@@ -30,9 +30,9 @@ echo "Running code quality checks..."
 echo "Running black..."
 if [ "$FIX_MODE" = true ]; then
     echo "Fixing black formatting..."
-    black . --exclude "$EXCLUDES_REGEX" --line-length 79
+    black . --line-length 79
 else
-    black . --check --diff --exclude "$EXCLUDES_REGEX"
+    black . --check --verbose --line-length 79
 fi
 if [ $? -ne 0 ]; then
     echo "Black check failed"
