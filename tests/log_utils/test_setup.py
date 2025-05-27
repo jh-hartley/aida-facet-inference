@@ -18,9 +18,7 @@ def test_setup_logging_configuration():
     assert logging.getLogger("httpx").level == logging.WARNING
 
     uvicorn_logger = logging.getLogger("uvicorn.access")
-    assert any(
-        isinstance(f, HealthCheckFilter) for f in uvicorn_logger.filters
-    )
+    assert any(isinstance(f, HealthCheckFilter) for f in uvicorn_logger.filters)
 
 
 def test_health_check_filter():

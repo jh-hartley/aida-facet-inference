@@ -1,8 +1,7 @@
 from datetime import UTC, datetime
 
 from pgvector.sqlalchemy import Vector
-from sqlalchemy import (JSON, Boolean, Column, DateTime, Float, ForeignKey,
-                        Integer, Text)
+from sqlalchemy import JSON, Boolean, Column, DateTime, Float, ForeignKey, Integer, Text
 from sqlalchemy.orm import relationship
 
 from src.config import config
@@ -153,9 +152,7 @@ class RetailerProductAttributeDB(Base):
         nullable=False,
     )
 
-    retailer_product = relationship(
-        "RetailerProductDB", back_populates="attributes"
-    )
+    retailer_product = relationship("RetailerProductDB", back_populates="attributes")
 
 
 class AttributeMappingDB(Base):

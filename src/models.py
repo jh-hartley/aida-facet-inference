@@ -1,9 +1,14 @@
 from pydantic import BaseModel
 
-from src.types_ import (AttributeMappingView, ProductEmbeddingView,
-                        ProductView, RetailerFacetView,
-                        RetailerProductAttributeView, RetailerProductView,
-                        RetailerView)
+from src.types_ import (
+    AttributeMappingView,
+    ProductEmbeddingView,
+    ProductView,
+    RetailerFacetView,
+    RetailerProductAttributeView,
+    RetailerProductView,
+    RetailerView,
+)
 
 
 class ProductWithRetailers(ProductView):

@@ -31,9 +31,7 @@ def setup_database() -> Engine:
                 text("SELECT 1 FROM pg_extension WHERE extname = 'vector'")
             )
             if not result.scalar():
-                connection.execute(
-                    text("CREATE EXTENSION IF NOT EXISTS vector")
-                )
+                connection.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
                 connection.commit()
         finally:
             connection.execute(text("SELECT pg_advisory_unlock(123456)"))

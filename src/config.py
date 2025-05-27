@@ -16,24 +16,16 @@ class Config:
     OPENAI_EMBEDDING_MODEL: str = os.getenv(
         "OPENAI_EMBEDDING_MODEL", "text-embedding-3-small"
     )
-    OPENAI_LLM_TEMPERATURE: float = float(
-        os.getenv("OPENAI_LLM_TEMPERATURE", "0.7")
-    )
+    OPENAI_LLM_TEMPERATURE: float = float(os.getenv("OPENAI_LLM_TEMPERATURE", "0.7"))
     OPENAI_LLM_TOP_P: float = float(os.getenv("OPENAI_LLM_TOP_P", "1.0"))
-    OPENAI_LLM_FREQ_PENALTY: float = float(
-        os.getenv("OPENAI_LLM_FREQ_PENALTY", "0.0")
-    )
+    OPENAI_LLM_FREQ_PENALTY: float = float(os.getenv("OPENAI_LLM_FREQ_PENALTY", "0.0"))
     OPENAI_LLM_REASONING_EFFORT: str = os.getenv(
         "OPENAI_LLM_REASONING_EFFORT", "medium"
     )
 
     # Embedding Configuration
-    EMBEDDING_MIN_DIMENSIONS: int = int(
-        os.getenv("EMBEDDING_MIN_DIMENSIONS", "384")
-    )
-    EMBEDDING_MAX_DIMENSIONS: int = int(
-        os.getenv("EMBEDDING_MAX_DIMENSIONS", "4096")
-    )
+    EMBEDDING_MIN_DIMENSIONS: int = int(os.getenv("EMBEDDING_MIN_DIMENSIONS", "384"))
+    EMBEDDING_MAX_DIMENSIONS: int = int(os.getenv("EMBEDDING_MAX_DIMENSIONS", "4096"))
     EMBEDDING_DEFAULT_DIMENSIONS: int = int(
         os.getenv("EMBEDDING_DEFAULT_DIMENSIONS", "384")
     )
@@ -97,8 +89,7 @@ class Config:
         valid_efforts = ["low", "medium", "high"]
         if value.lower() not in valid_efforts:
             raise ValueError(
-                f"Invalid reasoning effort: {value}. "
-                f"Must be one of {valid_efforts}"
+                f"Invalid reasoning effort: {value}. " f"Must be one of {valid_efforts}"
             )
         return value.lower()
 
@@ -115,9 +106,7 @@ class Config:
 
     @field_validator("EMBEDDING_DEFAULT_DIMENSIONS")
     @classmethod
-    def validate_default_dimensions(
-        cls, value: int, info: ValidationInfo
-    ) -> int:
+    def validate_default_dimensions(cls, value: int, info: ValidationInfo) -> int:
         min_dims = info.data.get("EMBEDDING_MIN_DIMENSIONS", 384)
         max_dims = info.data.get("EMBEDDING_MAX_DIMENSIONS", 4096)
         if not min_dims <= value <= max_dims:
