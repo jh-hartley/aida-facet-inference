@@ -2,7 +2,7 @@ import os
 from pathlib import Path
 
 from dotenv import load_dotenv
-from pydantic import field_validator
+from pydantic import ValidationInfo, field_validator
 
 load_dotenv()
 
@@ -25,6 +25,17 @@ class Config:
     )
     OPENAI_LLM_REASONING_EFFORT: str = os.getenv(
         "OPENAI_LLM_REASONING_EFFORT", "medium"
+    )
+
+    # Embedding Configuration
+    EMBEDDING_MIN_DIMENSIONS: int = int(
+        os.getenv("EMBEDDING_MIN_DIMENSIONS", "384")
+    )
+    EMBEDDING_MAX_DIMENSIONS: int = int(
+        os.getenv("EMBEDDING_MAX_DIMENSIONS", "4096")
+    )
+    EMBEDDING_DEFAULT_DIMENSIONS: int = int(
+        os.getenv("EMBEDDING_DEFAULT_DIMENSIONS", "384")
     )
 
     # API Configuration
@@ -90,6 +101,31 @@ class Config:
                 f"Must be one of {valid_efforts}"
             )
         return value.lower()
+
+    @field_validator(
+        "EMBEDDING_MIN_DIMENSIONS",
+        "EMBEDDING_MAX_DIMENSIONS",
+        "EMBEDDING_DEFAULT_DIMENSIONS",
+    )
+    @classmethod
+    def validate_embedding_dimensions(cls, value: int) -> int:
+        if value < 1:
+            raise ValueError("Embedding dimensions must be at least 1")
+        return value
+
+    @field_validator("EMBEDDING_DEFAULT_DIMENSIONS")
+    @classmethod
+    def validate_default_dimensions(
+        cls, value: int, info: ValidationInfo
+    ) -> int:
+        min_dims = info.data.get("EMBEDDING_MIN_DIMENSIONS", 384)
+        max_dims = info.data.get("EMBEDDING_MAX_DIMENSIONS", 4096)
+        if not min_dims <= value <= max_dims:
+            raise ValueError(
+                f"Default dimensions must be between min ({min_dims}) "
+                f"and max ({max_dims}) dimensions"
+            )
+        return value
 
 
 config = Config()
