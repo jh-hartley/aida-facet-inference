@@ -137,6 +137,9 @@ aida-facet-inference/
 │   │   ├── clock.py            # Time-related utilities
 │   │   └── ...                 # Other utility modules
 │   ├── config.py               # Application configuration
+│   ├── types_.py              # Data transfer objects and type definitions
+│   ├── models.py              # Composite models and search results
+│   ├── repositories.py        # SQLAlchemy database models
 │   └── __init__.py
 ├── tests/                      # Test suite
 │   ├── api/                    # API tests
@@ -164,6 +167,9 @@ aida-facet-inference/
 - **utils/**: General utility functions
   - **clock.py**: UTC timestamp utilities for database operations
 - **config.py**: Centralized configuration management
+- **types_.py**: Data transfer objects and type definitions
+- **models.py**: Composite models and search results
+- **repositories.py**: SQLAlchemy database models
 
 ## Database Schema
 
