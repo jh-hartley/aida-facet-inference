@@ -29,7 +29,7 @@ jobs:
     - name: Run linting
       run: |
         black . --check
-        flake8 .
+        flake8 . --max-line-length=88
         isort . --check-only
     - name: Run type checking
       run: |

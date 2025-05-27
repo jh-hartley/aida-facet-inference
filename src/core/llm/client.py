@@ -18,16 +18,20 @@ def llm(
     Creates and returns a configured ChatOpenAI instance.
 
     Parameters:
-    - model (str, optional): The name of the model to use (default from config).
-    - temperature (float, optional): Sampling temperature for randomness in output.
+    - model (str, optional): The name of the model to use
+        (default from config).
+    - temperature (float, optional): Sampling temperature for
+        randomness in output.
     - top_p (float, optional): Top-p sampling threshold for diversity.
     - frequency_penalty (float, optional): Penalty for word/phrase repetition.
-    - reasoning_effort (str, optional): Reasoning effort level for o3-mini model.
+    - reasoning_effort (str, optional): Reasoning effort level for o3-mini
+        model.
     """
     llm_config: dict[str, Any] = {
         "model": model or config.OPENAI_LLM_MODEL,
         "top_p": top_p or config.OPENAI_LLM_TOP_P,
-        "frequency_penalty": frequency_penalty or config.OPENAI_LLM_FREQ_PENALTY,
+        "frequency_penalty": frequency_penalty
+        or config.OPENAI_LLM_FREQ_PENALTY,
     }
 
     if (model or config.OPENAI_LLM_MODEL) == "o3-mini":
@@ -36,7 +40,9 @@ def llm(
                 reasoning_effort or config.OPENAI_LLM_REASONING_EFFORT
             )
     else:
-        llm_config["temperature"] = temperature or config.OPENAI_LLM_TEMPERATURE
+        llm_config["temperature"] = (
+            temperature or config.OPENAI_LLM_TEMPERATURE
+        )
 
     return ChatOpenAI(**llm_config)
 
@@ -47,12 +53,14 @@ def embeddings(model: str | None = None) -> OpenAIEmbeddings:
 
 class Llm:
     """
-    Abstraction layer for LLM interactions that provides configurable access to LLM
-    providers. Supports both synchronous and asynchronous invocations with structured
-    output.
+    Abstraction layer for LLM interactions that provides configurable access to
+    LLM providers. Supports both synchronous and asynchronous invocations with
+    structured output.
     """
 
-    def __init__(self, llm_model: LlmModel, temperature: float | None = None) -> None:
+    def __init__(
+        self, llm_model: LlmModel, temperature: float | None = None
+    ) -> None:
         self.llm_model = llm_model
         model_config: dict[str, Any] = {
             "model": self.llm_model.value,
@@ -80,7 +88,8 @@ class Llm:
         Parameters:
         - system (str): The system message to send
         - human (str): The user message to send
-        - output_type (Type[T] | None): The expected output type (defaults to str)
+        - output_type (Type[T] | None): The expected output type
+            (defaults to str)
 
         Returns:
         - T | str: The response content in the specified type
@@ -88,7 +97,8 @@ class Llm:
         messages = [SystemMessage(system), HumanMessage(human)]
 
         if output_type is None:
-            # ChatOpenAI.invoke() always returns BaseMessage, but mypy can't infer this
+            # ChatOpenAI.ainvoke() always returns a BaseMessage,
+            # but mypy can't infer this
             response = self._chat.invoke(messages)
             return response.content  # type: ignore
         else:
@@ -100,7 +110,9 @@ class Llm:
     async def ainvoke(self, system: str, human: str) -> str: ...
 
     @overload
-    async def ainvoke(self, system: str, human: str, output_type: Type[T]) -> T: ...
+    async def ainvoke(
+        self, system: str, human: str, output_type: Type[T]
+    ) -> T: ...
 
     async def ainvoke(
         self,
@@ -114,7 +126,8 @@ class Llm:
         Parameters:
         - system (str): The system message to send
         - human (str): The user message to send
-        - output_type (Type[T] | None): The expected output type (defaults to str)
+        - output_type (Type[T] | None): The expected output type (defaults to
+            str)
 
         Returns:
         - T | str: The response content in the specified type
@@ -122,7 +135,8 @@ class Llm:
         messages = [SystemMessage(system), HumanMessage(human)]
 
         if output_type is None:
-            # ChatOpenAI.ainvoke() always returns BaseMessage but mypy can't infer this
+            # ChatOpenAI.ainvoke() always returns a BaseMessage,
+            # but mypy can't infer this
             response = await self._chat.ainvoke(messages)
             return response.content  # type: ignore
         else:

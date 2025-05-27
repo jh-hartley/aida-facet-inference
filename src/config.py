@@ -16,9 +16,13 @@ class Config:
     OPENAI_EMBEDDING_MODEL: str = os.getenv(
         "OPENAI_EMBEDDING_MODEL", "text-embedding-3-small"
     )
-    OPENAI_LLM_TEMPERATURE: float = float(os.getenv("OPENAI_LLM_TEMPERATURE", "0.7"))
+    OPENAI_LLM_TEMPERATURE: float = float(
+        os.getenv("OPENAI_LLM_TEMPERATURE", "0.7")
+    )
     OPENAI_LLM_TOP_P: float = float(os.getenv("OPENAI_LLM_TOP_P", "1.0"))
-    OPENAI_LLM_FREQ_PENALTY: float = float(os.getenv("OPENAI_LLM_FREQ_PENALTY", "0.0"))
+    OPENAI_LLM_FREQ_PENALTY: float = float(
+        os.getenv("OPENAI_LLM_FREQ_PENALTY", "0.0")
+    )
     OPENAI_LLM_REASONING_EFFORT: str = os.getenv(
         "OPENAI_LLM_REASONING_EFFORT", "medium"
     )
@@ -82,7 +86,8 @@ class Config:
         valid_efforts = ["low", "medium", "high"]
         if value.lower() not in valid_efforts:
             raise ValueError(
-                f"Invalid reasoning effort: {value}. Must be one of {valid_efforts}"
+                f"Invalid reasoning effort: {value}. "
+                f"Must be one of {valid_efforts}"
             )
         return value.lower()
 

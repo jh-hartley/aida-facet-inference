@@ -22,7 +22,8 @@ def setup_database() -> Engine:
         max_overflow=config.DB_MAX_OVERFLOW,
     )
 
-    # Check if vector extension is installed once with lock to avoid race condition
+    # Check if vector extension is installed once with lock to avoid race
+    # condition
     with engine.connect() as connection:
         connection.execute(text("SELECT pg_advisory_lock(123456)"))
         try:
@@ -30,7 +31,9 @@ def setup_database() -> Engine:
                 text("SELECT 1 FROM pg_extension WHERE extname = 'vector'")
             )
             if not result.scalar():
-                connection.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
+                connection.execute(
+                    text("CREATE EXTENSION IF NOT EXISTS vector")
+                )
                 connection.commit()
         finally:
             connection.execute(text("SELECT pg_advisory_unlock(123456)"))
