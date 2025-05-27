@@ -127,18 +127,43 @@ To automatically fix formatting and import sorting issues:
 ```
 aida-facet-inference/
 ├── src/
-│   ├── api/                    # FastAPI endpoints
+│   ├── api/                    # FastAPI endpoints and routes
 │   ├── core/                   # Core business logic
-│   ├── db/                     # Database operations
-│   └── utils/              
-│   ├── config.py
-│   └── streamlit_app.py
-├── tests/                      
-├── docs/                       
+│   │   ├── llm/                # LLM integration and abstractions
+│   │   └── ...                 # Other core modules
+│   ├── db/                     # Database operations and models
+│   ├── log_utils/              # Logging configuration and utilities
+│   ├── utils/                  # General utility functions
+│   │   ├── clock.py            # Time-related utilities
+│   │   └── ...                 # Other utility modules
+│   ├── config.py               # Application configuration
+│   └── __init__.py
+├── tests/                      # Test suite
+│   ├── api/                    # API tests
+│   ├── core/                   # Core logic tests
+│   ├── db/                     # Database tests
+│   └── log_utils/              # Logging tests (to test the CI/CD pipeline)
+├── docs/                       # Documentation
 ├── schema/                     # Database schema and migrations
 │   └── 01_init.sql
+├── scripts/                    # Utility scripts
+│   └── check.sh                # Code quality check script
+├── .github/                    # GitHub configuration
+│   └── workflows/              # CI/CD workflows
+├── pyproject.toml              # Project configuration and dependencies
 └── docker-compose.yml          # Docker services configuration
 ```
+
+## Module Overview
+
+- **api/**: FastAPI application endpoints and route handlers
+- **core/**: Core business logic and abstractions
+  - **llm/**: LLM client implementation and model definitions
+- **db/**: Database models, operations, and connection management
+- **log_utils/**: Logging configuration and custom filters
+- **utils/**: General utility functions
+  - **clock.py**: UTC timestamp utilities for database operations
+- **config.py**: Centralized configuration management
 
 ## Database Schema
 

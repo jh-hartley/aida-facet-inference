@@ -30,9 +30,9 @@ echo "Running code quality checks..."
 echo "Running black..."
 if [ "$FIX_MODE" = true ]; then
     echo "Fixing black formatting..."
-    black . --exclude "$EXCLUDES_REGEX" --line-length 88
+    black . --line-length 79
 else
-    black . --check --diff --exclude "$EXCLUDES_REGEX"
+    black . --check --verbose --line-length 79
 fi
 if [ $? -ne 0 ]; then
     echo "Black check failed"
@@ -54,7 +54,7 @@ if [ $? -ne 0 ]; then
 fi
 
 echo "Running flake8..."
-flake8 . --show-source --exclude=$EXCLUDES_LIST --max-line-length 88
+flake8 . --show-source --exclude=$EXCLUDES_LIST --max-line-length=79
 if [ $? -ne 0 ]; then
     echo "flake8 check failed"
     echo "Please fix the issues shown above"
