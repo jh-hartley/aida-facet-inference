@@ -1,18 +1,18 @@
-from typing import Type, overload
+from typing import Any, Type, cast, overload
 
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 
 from src.config import config
-from src.core.llm.models import T, LlmModel
+from src.core.llm.models import LlmModel, T
 
 
 def llm(
-        model: str | None = None,
-        temperature: float | None = None,
-        top_p: float | None = None,
-        frequency_penalty: float | None = None,
-        reasoning_effort: str | None = None,
+    model: str | None = None,
+    temperature: float | None = None,
+    top_p: float | None = None,
+    frequency_penalty: float | None = None,
+    reasoning_effort: str | None = None,
 ) -> ChatOpenAI:
     """
     Creates and returns a configured ChatOpenAI instance.
@@ -24,7 +24,7 @@ def llm(
     - frequency_penalty (float, optional): Penalty for word/phrase repetition.
     - reasoning_effort (str, optional): Reasoning effort level for o3-mini model.
     """
-    llm_config = {
+    llm_config: dict[str, Any] = {
         "model": model or config.OPENAI_LLM_MODEL,
         "top_p": top_p or config.OPENAI_LLM_TOP_P,
         "frequency_penalty": frequency_penalty or config.OPENAI_LLM_FREQ_PENALTY,
@@ -32,7 +32,9 @@ def llm(
 
     if (model or config.OPENAI_LLM_MODEL) == "o3-mini":
         if reasoning_effort:
-            llm_config["reasoning_effort"] = reasoning_effort or config.OPENAI_LLM_REASONING_EFFORT
+            llm_config["reasoning_effort"] = (
+                reasoning_effort or config.OPENAI_LLM_REASONING_EFFORT
+            )
     else:
         llm_config["temperature"] = temperature or config.OPENAI_LLM_TEMPERATURE
 
@@ -40,28 +42,19 @@ def llm(
 
 
 def embeddings(model: str | None = None) -> OpenAIEmbeddings:
-    """
-    Creates and returns a configured OpenAIEmbeddings instance.
-    """
     return OpenAIEmbeddings(model=model or config.OPENAI_EMBEDDING_MODEL)
 
 
 class Llm:
     """
-    Abstraction layer for LLM interactions that provides configurable access to LLM providers.
-    Supports both synchronous and asynchronous invocations with structured output.
+    Abstraction layer for LLM interactions that provides configurable access to LLM
+    providers. Supports both synchronous and asynchronous invocations with structured
+    output.
     """
 
     def __init__(self, llm_model: LlmModel, temperature: float | None = None) -> None:
-        """
-        Initialize a Chat instance with specified model type.
-        
-        Parameters:
-        - llm_model (LlmModel): The LLM model type to use
-        - temperature (float, optional): Sampling temperature for randomness in output
-        """
         self.llm_model = llm_model
-        model_config = {
+        model_config: dict[str, Any] = {
             "model": self.llm_model.value,
             "temperature": temperature,
         }
@@ -70,77 +63,69 @@ class Llm:
         self._chat = ChatOpenAI(**model_config)
 
     @overload
-    def invoke(self, system: str, human: str) -> str:
-        ...
+    def invoke(self, system: str, human: str) -> str: ...
 
     @overload
-    def invoke(self, system: str, human: str, output_type: Type[T]) -> T:
-        ...
+    def invoke(self, system: str, human: str, output_type: Type[T]) -> T: ...
 
     def invoke(
-            self,
-            system: str,
-            human: str,
-            output_type: Type[T] | None = None,
+        self,
+        system: str,
+        human: str,
+        output_type: Type[T] | None = None,
     ) -> T | str:
         """
         Invoke the LLM with the provided messages.
-        
+
         Parameters:
         - system (str): The system message to send
         - human (str): The user message to send
         - output_type (Type[T] | None): The expected output type (defaults to str)
-        
+
         Returns:
         - T | str: The response content in the specified type
         """
-        messages = [
-            SystemMessage(system),
-            HumanMessage(human)
-        ]
+        messages = [SystemMessage(system), HumanMessage(human)]
 
         if output_type is None:
+            # ChatOpenAI.invoke() always returns BaseMessage, but mypy can't infer this
             response = self._chat.invoke(messages)
-            return response.content
+            return response.content  # type: ignore
         else:
             chat = self._chat.with_structured_output(output_type)
-            response = chat.invoke(messages)
-            return response
+            response = chat.invoke(messages)  # type: ignore[assignment]
+            return cast(T, response)
 
     @overload
-    async def ainvoke(self, system: str, human: str) -> str:
-        ...
+    async def ainvoke(self, system: str, human: str) -> str: ...
 
     @overload
-    async def ainvoke(self, system: str, human: str, output_type: Type[T]) -> T:
-        ...
+    async def ainvoke(self, system: str, human: str, output_type: Type[T]) -> T: ...
 
     async def ainvoke(
-            self,
-            system: str,
-            human: str,
-            output_type: Type[T] | None = None,
+        self,
+        system: str,
+        human: str,
+        output_type: Type[T] | None = None,
     ) -> T | str:
         """
         Asynchronously invoke the LLM with the provided messages.
-        
+
         Parameters:
         - system (str): The system message to send
         - human (str): The user message to send
         - output_type (Type[T] | None): The expected output type (defaults to str)
-        
+
         Returns:
         - T | str: The response content in the specified type
         """
-        messages = [
-            SystemMessage(system),
-            HumanMessage(human)
-        ]
+        messages = [SystemMessage(system), HumanMessage(human)]
 
         if output_type is None:
+            # ChatOpenAI.ainvoke() always returns BaseMessage but mypy can't infer this
             response = await self._chat.ainvoke(messages)
-            return response.content
+            return response.content  # type: ignore
         else:
             chat = self._chat.with_structured_output(output_type)
-            response = await chat.ainvoke(messages)
-            return response 
+            response = await chat.ainvoke(messages)  # type: ignore[assignment]
+            return cast(T, response)

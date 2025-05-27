@@ -13,11 +13,15 @@ class Config:
     # LLM Configuration
     OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "")
     OPENAI_LLM_MODEL: str = os.getenv("OPENAI_LLM_MODEL", "gpt-4")
-    OPENAI_EMBEDDING_MODEL: str = os.getenv("OPENAI_EMBEDDING_MODEL", "text-embedding-3-small")
+    OPENAI_EMBEDDING_MODEL: str = os.getenv(
+        "OPENAI_EMBEDDING_MODEL", "text-embedding-3-small"
+    )
     OPENAI_LLM_TEMPERATURE: float = float(os.getenv("OPENAI_LLM_TEMPERATURE", "0.7"))
     OPENAI_LLM_TOP_P: float = float(os.getenv("OPENAI_LLM_TOP_P", "1.0"))
     OPENAI_LLM_FREQ_PENALTY: float = float(os.getenv("OPENAI_LLM_FREQ_PENALTY", "0.0"))
-    OPENAI_LLM_REASONING_EFFORT: str = os.getenv("OPENAI_LLM_REASONING_EFFORT", "medium")
+    OPENAI_LLM_REASONING_EFFORT: str = os.getenv(
+        "OPENAI_LLM_REASONING_EFFORT", "medium"
+    )
 
     # API Configuration
     API_HOST: str = os.getenv("API_HOST", "0.0.0.0")
@@ -63,7 +67,9 @@ class Config:
             raise ValueError("Pool size must be at least 1")
         return value
 
-    @field_validator("OPENAI_LLM_TEMPERATURE", "OPENAI_LLM_TOP_P", "OPENAI_LLM_FREQ_PENALTY")
+    @field_validator(
+        "OPENAI_LLM_TEMPERATURE", "OPENAI_LLM_TOP_P", "OPENAI_LLM_FREQ_PENALTY"
+    )
     @classmethod
     def validate_float_range(cls, value: float) -> float:
         if not 0 <= value <= 1:
@@ -75,7 +81,9 @@ class Config:
     def validate_reasoning_effort(cls, value: str) -> str:
         valid_efforts = ["low", "medium", "high"]
         if value.lower() not in valid_efforts:
-            raise ValueError(f"Invalid reasoning effort: {value}. Must be one of {valid_efforts}")
+            raise ValueError(
+                f"Invalid reasoning effort: {value}. Must be one of {valid_efforts}"
+            )
         return value.lower()
 
 
