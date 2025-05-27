@@ -1,0 +1,25 @@
+#!/bin/bash
+
+# Patterns for various LLM API keys
+PATTERNS=(
+    "sk-[a-zA-Z0-9]{32,}"       # OpenAI
+    "sk-proj-[a-zA-Z0-9]{32,}"  # Stripe
+    "sk-[a-zA-Z0-9]{48}"        # Anthropic
+    "sk-[a-zA-Z0-9]{40}"        # Cohere
+    "sk-[a-zA-Z0-9]{24}"        # HuggingFace
+    "sk-[a-zA-Z0-9]{36}"        # Azure OpenAI
+)
+
+STAGED_FILES=$(git diff --cached --name-only)
+
+for FILE in $STAGED_FILES; do
+    for PATTERN in "${PATTERNS[@]}"; do
+        if grep -qE "$PATTERN" "$FILE"; then
+            echo "Error: Potential API key detected in file: $FILE"
+            echo "Please remove the API key before committing."
+            exit 1
+        fi
+    done
+done
+
+exit 0 
