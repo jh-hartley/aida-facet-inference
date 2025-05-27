@@ -32,9 +32,10 @@ if [ "$FIX_MODE" = true ]; then
     echo "Fixing black formatting..."
     black . --line-length 79
 else
+    echo "Checking black formatting..."
     black . --check --verbose --line-length 79
 fi
-if [ $? -ne 0 ]; then
+if [ $? -ne 0 ] && [ "$FIX_MODE" = false ]; then
     echo "Black check failed"
     echo "Run './scripts/check.sh --fix' to automatically fix formatting issues"
     exit 1

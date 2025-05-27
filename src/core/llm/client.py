@@ -30,7 +30,8 @@ def llm(
     llm_config: dict[str, Any] = {
         "model": model or config.OPENAI_LLM_MODEL,
         "top_p": top_p or config.OPENAI_LLM_TOP_P,
-        "frequency_penalty": frequency_penalty or config.OPENAI_LLM_FREQ_PENALTY,
+        "frequency_penalty": frequency_penalty
+        or config.OPENAI_LLM_FREQ_PENALTY,
     }
 
     if (model or config.OPENAI_LLM_MODEL) == "o3-mini":
@@ -39,7 +40,9 @@ def llm(
                 reasoning_effort or config.OPENAI_LLM_REASONING_EFFORT
             )
     else:
-        llm_config["temperature"] = temperature or config.OPENAI_LLM_TEMPERATURE
+        llm_config["temperature"] = (
+            temperature or config.OPENAI_LLM_TEMPERATURE
+        )
 
     return ChatOpenAI(**llm_config)
 
@@ -55,7 +58,9 @@ class Llm:
     structured output.
     """
 
-    def __init__(self, llm_model: LlmModel, temperature: float | None = None) -> None:
+    def __init__(
+        self, llm_model: LlmModel, temperature: float | None = None
+    ) -> None:
         self.llm_model = llm_model
         model_config: dict[str, Any] = {
             "model": self.llm_model.value,
@@ -105,7 +110,9 @@ class Llm:
     async def ainvoke(self, system: str, human: str) -> str: ...
 
     @overload
-    async def ainvoke(self, system: str, human: str, output_type: Type[T]) -> T: ...
+    async def ainvoke(
+        self, system: str, human: str, output_type: Type[T]
+    ) -> T: ...
 
     async def ainvoke(
         self,
