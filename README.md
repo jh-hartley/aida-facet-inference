@@ -169,9 +169,18 @@ aida-facet-inference/
 
 The system uses PostgreSQL with the pgvector extension for vector similarity search. The main tables are:
 
-- `products`: Stores product information
-- `facets`: Stores facet definitions
-- `product_facets`: Junction table linking products to their facets
+- `retailers`: Stores retailer information (name, URL, country, industry)
+- `products`: Stores core product information (identifiers, name, description, category)
+- `retailer_products`: Links products to retailers with retailer-specific data (price, availability)
+- `retailer_product_attributes`: Stores retailer-specific product attributes
+- `retailer_facets`: Stores retailer-specific facet definitions
+- `attribute_mappings`: Maps retailer-specific attributes to normalized attributes
 - `product_embeddings`: Stores vector embeddings for similarity search
+
+The schema is designed to support:
+- Multiple retailers with their own product data
+- Flexible attribute storage using JSONB
+- Vector similarity search for product matching
+- Attribute normalization across retailers
 
 See `schema/01_init.sql` for the complete schema definition.
