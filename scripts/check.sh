@@ -27,31 +27,27 @@ done
 
 echo "Running code quality checks..."
 
-echo "Running black..."
 if [ "$FIX_MODE" = true ]; then
+    echo "Fixing import sorting..."
+    isort . --profile black $ISORT_SKIPS
     echo "Fixing black formatting..."
     black . --line-length 79
 else
-    echo "Checking black formatting..."
+    echo "Running black..."
     black . --check --verbose --line-length 79
-fi
-if [ $? -ne 0 ] && [ "$FIX_MODE" = false ]; then
-    echo "Black check failed"
-    echo "Run './scripts/check.sh --fix' to automatically fix formatting issues"
-    exit 1
-fi
+    if [ $? -ne 0 ]; then
+        echo "Black check failed"
+        echo "Run './scripts/check.sh --fix' to automatically fix formatting issues"
+        exit 1
+    fi
 
-echo "Running isort..."
-if [ "$FIX_MODE" = true ]; then
-    echo "Fixing import sorting..."
-    isort . $ISORT_SKIPS
-else
-    isort . --check-only --diff $ISORT_SKIPS
-fi
-if [ $? -ne 0 ]; then
-    echo "isort check failed"
-    echo "Run './scripts/check.sh --fix' to automatically fix import sorting"
-    exit 1
+    echo "Running isort..."
+    isort . --check-only --diff --profile black $ISORT_SKIPS
+    if [ $? -ne 0 ]; then
+        echo "isort check failed"
+        echo "Run './scripts/check.sh --fix' to automatically fix import sorting"
+        exit 1
+    fi
 fi
 
 echo "Running flake8..."
