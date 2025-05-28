@@ -1,6 +1,16 @@
 # Development Guide
 
-## Setup
+## Development Approaches
+
+### Local Development (Recommended)
+
+This approach is recommended for active development as it provides:
+- Fast iteration with hot-reloading
+- Direct access to the codebase
+- Quick testing of changes
+- Better debugging capabilities
+
+#### Setup
 
 1. Clone the repository:
 ```bash
@@ -24,6 +34,45 @@ pip install -e ".[dev]"
 cp .env.example .env
 # Edit .env with your settings
 ```
+
+5. Start the database (using Docker):
+```bash
+docker-compose up db
+```
+
+6. Run the API with hot-reloading:
+```bash
+uvicorn src.api.main:app --host 0.0.0.0 --port 8000 --reload
+```
+
+The `--reload` flag enables hot-reloading, so your API will automatically update when you make code changes.
+
+### Docker-based Development
+
+This approach is useful for:
+- Testing the production-like environment
+- Ensuring consistency across team members
+- CI/CD pipeline testing
+
+#### Setup
+
+1. Configure environment:
+```bash
+cp .env.example .env
+# Edit .env with your settings
+```
+
+2. Start services:
+```bash
+# Start both API and database
+docker-compose up
+
+# Or start individual services
+docker-compose up db    # Just the database
+docker-compose up api   # Just the API
+```
+
+Note: Code changes require rebuilding the container, which is slower for active development.
 
 ## Code Quality
 
@@ -121,4 +170,10 @@ git checkout -b feature/your-feature-name
 5. **Code Style**
    - Follow PEP 8
    - Use meaningful variable names
-   - Keep functions small and focused 
+   - Keep functions small and focused
+
+6. **Development Workflow**
+   - Use local development for active coding
+   - Test in Docker before committing
+   - Keep the database schema in sync
+   - Document any new environment variables 
