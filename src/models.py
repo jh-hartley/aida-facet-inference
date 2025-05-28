@@ -8,6 +8,7 @@ from src.types_ import (
     RetailerProductAttributeView,
     RetailerProductView,
     RetailerView,
+    RetailerCategoryView,
 )
 
 
@@ -33,6 +34,15 @@ class RetailerWithFacets(RetailerView):
     """A retailer with its associated facets"""
 
     facets: list[RetailerFacetView]
+
+
+class RetailerCategoryTree(RetailerCategoryView):
+    """A complete category tree with facets for a retailer"""
+
+    children: list["RetailerCategoryTree"] = []
+
+    class Config:
+        from_attributes = True
 
 
 class RetailerProductWithAttributes(RetailerProductView):
@@ -66,3 +76,7 @@ class RetailerFacetSearchResult(BaseModel):
 
     facet: RetailerFacetView
     similarity_score: float
+
+
+# Update forward references
+RetailerCategoryTree.update_forward_refs()

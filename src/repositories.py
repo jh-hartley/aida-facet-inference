@@ -42,6 +42,7 @@ class RetailerDB(Base):
     products = relationship("RetailerProductDB", back_populates="retailer")
     facets = relationship("RetailerFacetDB", back_populates="retailer")
     mappings = relationship("AttributeMappingDB", back_populates="retailer")
+    categories = relationship("RetailerCategoryDB", back_populates="retailer")
 
 
 class ProductDB(Base):
@@ -110,6 +111,50 @@ class RetailerFacetDB(Base):
     )
 
     retailer = relationship("RetailerDB", back_populates="facets")
+    categories = relationship(
+        "RetailerCategoryDB",
+        secondary="retailer_category_facets",
+        back_populates="facets"
+    )
+
+
+class RetailerCategoryDB(Base):
+    """Database model for retailer categories"""
+
+    __tablename__ = "retailer_categories"
+
+    id = Column(Integer, primary_key=True)
+    retailer_id = Column(Integer, ForeignKey("retailers.id"), nullable=False)
+    parent_id = Column(Integer, ForeignKey("retailer_categories.id"), nullable=True)
+    name = Column(Text, nullable=False)
+    description = Column(Text, nullable=True)
+    created_at = Column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(UTC),
+        nullable=False,
+    )
+
+    retailer = relationship("RetailerDB", back_populates="categories")
+    parent = relationship("RetailerCategoryDB", remote_side=[id], backref="children")
+    facets = relationship(
+        "RetailerFacetDB",
+        secondary="retailer_category_facets",
+        back_populates="categories"
+    )
+
+
+class RetailerCategoryFacetDB(Base):
+    """Database model for retailer category-facet mappings"""
+
+    __tablename__ = "retailer_category_facets"
+
+    category_id = Column(Integer, ForeignKey("retailer_categories.id"), primary_key=True)
+    facet_id = Column(Integer, ForeignKey("retailer_facets.id"), primary_key=True)
+    created_at = Column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(UTC),
+        nullable=False,
+    )
 
 
 class RetailerProductDB(Base):

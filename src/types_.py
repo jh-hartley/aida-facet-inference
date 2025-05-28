@@ -42,6 +42,14 @@ class RetailerFacetBase(BaseModel):
     description: str
 
 
+class RetailerCategoryBase(BaseModel):
+    """Base model for Retailer Category data"""
+
+    name: str
+    description: str | None = None
+    parent_id: int | None = None
+
+
 class RetailerProductBase(BaseModel):
     """Base model for Retailer Product data"""
 
@@ -214,3 +222,34 @@ class AttributeMappingView(AttributeMappingBase):
 
     class Config:
         from_attributes = True
+
+
+class RetailerCategoryCreate(RetailerCategoryBase):
+    """DTO for creating a new retailer category"""
+
+    retailer_id: int
+
+
+class RetailerCategoryUpdate(RetailerCategoryBase):
+    """DTO for updating a retailer category"""
+
+    name: str
+    description: str | None = None
+    parent_id: int | None = None
+
+
+class RetailerCategoryView(RetailerCategoryBase):
+    """DTO for retailer category view"""
+
+    id: int
+    retailer_id: int
+    created_at: datetime
+    facets: list[RetailerFacetView] = []
+    children: list["RetailerCategoryView"] = []
+
+    class Config:
+        from_attributes = True
+
+
+# Update forward references
+RetailerCategoryView.update_forward_refs()
