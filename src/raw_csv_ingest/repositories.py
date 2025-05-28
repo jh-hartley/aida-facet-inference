@@ -1,4 +1,4 @@
-from typing import TypeVar, cast
+from typing import TypeVar, cast, Generic
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -22,10 +22,10 @@ from src.raw_csv_ingest.models import (
 )
 
 
-T = TypeVar('T', bound=Base, covariant=True)
+T = TypeVar('T', bound=Base)
 
 
-class Repository:
+class Repository(Generic[T]):
     """Repository class with common functionality"""
 
     def __init__(self, session: Session, model: type[T]):
@@ -62,16 +62,11 @@ class Repository:
         return cast(list[T], self.session.scalars(select(self.model)).all())
 
 
-class RawProductRepository(Repository):
+class RawProductRepository(Repository[RawProduct]):
     """Repository for raw product data from CSV"""
 
     def __init__(self, session: Session):
         super().__init__(session, RawProduct)
-
-    def create(self, product: RawProduct) -> RawProduct:
-        """Create a new product"""
-        self.session.add(product)
-        return product
 
     def get_by_system_name(self, system_name: str) -> RawProduct:
         """Get a product by its system name, raising an exception if not found"""
@@ -89,7 +84,7 @@ class RawProductRepository(Repository):
         )
 
 
-class RawCategoryRepository(Repository):
+class RawCategoryRepository(Repository[RawCategory]):
     """Repository for raw category data from CSV"""
 
     def __init__(self, session: Session):
@@ -111,7 +106,7 @@ class RawCategoryRepository(Repository):
         )
 
 
-class RawAttributeRepository(Repository):
+class RawAttributeRepository(Repository[RawAttribute]):
     """Repository for raw attribute data from CSV"""
 
     def __init__(self, session: Session):
@@ -133,7 +128,7 @@ class RawAttributeRepository(Repository):
         )
 
 
-class RawProductCategoryRepository(Repository):
+class RawProductCategoryRepository(Repository[RawProductCategory]):
     """Repository for raw product-category relationship data from CSV"""
 
     def __init__(self, session: Session):
@@ -178,7 +173,7 @@ class RawProductCategoryRepository(Repository):
         )
 
 
-class RawCategoryAttributeRepository(Repository):
+class RawCategoryAttributeRepository(Repository[RawCategoryAttribute]):
     """Repository for raw category-attribute relationship data from CSV"""
 
     def __init__(self, session: Session):
@@ -223,7 +218,7 @@ class RawCategoryAttributeRepository(Repository):
         )
 
 
-class RawProductAttributeValueRepository(Repository):
+class RawProductAttributeValueRepository(Repository[RawProductAttributeValue]):
     """Repository for raw product attribute value data from CSV"""
 
     def __init__(self, session: Session):
@@ -268,7 +263,7 @@ class RawProductAttributeValueRepository(Repository):
         )
 
 
-class RawProductAttributeGapRepository(Repository):
+class RawProductAttributeGapRepository(Repository[RawProductAttributeGap]):
     """Repository for raw product attribute gap data from CSV"""
 
     def __init__(self, session: Session):
@@ -313,7 +308,7 @@ class RawProductAttributeGapRepository(Repository):
         )
 
 
-class RawProductAttributeAllowableValueRepository(Repository):
+class RawProductAttributeAllowableValueRepository(Repository[RawProductAttributeAllowableValue]):
     """Repository for raw product attribute allowable value data from CSV"""
 
     def __init__(self, session: Session):
@@ -358,7 +353,7 @@ class RawProductAttributeAllowableValueRepository(Repository):
         )
 
 
-class RawCategoryAllowableValueRepository(Repository):
+class RawCategoryAllowableValueRepository(Repository[RawCategoryAllowableValue]):
     """Repository for raw category allowable value data from CSV"""
 
     def __init__(self, session: Session):
@@ -403,7 +398,7 @@ class RawCategoryAllowableValueRepository(Repository):
         )
 
 
-class RawAttributeAllowableValueApplicableInEveryCategoryRepository(Repository):
+class RawAttributeAllowableValueApplicableInEveryCategoryRepository(Repository[RawAttributeAllowableValueApplicableInEveryCategory]):
     """Repository for raw attribute allowable value applicable in every category data from CSV"""
 
     def __init__(self, session: Session):
@@ -429,7 +424,7 @@ class RawAttributeAllowableValueApplicableInEveryCategoryRepository(Repository):
         )
 
 
-class RawAttributeAllowableValueInAnyCategoryRepository(Repository):
+class RawAttributeAllowableValueInAnyCategoryRepository(Repository[RawAttributeAllowableValueInAnyCategory]):
     """Repository for raw attribute allowable value in any category data from CSV"""
 
     def __init__(self, session: Session):
@@ -455,7 +450,7 @@ class RawAttributeAllowableValueInAnyCategoryRepository(Repository):
         )
 
 
-class RawRecommendationRepository(Repository):
+class RawRecommendationRepository(Repository[RawRecommendation]):
     """Repository for raw recommendation data from CSV"""
 
     def __init__(self, session: Session):
@@ -500,7 +495,7 @@ class RawRecommendationRepository(Repository):
         )
 
 
-class RawRecommendationRoundRepository(Repository):
+class RawRecommendationRoundRepository(Repository[RawRecommendationRound]):
     """Repository for raw recommendation round data from CSV"""
 
     def __init__(self, session: Session):
@@ -513,7 +508,7 @@ class RawRecommendationRoundRepository(Repository):
         )
 
 
-class RawRichTextSourceRepository(Repository):
+class RawRichTextSourceRepository(Repository[RawRichTextSource]):
     """Repository for raw rich text source data from CSV"""
 
     def __init__(self, session: Session):
