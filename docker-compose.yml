@@ -1,9 +1,8 @@
-version: '3.8'
-
 services:
   postgres:
     profiles:
       - db
+      - all # For when we want to run everything together
     image: pgvector/pgvector:pg16
     container_name: aida-pg-db
     environment:
@@ -25,6 +24,7 @@ services:
   api:
     profiles:
       - api
+      - all # For when we want to run everything together
     build:
       context: .
       dockerfile: Dockerfile.api
@@ -37,6 +37,7 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+        required: false # This makes the dependency optional when running api alone
 
 volumes:
   postgres_data:
