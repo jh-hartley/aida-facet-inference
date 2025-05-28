@@ -60,11 +60,14 @@ class RawCategoryAttribute(Base):
 
     __tablename__ = "raw_category_attributes"
 
+    category_attribute_key: Mapped[str] = mapped_column(
+        String, primary_key=True
+    )
     category_key: Mapped[str] = mapped_column(
-        String, ForeignKey("raw_categories.category_key"), primary_key=True
+        String, ForeignKey("raw_categories.category_key")
     )
     attribute_key: Mapped[str] = mapped_column(
-        String, ForeignKey("raw_attributes.attribute_key"), primary_key=True
+        String, ForeignKey("raw_attributes.attribute_key")
     )
 
 

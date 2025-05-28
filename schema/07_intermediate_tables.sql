@@ -33,9 +33,9 @@ CREATE TABLE raw_product_categories (
 
 -- Category-Attribute relationships
 CREATE TABLE raw_category_attributes (
+    category_attribute_key TEXT PRIMARY KEY,
     category_key TEXT REFERENCES raw_categories(category_key),
-    attribute_key TEXT REFERENCES raw_attributes(attribute_key),
-    PRIMARY KEY (category_key, attribute_key)
+    attribute_key TEXT REFERENCES raw_attributes(attribute_key)
 );
 
 -- Product Attribute Values

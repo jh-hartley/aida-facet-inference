@@ -31,41 +31,90 @@ class CSVConfig:
         "Product.csv": {
             "model": RawProduct,
             "create_func": create_product,
+            "column_mapping": {
+                "ProductKey": "product_key",
+                "SystemName": "system_name",
+                "FriendlyName": "friendly_name",
+            },
         },
         "Category.csv": {
             "model": RawCategory,
             "create_func": create_category,
+            "column_mapping": {
+                "CategoryKey": "category_key",
+                "SystemName": "system_name",
+                "FriendlyName": "friendly_name",
+            },
         },
         "Attribute.csv": {
             "model": RawAttribute,
             "create_func": create_attribute,
+            "column_mapping": {
+                "AttributeKey": "attribute_key",
+                "SystemName": "system_name",
+                "FriendlyName": "friendly_name",
+                "AttributeType": "attribute_type",
+                "UnitMeasureType": "unit_measure_type",
+            },
         },
         "ProductCategory.csv": {
             "model": RawProductCategory,
             "create_func": create_product_category,
+            "column_mapping": {
+                "ProductKey": "product_key",
+                "CategoryKey": "category_key",
+            },
         },
         "CategoryAttribute.csv": {
             "model": RawCategoryAttribute,
             "create_func": create_category_attribute,
+            "column_mapping": {
+                "CategoryAttributeKey": "category_attribute_key",
+                "CategoryKey": "category_key",
+                "AttributeKey": "attribute_key",
+            },
         },
         "ProductAttributeValue.csv": {
             "model": RawProductAttributeValue,
             "create_func": create_product_attribute_value,
+            "column_mapping": {
+                "ProductKey": "product_key",
+                "AttributeKey": "attribute_key",
+                "Value": "value",
+            },
         },
-        "ProductAttributeGap.csv": {
+        "ProductAttributeGaps.csv": {
             "model": RawProductAttributeGap,
             "create_func": create_product_attribute_gap,
+            "column_mapping": {
+                "ProductKey": "product_key",
+                "AttributeKey": "attribute_key",
+            },
         },
         "ProductAttributeAllowableValue.csv": {
             "model": RawProductAttributeAllowableValue,
             "create_func": create_product_attribute_allowable_value,
+            "column_mapping": {
+                "ProductKey": "product_key",
+                "AttributeKey": "attribute_key",
+                "Value": "value",
+            },
         },
         "CategoryAllowableValue.csv": {
             "model": RawCategoryAllowableValue,
             "create_func": create_category_allowable_value,
+            "column_mapping": {
+                "CategoryAttributeKey": "category_attribute_key",
+                "AllowableValue": "value",
+            },
         },
         "Recommendation.csv": {
             "model": RawRecommendation,
             "create_func": create_recommendation,
+            "column_mapping": {
+                "ProductKey": "product_key",
+                "AttributeKey": "attribute_key",
+                "RecommendedValue": "value",
+            },
         },
     }

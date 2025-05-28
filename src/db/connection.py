@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, cast
 from uuid import UUID, uuid4
 
 from dotenv import load_dotenv
@@ -47,7 +47,7 @@ class ConnectionProvider:
         return SessionLocal
 
     @staticmethod
-    def psycopgpool() -> ConnectionPool:
+    def psycopgpool() -> ConnectionPool[Any]:
         """Creates and returns a psycopg connection pool."""
         connection_kwargs = {
             "autocommit": True,
@@ -58,10 +58,10 @@ class ConnectionProvider:
             max_size=config.DB_POOL_SIZE,
             kwargs=connection_kwargs,
         )
-        return pool
+        return cast(ConnectionPool[Any], pool)
 
     @staticmethod
-    def async_psycopgpool() -> AsyncConnectionPool:
+    def async_psycopgpool() -> AsyncConnectionPool[Any]:
         """Creates and returns an async psycopg connection pool."""
         connection_kwargs = {
             "autocommit": True,
@@ -72,7 +72,7 @@ class ConnectionProvider:
             max_size=config.DB_ASYNC_POOL_SIZE,
             kwargs=connection_kwargs,
         )
-        return pool
+        return cast(AsyncConnectionPool[Any], pool)
 
     @staticmethod
     def connection_url() -> str:

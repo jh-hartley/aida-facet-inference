@@ -9,11 +9,26 @@ CREATE TABLE retailers (
 
 CREATE TABLE products (
     id SERIAL PRIMARY KEY,
+    name TEXT NOT NULL,
     identifier_value TEXT NOT NULL,  -- EAN/GTIN
     identifier_type TEXT NOT NULL,   -- 'EAN', 'UPC', etc.
+    category TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(identifier_value, identifier_type)
+);
+
+CREATE TABLE retailer_products (
+    id SERIAL PRIMARY KEY,
+    retailer_id INTEGER REFERENCES retailers(id),
+    product_id INTEGER REFERENCES products(id),
+    retailer_product_id TEXT NOT NULL,
+    url TEXT,
+    price FLOAT,
+    availability BOOLEAN,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(retailer_id, retailer_product_id)
 );
 
 CREATE TABLE categories (
