@@ -1,6 +1,61 @@
 # AIDA Facet Inference
 
-A product facet inference system that uses LLMs to intelligently categorise and enrich product data. The system takes in product information and uses LLMs to infer missing facets based on the gathered information, with confidence scoring and validation.
+A product facet inference system that uses LLMs to intelligently categorise and enrich product data. When complete, the system will take in product information and use LLMs to infer missing facets based on the gathered information, with confidence scoring and validation.
+
+## TODO
+
+### Core Functionality (Must Have)
+- [ ] Data Ingestion Pipeline
+  - [ ] CSV ingestion for raw product information
+  - [ ] Separation of universal traits (EAN) from retailer-specific traits
+  - [ ] Database schema design for product and facet data
+  - [ ] Facet structure ingestion and validation
+- [ ] Facet Prediction Pipeline
+  - [ ] Missing facet detection
+  - [ ] Batch processing for products with missing values
+  - [ ] Confidence scoring system
+  - [ ] False positive prevention mechanisms
+
+### Data Infrastructure (Must Have)
+- [ ] Vector Database Integration
+  - [ ] Embedding generation for product details
+  - [ ] Similarity search functionality
+  - [ ] Efficient storage and retrieval of embeddings
+- [ ] Evaluation Framework
+  - [ ] Test dataset creation from labeled entries
+  - [ ] Confusion matrix analysis
+  - [ ] Class imbalance handling
+  - [ ] Performance metrics tracking
+
+### Performance Optimization (Should Have)
+- [ ] Model Evaluation
+  - [ ] Comparison of different OpenAI models (speed, cost, accuracy)
+  - [ ] Confidence score analysis
+  - [ ] Failure rate tracking
+- [ ] Token Optimization
+  - [ ] Multi-facet bundling in single queries
+  - [ ] Token usage monitoring
+  - [ ] Cost optimization strategies
+
+### Extended Features (Nice to Have)
+- [ ] Cross-Retailer Integration
+  - [ ] EAN-based product lookup service
+  - [ ] Automatic data enrichment from multiple sources
+  - [ ] Context aggregation from different retailers
+- [ ] Image Processing
+  - [ ] Image-to-text conversion
+  - [ ] Visual feature extraction
+  - [ ] Integration with product descriptions
+
+### Future Experiments
+- [ ] Advanced Similarity Search
+  - [ ] Multi-modal search (text + image)
+  - [ ] Cross-retailer similarity matching
+  - [ ] Category-aware similarity
+- [ ] Model Improvements
+  - [ ] Fine-tuning on domain-specific data
+  - [ ] Custom model development
+  - [ ] Ensemble approaches
 
 ## Development Setup
 
