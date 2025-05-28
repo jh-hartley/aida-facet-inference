@@ -4,6 +4,7 @@ from src.types_ import (
     AttributeMappingView,
     ProductEmbeddingView,
     ProductView,
+    RetailerCategoryView,
     RetailerFacetView,
     RetailerProductAttributeView,
     RetailerProductView,
@@ -33,6 +34,15 @@ class RetailerWithFacets(RetailerView):
     """A retailer with its associated facets"""
 
     facets: list[RetailerFacetView]
+
+
+class RetailerCategoryTree(RetailerCategoryView):
+    """A complete category tree with facets for a retailer"""
+
+    children: list[RetailerCategoryView] = []
+
+    class Config:
+        from_attributes = True
 
 
 class RetailerProductWithAttributes(RetailerProductView):
@@ -66,3 +76,6 @@ class RetailerFacetSearchResult(BaseModel):
 
     facet: RetailerFacetView
     similarity_score: float
+
+
+RetailerCategoryTree.model_rebuild()
