@@ -1,73 +1,87 @@
-CREATE TABLE IF NOT EXISTS retailers (
+CREATE TABLE retailers (
     id SERIAL PRIMARY KEY,
     name TEXT NOT NULL,
     url TEXT NOT NULL,
-    country TEXT,
-    industry TEXT,
+    is_client BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE IF NOT EXISTS products (
+CREATE TABLE products (
     id SERIAL PRIMARY KEY,
-    identifier_value TEXT NOT NULL,
-    identifier_type TEXT NOT NULL,  -- 'EAN', 'UPC', 'ISBN', etc.
-    name TEXT NOT NULL,
-    description TEXT,
-    category TEXT,
-    attributes JSONB,  -- Flexible schema for different product types
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE IF NOT EXISTS product_embeddings (
-    id SERIAL PRIMARY KEY,
-    product_id INTEGER REFERENCES products(id),
-    embedding_model TEXT NOT NULL,  -- e.g., 'openai-ada-002', 'cohere-embed'
-    embedding vector(1536),  -- must be calibrated with embedding_model
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE IF NOT EXISTS retailer_facets (
-    id SERIAL PRIMARY KEY,
-    retailer_id INTEGER REFERENCES retailers(id),
-    name TEXT NOT NULL,
-    description TEXT,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE IF NOT EXISTS retailer_products (
-    id SERIAL,
-    retailer_id INTEGER REFERENCES retailers(id),
-    product_id INTEGER REFERENCES products(id),
-    retailer_product_id TEXT,  -- Retailer's internal ID
-    url TEXT,
-    price DECIMAL,
-    availability BOOLEAN,
+    identifier_value TEXT NOT NULL,  -- EAN/GTIN
+    identifier_type TEXT NOT NULL,   -- 'EAN', 'UPC', etc.
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (retailer_id, id)
-) PARTITION BY LIST (retailer_id);
+    UNIQUE(identifier_value, identifier_type)
+);
 
-CREATE TABLE IF NOT EXISTS retailer_product_attributes (
-    retailer_product_id INTEGER,
-    retailer_id INTEGER,
-    attribute_name TEXT NOT NULL,
-    attribute_value TEXT NOT NULL,
-    attribute_type TEXT NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (retailer_id, retailer_product_id, attribute_name),
-    FOREIGN KEY (retailer_id, retailer_product_id) 
-        REFERENCES retailer_products(retailer_id, id)
-) PARTITION BY LIST (retailer_id);
-
-CREATE TABLE IF NOT EXISTS attribute_mappings (
+CREATE TABLE categories (
     id SERIAL PRIMARY KEY,
     retailer_id INTEGER REFERENCES retailers(id),
-    source_attribute TEXT NOT NULL,
-    normalized_attribute TEXT NOT NULL,
+    parent_id INTEGER REFERENCES categories(id),
+    name TEXT NOT NULL,
+    system_name TEXT,  -- Original category path from retailer
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(retailer_id, system_name)
+);
+
+-- Facet definitions
+CREATE TABLE facets (
+    id SERIAL PRIMARY KEY,
+    retailer_id INTEGER REFERENCES retailers(id),
+    name TEXT NOT NULL,
+    description TEXT,
+    attribute_type TEXT,  -- e.g., 'numeric', 'categorical', 'boolean'
+    unit_measure_type TEXT,  -- e.g., 'CM', 'KG'
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(retailer_id, name)
+);
+
+CREATE TABLE facet_allowed_values (
+    id SERIAL PRIMARY KEY,
+    facet_id INTEGER REFERENCES facets(id),
+    value TEXT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(facet_id, value)
+);
+
+CREATE TABLE category_facets (
+    category_id INTEGER REFERENCES categories(id),
+    facet_id INTEGER REFERENCES facets(id),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (category_id, facet_id)
+);
+
+CREATE TABLE product_metadata (
+    id SERIAL PRIMARY KEY,
+    retailer_id INTEGER REFERENCES retailers(id),
+    product_id INTEGER REFERENCES products(id),
+    facet_id INTEGER REFERENCES facets(id),
+    value TEXT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(retailer_id, product_id, facet_id)
+);
+
+CREATE TABLE product_embeddings (
+    id SERIAL PRIMARY KEY,
+    retailer_id INTEGER REFERENCES retailers(id),
+    product_id INTEGER REFERENCES products(id),
+    embedding_model TEXT NOT NULL,  -- e.g., 'openai-ada-002'
+    embedding vector(1536),  -- Adjust dimension based on model
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(retailer_id, product_id, embedding_model)
+);
+
+CREATE TABLE facet_predictions (
+    id SERIAL PRIMARY KEY,
+    retailer_id INTEGER REFERENCES retailers(id),
+    product_id INTEGER REFERENCES products(id),
+    facet_id INTEGER REFERENCES facets(id),
+    predicted_value TEXT NOT NULL,
     confidence FLOAT,
+    model_version TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(retailer_id, source_attribute)
-); 
+    UNIQUE(retailer_id, product_id, facet_id, model_version)
+);

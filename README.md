@@ -142,6 +142,7 @@ aida-facet-inference/
 - [API Reference](docs/api_reference.md) - Detailed API documentation
 - [Development Guide](docs/development.md) - Setup and contribution guidelines
 - [Architecture](docs/architecture.md) - System architecture and design decisions
+- [Database Schema](docs/database.md) - Database structure and relationships
 
 ## Development
 
