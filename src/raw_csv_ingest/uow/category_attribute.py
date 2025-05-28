@@ -10,8 +10,13 @@ def create_category_attribute(
     """Create a new category attribute if it doesn't already exist"""
     with db_session().begin() as session:
         repo = RawCategoryAttributeRepository(session)
-        
-        if repo.find_by_category_key_and_attribute_key(category_key, attribute_key) is not None:
+
+        if (
+            repo.find_by_category_key_and_attribute_key(
+                category_key, attribute_key
+            )
+            is not None
+        ):
             return None
 
         category_attribute = RawCategoryAttribute(
@@ -19,4 +24,4 @@ def create_category_attribute(
             attribute_key=attribute_key,
         )
 
-        return repo.create(category_attribute) 
+        return repo.create(category_attribute)

@@ -11,8 +11,13 @@ def create_category_allowable_value(
     """Create a new category allowable value if it doesn't already exist"""
     with db_session().begin() as session:
         repo = RawCategoryAllowableValueRepository(session)
-        
-        if repo.find_by_category_key_and_attribute_key_and_value(category_key, attribute_key, value) is not None:
+
+        if (
+            repo.find_by_category_key_and_attribute_key_and_value(
+                category_key, attribute_key, value
+            )
+            is not None
+        ):
             return None
 
         category_allowable_value = RawCategoryAllowableValue(
@@ -21,4 +26,4 @@ def create_category_allowable_value(
             value=value,
         )
 
-        return repo.create(category_allowable_value) 
+        return repo.create(category_allowable_value)

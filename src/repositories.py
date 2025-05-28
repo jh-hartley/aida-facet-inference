@@ -114,7 +114,7 @@ class RetailerFacetDB(Base):
     categories = relationship(
         "RetailerCategoryDB",
         secondary="retailer_category_facets",
-        back_populates="facets"
+        back_populates="facets",
     )
 
 
@@ -125,7 +125,9 @@ class RetailerCategoryDB(Base):
 
     id = Column(Integer, primary_key=True)
     retailer_id = Column(Integer, ForeignKey("retailers.id"), nullable=False)
-    parent_id = Column(Integer, ForeignKey("retailer_categories.id"), nullable=True)
+    parent_id = Column(
+        Integer, ForeignKey("retailer_categories.id"), nullable=True
+    )
     name = Column(Text, nullable=False)
     description = Column(Text, nullable=True)
     created_at = Column(
@@ -135,11 +137,13 @@ class RetailerCategoryDB(Base):
     )
 
     retailer = relationship("RetailerDB", back_populates="categories")
-    parent = relationship("RetailerCategoryDB", remote_side=[id], backref="children")
+    parent = relationship(
+        "RetailerCategoryDB", remote_side=[id], backref="children"
+    )
     facets = relationship(
         "RetailerFacetDB",
         secondary="retailer_category_facets",
-        back_populates="categories"
+        back_populates="categories",
     )
 
 
@@ -148,8 +152,12 @@ class RetailerCategoryFacetDB(Base):
 
     __tablename__ = "retailer_category_facets"
 
-    category_id = Column(Integer, ForeignKey("retailer_categories.id"), primary_key=True)
-    facet_id = Column(Integer, ForeignKey("retailer_facets.id"), primary_key=True)
+    category_id = Column(
+        Integer, ForeignKey("retailer_categories.id"), primary_key=True
+    )
+    facet_id = Column(
+        Integer, ForeignKey("retailer_facets.id"), primary_key=True
+    )
     created_at = Column(
         DateTime(timezone=True),
         default=lambda: datetime.now(UTC),

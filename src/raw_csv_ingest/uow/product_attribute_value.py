@@ -11,8 +11,13 @@ def create_product_attribute_value(
     """Create a new product attribute value if it doesn't already exist"""
     with db_session().begin() as session:
         repo = RawProductAttributeValueRepository(session)
-        
-        if repo.find_by_product_key_and_attribute_key_and_value(product_key, attribute_key, value) is not None:
+
+        if (
+            repo.find_by_product_key_and_attribute_key_and_value(
+                product_key, attribute_key, value
+            )
+            is not None
+        ):
             return None
 
         product_attribute_value = RawProductAttributeValue(
@@ -21,4 +26,4 @@ def create_product_attribute_value(
             value=value,
         )
 
-        return repo.create(product_attribute_value) 
+        return repo.create(product_attribute_value)

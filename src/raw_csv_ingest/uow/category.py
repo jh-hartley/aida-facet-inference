@@ -11,7 +11,7 @@ def create_category(
     """Create a new category if it doesn't already exist"""
     with db_session().begin() as session:
         repo = RawCategoryRepository(session)
-        
+
         if repo.find_by_system_name(system_name):
             return None
 
@@ -21,4 +21,4 @@ def create_category(
             friendly_name=friendly_name,
         )
 
-        return repo.create(category) 
+        return repo.create(category)

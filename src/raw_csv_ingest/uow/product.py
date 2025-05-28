@@ -11,7 +11,7 @@ def create_product(
     """Create a new product if it doesn't already exist"""
     with db_session().begin() as session:
         repo = RawProductRepository(session)
-        
+
         if repo.find_by_system_name(system_name):
             return None
 
@@ -21,4 +21,4 @@ def create_product(
             friendly_name=friendly_name,
         )
 
-        return repo.create(product) 
+        return repo.create(product)

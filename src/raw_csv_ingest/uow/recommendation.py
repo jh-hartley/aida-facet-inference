@@ -12,8 +12,13 @@ def create_recommendation(
     """Create a new recommendation if it doesn't already exist"""
     with db_session().begin() as session:
         repo = RawRecommendationRepository(session)
-        
-        if repo.find_by_product_key_and_attribute_key_and_value(product_key, attribute_key, value) is not None:
+
+        if (
+            repo.find_by_product_key_and_attribute_key_and_value(
+                product_key, attribute_key, value
+            )
+            is not None
+        ):
             return None
 
         recommendation = RawRecommendation(
@@ -23,4 +28,4 @@ def create_recommendation(
             confidence=confidence,
         )
 
-        return repo.create(recommendation) 
+        return repo.create(recommendation)

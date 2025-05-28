@@ -13,7 +13,7 @@ def create_attribute(
     """Create a new attribute if it doesn't already exist"""
     with db_session().begin() as session:
         repo = RawAttributeRepository(session)
-        
+
         if repo.find_by_system_name(system_name):
             return None
 
@@ -25,4 +25,4 @@ def create_attribute(
             unit_measure_type=unit_measure_type,
         )
 
-        return repo.create(attribute) 
+        return repo.create(attribute)

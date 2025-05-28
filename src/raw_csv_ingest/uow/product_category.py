@@ -10,8 +10,13 @@ def create_product_category(
     """Create a new product category if it doesn't already exist"""
     with db_session().begin() as session:
         repo = RawProductCategoryRepository(session)
-        
-        if repo.find_by_product_key_and_category_key(product_key, category_key) is not None:
+
+        if (
+            repo.find_by_product_key_and_category_key(
+                product_key, category_key
+            )
+            is not None
+        ):
             return None
 
         product_category = RawProductCategory(
@@ -19,4 +24,4 @@ def create_product_category(
             category_key=category_key,
         )
 
-        return repo.create(product_category) 
+        return repo.create(product_category)

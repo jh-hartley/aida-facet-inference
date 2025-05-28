@@ -1,28 +1,23 @@
-from typing import TypeVar, cast, Generic
+from typing import Generic, TypeVar
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from src.raw_csv_ingest.models import (
     Base,
-    RawProduct,
-    RawCategory,
     RawAttribute,
-    RawProductCategory,
-    RawCategoryAttribute,
-    RawProductAttributeValue,
-    RawProductAttributeGap,
-    RawProductAttributeAllowableValue,
+    RawCategory,
     RawCategoryAllowableValue,
-    RawAttributeAllowableValueApplicableInEveryCategory,
-    RawAttributeAllowableValueInAnyCategory,
+    RawCategoryAttribute,
+    RawProduct,
+    RawProductAttributeAllowableValue,
+    RawProductAttributeGap,
+    RawProductAttributeValue,
+    RawProductCategory,
     RawRecommendation,
-    RawRecommendationRound,
-    RawRichTextSource,
 )
 
-
-T = TypeVar('T', bound=Base)
+T = TypeVar("T", bound=Base)
 
 
 class Repository(Generic[T]):
@@ -33,33 +28,26 @@ class Repository(Generic[T]):
         self.model = model
 
     def add(self, entity: T) -> None:
-        """Add a new entity to the session"""
         self.session.add(entity)
 
     def add_all(self, entities: list[T]) -> None:
-        """Add multiple entities to the session"""
         self.session.add_all(entities)
 
     def create(self, entity: T) -> T:
-        """Create a new entity"""
         self.session.add(entity)
         return entity
 
     def get_by_id(self, id: str) -> T:
-        """Get an entity by its ID, raising an exception if not found"""
         result = self.session.get(self.model, id)
         if result is None:
             raise ValueError(f"No {self.model.__name__} found with id {id}")
-        return cast(T, result)
+        return result
 
     def find_by_id(self, id: str) -> T | None:
-        """Find an entity by its ID, returning None if not found"""
-        result = self.session.get(self.model, id)
-        return cast(T | None, result)
+        return self.session.get(self.model, id)
 
     def get_all(self) -> list[T]:
-        """Get all entities"""
-        return cast(list[T], self.session.scalars(select(self.model)).all())
+        return list(self.session.scalars(select(self.model)).all())
 
 
 class RawProductRepository(Repository[RawProduct]):
@@ -69,16 +57,16 @@ class RawProductRepository(Repository[RawProduct]):
         super().__init__(session, RawProduct)
 
     def get_by_system_name(self, system_name: str) -> RawProduct:
-        """Get a product by its system name, raising an exception if not found"""
         result = self.session.scalar(
             select(RawProduct).where(RawProduct.system_name == system_name)
         )
         if result is None:
-            raise ValueError(f"No product found with system name {system_name}")
+            raise ValueError(
+                f"No product found with system name {system_name}"
+            )
         return result
 
     def find_by_system_name(self, system_name: str) -> RawProduct | None:
-        """Find a product by its system name, returning None if not found"""
         return self.session.scalar(
             select(RawProduct).where(RawProduct.system_name == system_name)
         )
@@ -91,16 +79,16 @@ class RawCategoryRepository(Repository[RawCategory]):
         super().__init__(session, RawCategory)
 
     def get_by_system_name(self, system_name: str) -> RawCategory:
-        """Get a category by its system name, raising an exception if not found"""
         result = self.session.scalar(
             select(RawCategory).where(RawCategory.system_name == system_name)
         )
         if result is None:
-            raise ValueError(f"No category found with system name {system_name}")
+            raise ValueError(
+                f"No category found with system name {system_name}"
+            )
         return result
 
     def find_by_system_name(self, system_name: str) -> RawCategory | None:
-        """Find a category by its system name, returning None if not found"""
         return self.session.scalar(
             select(RawCategory).where(RawCategory.system_name == system_name)
         )
@@ -113,16 +101,16 @@ class RawAttributeRepository(Repository[RawAttribute]):
         super().__init__(session, RawAttribute)
 
     def get_by_system_name(self, system_name: str) -> RawAttribute:
-        """Get an attribute by its system name, raising an exception if not found"""
         result = self.session.scalar(
             select(RawAttribute).where(RawAttribute.system_name == system_name)
         )
         if result is None:
-            raise ValueError(f"No attribute found with system name {system_name}")
+            raise ValueError(
+                f"No attribute found with system name {system_name}"
+            )
         return result
 
     def find_by_system_name(self, system_name: str) -> RawAttribute | None:
-        """Find an attribute by its system name, returning None if not found"""
         return self.session.scalar(
             select(RawAttribute).where(RawAttribute.system_name == system_name)
         )
@@ -135,52 +123,60 @@ class RawProductCategoryRepository(Repository[RawProductCategory]):
         super().__init__(session, RawProductCategory)
 
     def get_by_product_key(self, product_key: str) -> list[RawProductCategory]:
-        """Get all categories for a product"""
         result = list(
             self.session.scalars(
-                select(RawProductCategory).where(RawProductCategory.product_key == product_key)
+                select(RawProductCategory).where(
+                    RawProductCategory.product_key == product_key
+                )
             ).all()
         )
         if not result:
             raise ValueError(f"No categories found for product {product_key}")
         return result
 
-    def find_by_product_key(self, product_key: str) -> list[RawProductCategory]:
-        """Find all categories for a product"""
+    def find_by_product_key(
+        self, product_key: str
+    ) -> list[RawProductCategory]:
         return list(
             self.session.scalars(
-                select(RawProductCategory).where(RawProductCategory.product_key == product_key)
+                select(RawProductCategory).where(
+                    RawProductCategory.product_key == product_key
+                )
             ).all()
         )
 
-    def get_by_category_key(self, category_key: str) -> list[RawProductCategory]:
-        """Get all products in a category"""
+    def get_by_category_key(
+        self, category_key: str
+    ) -> list[RawProductCategory]:
         result = list(
             self.session.scalars(
-                select(RawProductCategory).where(RawProductCategory.category_key == category_key)
+                select(RawProductCategory).where(
+                    RawProductCategory.category_key == category_key
+                )
             ).all()
         )
         if not result:
             raise ValueError(f"No products found in category {category_key}")
         return result
 
-    def find_by_category_key(self, category_key: str) -> list[RawProductCategory]:
-        """Find all products in a category"""
+    def find_by_category_key(
+        self, category_key: str
+    ) -> list[RawProductCategory]:
         return list(
             self.session.scalars(
-                select(RawProductCategory).where(RawProductCategory.category_key == category_key)
+                select(RawProductCategory).where(
+                    RawProductCategory.category_key == category_key
+                )
             ).all()
         )
 
     def find_by_product_key_and_category_key(
         self, product_key: str, category_key: str
     ) -> RawProductCategory | None:
-        """Find a specific product-category relationship"""
         return self.session.scalar(
-            select(RawProductCategory)
-            .where(
+            select(RawProductCategory).where(
                 RawProductCategory.product_key == product_key,
-                RawProductCategory.category_key == category_key
+                RawProductCategory.category_key == category_key,
             )
         )
 
@@ -191,53 +187,67 @@ class RawCategoryAttributeRepository(Repository[RawCategoryAttribute]):
     def __init__(self, session: Session):
         super().__init__(session, RawCategoryAttribute)
 
-    def get_by_category_key(self, category_key: str) -> list[RawCategoryAttribute]:
-        """Get all attributes for a category"""
+    def get_by_category_key(
+        self, category_key: str
+    ) -> list[RawCategoryAttribute]:
         result = list(
             self.session.scalars(
-                select(RawCategoryAttribute).where(RawCategoryAttribute.category_key == category_key)
+                select(RawCategoryAttribute).where(
+                    RawCategoryAttribute.category_key == category_key
+                )
             ).all()
         )
         if not result:
-            raise ValueError(f"No attributes found for category {category_key}")
+            raise ValueError(
+                f"No attributes found for category {category_key}"
+            )
         return result
 
-    def find_by_category_key(self, category_key: str) -> list[RawCategoryAttribute]:
-        """Find all attributes for a category"""
+    def find_by_category_key(
+        self, category_key: str
+    ) -> list[RawCategoryAttribute]:
         return list(
             self.session.scalars(
-                select(RawCategoryAttribute).where(RawCategoryAttribute.category_key == category_key)
+                select(RawCategoryAttribute).where(
+                    RawCategoryAttribute.category_key == category_key
+                )
             ).all()
         )
 
-    def get_by_attribute_key(self, attribute_key: str) -> list[RawCategoryAttribute]:
-        """Get all categories for an attribute"""
+    def get_by_attribute_key(
+        self, attribute_key: str
+    ) -> list[RawCategoryAttribute]:
         result = list(
             self.session.scalars(
-                select(RawCategoryAttribute).where(RawCategoryAttribute.attribute_key == attribute_key)
+                select(RawCategoryAttribute).where(
+                    RawCategoryAttribute.attribute_key == attribute_key
+                )
             ).all()
         )
         if not result:
-            raise ValueError(f"No categories found for attribute {attribute_key}")
+            raise ValueError(
+                f"No categories found for attribute {attribute_key}"
+            )
         return result
 
-    def find_by_attribute_key(self, attribute_key: str) -> list[RawCategoryAttribute]:
-        """Find all categories for an attribute"""
+    def find_by_attribute_key(
+        self, attribute_key: str
+    ) -> list[RawCategoryAttribute]:
         return list(
             self.session.scalars(
-                select(RawCategoryAttribute).where(RawCategoryAttribute.attribute_key == attribute_key)
+                select(RawCategoryAttribute).where(
+                    RawCategoryAttribute.attribute_key == attribute_key
+                )
             ).all()
         )
 
     def find_by_category_key_and_attribute_key(
         self, category_key: str, attribute_key: str
     ) -> RawCategoryAttribute | None:
-        """Find a specific category-attribute relationship"""
         return self.session.scalar(
-            select(RawCategoryAttribute)
-            .where(
+            select(RawCategoryAttribute).where(
                 RawCategoryAttribute.category_key == category_key,
-                RawCategoryAttribute.attribute_key == attribute_key
+                RawCategoryAttribute.attribute_key == attribute_key,
             )
         )
 
@@ -248,54 +258,68 @@ class RawProductAttributeValueRepository(Repository[RawProductAttributeValue]):
     def __init__(self, session: Session):
         super().__init__(session, RawProductAttributeValue)
 
-    def get_by_product_key(self, product_key: str) -> list[RawProductAttributeValue]:
-        """Get all attribute values for a product"""
+    def get_by_product_key(
+        self, product_key: str
+    ) -> list[RawProductAttributeValue]:
         result = list(
             self.session.scalars(
-                select(RawProductAttributeValue).where(RawProductAttributeValue.product_key == product_key)
+                select(RawProductAttributeValue).where(
+                    RawProductAttributeValue.product_key == product_key
+                )
             ).all()
         )
         if not result:
-            raise ValueError(f"No attribute values found for product {product_key}")
+            raise ValueError(
+                f"No attribute values found for product {product_key}"
+            )
         return result
 
-    def find_by_product_key(self, product_key: str) -> list[RawProductAttributeValue]:
-        """Find all attribute values for a product"""
+    def find_by_product_key(
+        self, product_key: str
+    ) -> list[RawProductAttributeValue]:
         return list(
             self.session.scalars(
-                select(RawProductAttributeValue).where(RawProductAttributeValue.product_key == product_key)
+                select(RawProductAttributeValue).where(
+                    RawProductAttributeValue.product_key == product_key
+                )
             ).all()
         )
 
-    def get_by_attribute_key(self, attribute_key: str) -> list[RawProductAttributeValue]:
-        """Get all product values for an attribute"""
+    def get_by_attribute_key(
+        self, attribute_key: str
+    ) -> list[RawProductAttributeValue]:
         result = list(
             self.session.scalars(
-                select(RawProductAttributeValue).where(RawProductAttributeValue.attribute_key == attribute_key)
+                select(RawProductAttributeValue).where(
+                    RawProductAttributeValue.attribute_key == attribute_key
+                )
             ).all()
         )
         if not result:
-            raise ValueError(f"No product values found for attribute {attribute_key}")
+            raise ValueError(
+                f"No product values found for attribute {attribute_key}"
+            )
         return result
 
-    def find_by_attribute_key(self, attribute_key: str) -> list[RawProductAttributeValue]:
-        """Find all product values for an attribute"""
+    def find_by_attribute_key(
+        self, attribute_key: str
+    ) -> list[RawProductAttributeValue]:
         return list(
             self.session.scalars(
-                select(RawProductAttributeValue).where(RawProductAttributeValue.attribute_key == attribute_key)
+                select(RawProductAttributeValue).where(
+                    RawProductAttributeValue.attribute_key == attribute_key
+                )
             ).all()
         )
 
     def find_by_product_key_and_attribute_key_and_value(
         self, product_key: str, attribute_key: str, value: str
     ) -> RawProductAttributeValue | None:
-        """Find a specific value for a product attribute"""
         return self.session.scalar(
-            select(RawProductAttributeValue)
-            .where(
+            select(RawProductAttributeValue).where(
                 RawProductAttributeValue.product_key == product_key,
                 RawProductAttributeValue.attribute_key == attribute_key,
-                RawProductAttributeValue.value == value
+                RawProductAttributeValue.value == value,
             )
         )
 
@@ -306,241 +330,226 @@ class RawProductAttributeGapRepository(Repository[RawProductAttributeGap]):
     def __init__(self, session: Session):
         super().__init__(session, RawProductAttributeGap)
 
-    def get_by_product_key(self, product_key: str) -> list[RawProductAttributeGap]:
-        """Get all attribute gaps for a product"""
+    def get_by_product_key(
+        self, product_key: str
+    ) -> list[RawProductAttributeGap]:
         result = list(
             self.session.scalars(
-                select(RawProductAttributeGap).where(RawProductAttributeGap.product_key == product_key)
+                select(RawProductAttributeGap).where(
+                    RawProductAttributeGap.product_key == product_key
+                )
             ).all()
         )
         if not result:
-            raise ValueError(f"No attribute gaps found for product {product_key}")
+            raise ValueError(
+                f"No attribute gaps found for product {product_key}"
+            )
         return result
 
-    def find_by_product_key(self, product_key: str) -> list[RawProductAttributeGap]:
-        """Find all attribute gaps for a product"""
+    def find_by_product_key(
+        self, product_key: str
+    ) -> list[RawProductAttributeGap]:
         return list(
             self.session.scalars(
-                select(RawProductAttributeGap).where(RawProductAttributeGap.product_key == product_key)
+                select(RawProductAttributeGap).where(
+                    RawProductAttributeGap.product_key == product_key
+                )
             ).all()
         )
 
-    def get_by_attribute_key(self, attribute_key: str) -> list[RawProductAttributeGap]:
-        """Get all product gaps for an attribute"""
+    def get_by_attribute_key(
+        self, attribute_key: str
+    ) -> list[RawProductAttributeGap]:
         result = list(
             self.session.scalars(
-                select(RawProductAttributeGap).where(RawProductAttributeGap.attribute_key == attribute_key)
+                select(RawProductAttributeGap).where(
+                    RawProductAttributeGap.attribute_key == attribute_key
+                )
             ).all()
         )
         if not result:
-            raise ValueError(f"No product gaps found for attribute {attribute_key}")
+            raise ValueError(
+                f"No product gaps found for attribute {attribute_key}"
+            )
         return result
 
-    def find_by_attribute_key(self, attribute_key: str) -> list[RawProductAttributeGap]:
-        """Find all product gaps for an attribute"""
+    def find_by_attribute_key(
+        self, attribute_key: str
+    ) -> list[RawProductAttributeGap]:
         return list(
             self.session.scalars(
-                select(RawProductAttributeGap).where(RawProductAttributeGap.attribute_key == attribute_key)
+                select(RawProductAttributeGap).where(
+                    RawProductAttributeGap.attribute_key == attribute_key
+                )
             ).all()
         )
 
     def find_by_product_key_and_attribute_key(
         self, product_key: str, attribute_key: str
     ) -> RawProductAttributeGap | None:
-        """Find a specific gap for a product attribute"""
         return self.session.scalar(
-            select(RawProductAttributeGap)
-            .where(
+            select(RawProductAttributeGap).where(
                 RawProductAttributeGap.product_key == product_key,
-                RawProductAttributeGap.attribute_key == attribute_key
+                RawProductAttributeGap.attribute_key == attribute_key,
             )
         )
 
 
-class RawProductAttributeAllowableValueRepository(Repository[RawProductAttributeAllowableValue]):
-    """Repository for raw product attribute allowable value data from CSV"""
+class RawProductAttributeAllowableValueRepository(
+    Repository[RawProductAttributeAllowableValue]
+):
+    """
+    Repository for raw product attribute allowable value data from CSV
+    """
 
     def __init__(self, session: Session):
         super().__init__(session, RawProductAttributeAllowableValue)
 
-    def get_by_product_key(self, product_key: str) -> list[RawProductAttributeAllowableValue]:
-        """Get all allowable values for a product"""
+    def get_by_product_key(
+        self, product_key: str
+    ) -> list[RawProductAttributeAllowableValue]:
         result = list(
             self.session.scalars(
-                select(RawProductAttributeAllowableValue).where(RawProductAttributeAllowableValue.product_key == product_key)
+                select(RawProductAttributeAllowableValue).where(
+                    RawProductAttributeAllowableValue.product_key
+                    == product_key
+                )
             ).all()
         )
         if not result:
-            raise ValueError(f"No allowable values found for product {product_key}")
+            raise ValueError(
+                f"No allowable values found for product {product_key}"
+            )
         return result
 
-    def find_by_product_key(self, product_key: str) -> list[RawProductAttributeAllowableValue]:
+    def find_by_product_key(
+        self, product_key: str
+    ) -> list[RawProductAttributeAllowableValue]:
         """Find all allowable values for a product"""
         return list(
             self.session.scalars(
-                select(RawProductAttributeAllowableValue).where(RawProductAttributeAllowableValue.product_key == product_key)
+                select(RawProductAttributeAllowableValue).where(
+                    RawProductAttributeAllowableValue.product_key
+                    == product_key
+                )
             ).all()
         )
 
-    def get_by_attribute_key(self, attribute_key: str) -> list[RawProductAttributeAllowableValue]:
-        """Get all product allowable values for an attribute"""
+    def get_by_attribute_key(
+        self, attribute_key: str
+    ) -> list[RawProductAttributeAllowableValue]:
         result = list(
             self.session.scalars(
-                select(RawProductAttributeAllowableValue).where(RawProductAttributeAllowableValue.attribute_key == attribute_key)
+                select(RawProductAttributeAllowableValue).where(
+                    RawProductAttributeAllowableValue.attribute_key
+                    == attribute_key
+                )
             ).all()
         )
         if not result:
-            raise ValueError(f"No product allowable values found for attribute {attribute_key}")
+            raise ValueError(
+                f"No product allowable values found "
+                f"for attribute {attribute_key}"
+            )
         return result
 
-    def find_by_attribute_key(self, attribute_key: str) -> list[RawProductAttributeAllowableValue]:
+    def find_by_attribute_key(
+        self, attribute_key: str
+    ) -> list[RawProductAttributeAllowableValue]:
         """Find all product allowable values for an attribute"""
         return list(
             self.session.scalars(
-                select(RawProductAttributeAllowableValue).where(RawProductAttributeAllowableValue.attribute_key == attribute_key)
+                select(RawProductAttributeAllowableValue).where(
+                    RawProductAttributeAllowableValue.attribute_key
+                    == attribute_key
+                )
             ).all()
         )
 
     def find_by_product_key_and_attribute_key_and_value(
         self, product_key: str, attribute_key: str, value: str
     ) -> RawProductAttributeAllowableValue | None:
-        """Find a specific allowable value for a product attribute"""
         return self.session.scalar(
-            select(RawProductAttributeAllowableValue)
-            .where(
+            select(RawProductAttributeAllowableValue).where(
                 RawProductAttributeAllowableValue.product_key == product_key,
-                RawProductAttributeAllowableValue.attribute_key == attribute_key,
-                RawProductAttributeAllowableValue.value == value
+                RawProductAttributeAllowableValue.attribute_key
+                == attribute_key,
+                RawProductAttributeAllowableValue.value == value,
             )
         )
 
 
-class RawCategoryAllowableValueRepository(Repository[RawCategoryAllowableValue]):
+class RawCategoryAllowableValueRepository(
+    Repository[RawCategoryAllowableValue]
+):
     """Repository for raw category allowable value data from CSV"""
 
     def __init__(self, session: Session):
         super().__init__(session, RawCategoryAllowableValue)
 
-    def get_by_category_key(self, category_key: str) -> list[RawCategoryAllowableValue]:
-        """Get all allowable values for a category"""
+    def get_by_category_key(
+        self, category_key: str
+    ) -> list[RawCategoryAllowableValue]:
         result = list(
             self.session.scalars(
-                select(RawCategoryAllowableValue).where(RawCategoryAllowableValue.category_key == category_key)
+                select(RawCategoryAllowableValue).where(
+                    RawCategoryAllowableValue.category_key == category_key
+                )
             ).all()
         )
         if not result:
-            raise ValueError(f"No allowable values found for category {category_key}")
+            raise ValueError(
+                f"No allowable values found for category {category_key}"
+            )
         return result
 
-    def find_by_category_key(self, category_key: str) -> list[RawCategoryAllowableValue]:
-        """Find all allowable values for a category"""
+    def find_by_category_key(
+        self, category_key: str
+    ) -> list[RawCategoryAllowableValue]:
         return list(
             self.session.scalars(
-                select(RawCategoryAllowableValue).where(RawCategoryAllowableValue.category_key == category_key)
+                select(RawCategoryAllowableValue).where(
+                    RawCategoryAllowableValue.category_key == category_key
+                )
             ).all()
         )
 
-    def get_by_attribute_key(self, attribute_key: str) -> list[RawCategoryAllowableValue]:
-        """Get all category allowable values for an attribute"""
+    def get_by_attribute_key(
+        self, attribute_key: str
+    ) -> list[RawCategoryAllowableValue]:
         result = list(
             self.session.scalars(
-                select(RawCategoryAllowableValue).where(RawCategoryAllowableValue.attribute_key == attribute_key)
+                select(RawCategoryAllowableValue).where(
+                    RawCategoryAllowableValue.attribute_key == attribute_key
+                )
             ).all()
         )
         if not result:
-            raise ValueError(f"No category allowable values found for attribute {attribute_key}")
+            raise ValueError(
+                f"No category allowable values found "
+                f"for attribute {attribute_key}"
+            )
         return result
 
-    def find_by_attribute_key(self, attribute_key: str) -> list[RawCategoryAllowableValue]:
-        """Find all category allowable values for an attribute"""
+    def find_by_attribute_key(
+        self, attribute_key: str
+    ) -> list[RawCategoryAllowableValue]:
         return list(
             self.session.scalars(
-                select(RawCategoryAllowableValue).where(RawCategoryAllowableValue.attribute_key == attribute_key)
+                select(RawCategoryAllowableValue).where(
+                    RawCategoryAllowableValue.attribute_key == attribute_key
+                )
             ).all()
         )
 
     def find_by_category_key_and_attribute_key_and_value(
         self, category_key: str, attribute_key: str, value: str
     ) -> RawCategoryAllowableValue | None:
-        """Find a specific allowable value for a category attribute"""
         return self.session.scalar(
-            select(RawCategoryAllowableValue)
-            .where(
+            select(RawCategoryAllowableValue).where(
                 RawCategoryAllowableValue.category_key == category_key,
                 RawCategoryAllowableValue.attribute_key == attribute_key,
-                RawCategoryAllowableValue.value == value
-            )
-        )
-
-
-class RawAttributeAllowableValueApplicableInEveryCategoryRepository(Repository[RawAttributeAllowableValueApplicableInEveryCategory]):
-    """Repository for raw attribute allowable value applicable in every category data from CSV"""
-
-    def __init__(self, session: Session):
-        super().__init__(session, RawAttributeAllowableValueApplicableInEveryCategory)
-
-    def get_by_attribute_key(self, attribute_key: str) -> list[RawAttributeAllowableValueApplicableInEveryCategory]:
-        """Get all allowable values for an attribute"""
-        result = list(
-            self.session.scalars(
-                select(RawAttributeAllowableValueApplicableInEveryCategory).where(RawAttributeAllowableValueApplicableInEveryCategory.attribute_key == attribute_key)
-            ).all()
-        )
-        if not result:
-            raise ValueError(f"No allowable values found for attribute {attribute_key}")
-        return result
-
-    def find_by_attribute_key(self, attribute_key: str) -> list[RawAttributeAllowableValueApplicableInEveryCategory]:
-        """Find all allowable values for an attribute"""
-        return list(
-            self.session.scalars(
-                select(RawAttributeAllowableValueApplicableInEveryCategory).where(RawAttributeAllowableValueApplicableInEveryCategory.attribute_key == attribute_key)
-            ).all()
-        )
-
-    def find_by_attribute_key_and_value(self, attribute_key: str, value: str) -> RawAttributeAllowableValueApplicableInEveryCategory | None:
-        """Find a specific allowable value for an attribute"""
-        return self.session.scalar(
-            select(RawAttributeAllowableValueApplicableInEveryCategory)
-            .where(
-                RawAttributeAllowableValueApplicableInEveryCategory.attribute_key == attribute_key,
-                RawAttributeAllowableValueApplicableInEveryCategory.value == value
-            )
-        )
-
-
-class RawAttributeAllowableValueInAnyCategoryRepository(Repository[RawAttributeAllowableValueInAnyCategory]):
-    """Repository for raw attribute allowable value in any category data from CSV"""
-
-    def __init__(self, session: Session):
-        super().__init__(session, RawAttributeAllowableValueInAnyCategory)
-
-    def get_by_attribute_key(self, attribute_key: str) -> list[RawAttributeAllowableValueInAnyCategory]:
-        """Get all allowable values for an attribute"""
-        result = list(
-            self.session.scalars(
-                select(RawAttributeAllowableValueInAnyCategory).where(RawAttributeAllowableValueInAnyCategory.attribute_key == attribute_key)
-            ).all()
-        )
-        if not result:
-            raise ValueError(f"No allowable values found for attribute {attribute_key}")
-        return result
-
-    def find_by_attribute_key(self, attribute_key: str) -> list[RawAttributeAllowableValueInAnyCategory]:
-        """Find all allowable values for an attribute"""
-        return list(
-            self.session.scalars(
-                select(RawAttributeAllowableValueInAnyCategory).where(RawAttributeAllowableValueInAnyCategory.attribute_key == attribute_key)
-            ).all()
-        )
-
-    def find_by_attribute_key_and_value(self, attribute_key: str, value: str) -> RawAttributeAllowableValueInAnyCategory | None:
-        """Find a specific allowable value for an attribute"""
-        return self.session.scalar(
-            select(RawAttributeAllowableValueInAnyCategory)
-            .where(
-                RawAttributeAllowableValueInAnyCategory.attribute_key == attribute_key,
-                RawAttributeAllowableValueInAnyCategory.value == value
+                RawCategoryAllowableValue.value == value,
             )
         )
 
@@ -552,93 +561,63 @@ class RawRecommendationRepository(Repository[RawRecommendation]):
         super().__init__(session, RawRecommendation)
 
     def get_by_product_key(self, product_key: str) -> list[RawRecommendation]:
-        """Get all recommendations for a product"""
         result = list(
             self.session.scalars(
-                select(RawRecommendation).where(RawRecommendation.product_key == product_key)
+                select(RawRecommendation).where(
+                    RawRecommendation.product_key == product_key
+                )
             ).all()
         )
         if not result:
-            raise ValueError(f"No recommendations found for product {product_key}")
+            raise ValueError(
+                f"No recommendations found for product {product_key}"
+            )
         return result
 
     def find_by_product_key(self, product_key: str) -> list[RawRecommendation]:
-        """Find all recommendations for a product"""
         return list(
             self.session.scalars(
-                select(RawRecommendation).where(RawRecommendation.product_key == product_key)
+                select(RawRecommendation).where(
+                    RawRecommendation.product_key == product_key
+                )
             ).all()
         )
 
-    def get_by_attribute_key(self, attribute_key: str) -> list[RawRecommendation]:
+    def get_by_attribute_key(
+        self, attribute_key: str
+    ) -> list[RawRecommendation]:
         """Get all recommendations for an attribute"""
         result = list(
             self.session.scalars(
-                select(RawRecommendation).where(RawRecommendation.attribute_key == attribute_key)
+                select(RawRecommendation).where(
+                    RawRecommendation.attribute_key == attribute_key
+                )
             ).all()
         )
         if not result:
-            raise ValueError(f"No recommendations found for attribute {attribute_key}")
+            raise ValueError(
+                f"No recommendations found for attribute {attribute_key}"
+            )
         return result
 
-    def find_by_attribute_key(self, attribute_key: str) -> list[RawRecommendation]:
-        """Find all recommendations for an attribute"""
+    def find_by_attribute_key(
+        self, attribute_key: str
+    ) -> list[RawRecommendation]:
         return list(
             self.session.scalars(
-                select(RawRecommendation).where(RawRecommendation.attribute_key == attribute_key)
+                select(RawRecommendation).where(
+                    RawRecommendation.attribute_key == attribute_key
+                )
             ).all()
         )
 
     def find_by_product_key_and_attribute_key_and_value(
         self, product_key: str, attribute_key: str, value: str
     ) -> RawRecommendation | None:
-        """Find a specific recommendation for a product attribute"""
         return self.session.scalar(
-            select(RawRecommendation)
-            .where(
+            select(RawRecommendation).where(
                 RawRecommendation.product_key == product_key,
                 RawRecommendation.attribute_key == attribute_key,
-                RawRecommendation.value == value
+                RawRecommendation.value == value,
             )
         )
-
-
-class RawRecommendationRoundRepository(Repository[RawRecommendationRound]):
-    """Repository for raw recommendation round data from CSV"""
-
-    def __init__(self, session: Session):
-        super().__init__(session, RawRecommendationRound)
-
-    def find_by_round_number(self, round_number: int) -> RawRecommendationRound | None:
-        """Find a recommendation round by its round number"""
-        return self.session.scalar(
-            select(RawRecommendationRound).where(RawRecommendationRound.round_number == round_number)
-        )
-
-
-class RawRichTextSourceRepository(Repository[RawRichTextSource]):
-    """Repository for raw rich text source data from CSV"""
-
-    def __init__(self, session: Session):
-        super().__init__(session, RawRichTextSource)
-
-    def find_by_product_key(self, product_key: str) -> list[RawRichTextSource]:
-        """Find all rich text sources for a product"""
-        return list(
-            self.session.scalars(
-                select(RawRichTextSource).where(RawRichTextSource.product_key == product_key)
-            ).all()
-        )
-
-    def find_by_product_key_and_attribute_key_and_source(
-        self, product_key: str, attribute_key: str, source: str
-    ) -> RawRichTextSource | None:
-        """Find a specific rich text source for a product attribute"""
-        return self.session.scalar(
-            select(RawRichTextSource)
-            .where(
-                RawRichTextSource.product_key == product_key,
-                RawRichTextSource.attribute_key == attribute_key,
-                RawRichTextSource.source == source
-            )
-        ) 
