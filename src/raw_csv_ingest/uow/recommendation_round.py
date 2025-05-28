@@ -11,7 +11,6 @@ def create_recommendation_round(
     with db_session().begin() as session:
         repo = RawRecommendationRoundRepository(session)
         
-        # Check if round already exists
         if repo.find_by_round_number(round_number):
             return None
 

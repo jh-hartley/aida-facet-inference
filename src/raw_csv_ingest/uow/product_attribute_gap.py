@@ -11,9 +11,7 @@ def create_product_attribute_gap(
     with db_session().begin() as session:
         repo = RawProductAttributeGapRepository(session)
         
-        # Check if gap already exists
-        existing = repo.find_by_product_key(product_key)
-        if any(pag.attribute_key == attribute_key for pag in existing):
+        if repo.find_by_product_key_and_attribute_key(product_key, attribute_key) is not None:
             return None
 
         product_attribute_gap = RawProductAttributeGap(

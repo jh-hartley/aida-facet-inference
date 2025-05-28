@@ -11,9 +11,7 @@ def create_attribute_allowable_value_applicable_in_every_category(
     with db_session().begin() as session:
         repo = RawAttributeAllowableValueApplicableInEveryCategoryRepository(session)
         
-        # Check if value already exists
-        existing = repo.find_by_attribute_key(attribute_key)
-        if any(aav.attribute_key == attribute_key and aav.value == value for aav in existing):
+        if repo.find_by_attribute_key_and_value(attribute_key, value) is not None:
             return None
 
         attribute_allowable_value = RawAttributeAllowableValueApplicableInEveryCategory(

@@ -172,6 +172,18 @@ class RawProductCategoryRepository(Repository[RawProductCategory]):
             ).all()
         )
 
+    def find_by_product_key_and_category_key(
+        self, product_key: str, category_key: str
+    ) -> RawProductCategory | None:
+        """Find a specific product-category relationship"""
+        return self.session.scalar(
+            select(RawProductCategory)
+            .where(
+                RawProductCategory.product_key == product_key,
+                RawProductCategory.category_key == category_key
+            )
+        )
+
 
 class RawCategoryAttributeRepository(Repository[RawCategoryAttribute]):
     """Repository for raw category-attribute relationship data from CSV"""
@@ -215,6 +227,18 @@ class RawCategoryAttributeRepository(Repository[RawCategoryAttribute]):
             self.session.scalars(
                 select(RawCategoryAttribute).where(RawCategoryAttribute.attribute_key == attribute_key)
             ).all()
+        )
+
+    def find_by_category_key_and_attribute_key(
+        self, category_key: str, attribute_key: str
+    ) -> RawCategoryAttribute | None:
+        """Find a specific category-attribute relationship"""
+        return self.session.scalar(
+            select(RawCategoryAttribute)
+            .where(
+                RawCategoryAttribute.category_key == category_key,
+                RawCategoryAttribute.attribute_key == attribute_key
+            )
         )
 
 
@@ -262,6 +286,19 @@ class RawProductAttributeValueRepository(Repository[RawProductAttributeValue]):
             ).all()
         )
 
+    def find_by_product_key_and_attribute_key_and_value(
+        self, product_key: str, attribute_key: str, value: str
+    ) -> RawProductAttributeValue | None:
+        """Find a specific value for a product attribute"""
+        return self.session.scalar(
+            select(RawProductAttributeValue)
+            .where(
+                RawProductAttributeValue.product_key == product_key,
+                RawProductAttributeValue.attribute_key == attribute_key,
+                RawProductAttributeValue.value == value
+            )
+        )
+
 
 class RawProductAttributeGapRepository(Repository[RawProductAttributeGap]):
     """Repository for raw product attribute gap data from CSV"""
@@ -305,6 +342,18 @@ class RawProductAttributeGapRepository(Repository[RawProductAttributeGap]):
             self.session.scalars(
                 select(RawProductAttributeGap).where(RawProductAttributeGap.attribute_key == attribute_key)
             ).all()
+        )
+
+    def find_by_product_key_and_attribute_key(
+        self, product_key: str, attribute_key: str
+    ) -> RawProductAttributeGap | None:
+        """Find a specific gap for a product attribute"""
+        return self.session.scalar(
+            select(RawProductAttributeGap)
+            .where(
+                RawProductAttributeGap.product_key == product_key,
+                RawProductAttributeGap.attribute_key == attribute_key
+            )
         )
 
 
@@ -352,6 +401,19 @@ class RawProductAttributeAllowableValueRepository(Repository[RawProductAttribute
             ).all()
         )
 
+    def find_by_product_key_and_attribute_key_and_value(
+        self, product_key: str, attribute_key: str, value: str
+    ) -> RawProductAttributeAllowableValue | None:
+        """Find a specific allowable value for a product attribute"""
+        return self.session.scalar(
+            select(RawProductAttributeAllowableValue)
+            .where(
+                RawProductAttributeAllowableValue.product_key == product_key,
+                RawProductAttributeAllowableValue.attribute_key == attribute_key,
+                RawProductAttributeAllowableValue.value == value
+            )
+        )
+
 
 class RawCategoryAllowableValueRepository(Repository[RawCategoryAllowableValue]):
     """Repository for raw category allowable value data from CSV"""
@@ -397,6 +459,19 @@ class RawCategoryAllowableValueRepository(Repository[RawCategoryAllowableValue])
             ).all()
         )
 
+    def find_by_category_key_and_attribute_key_and_value(
+        self, category_key: str, attribute_key: str, value: str
+    ) -> RawCategoryAllowableValue | None:
+        """Find a specific allowable value for a category attribute"""
+        return self.session.scalar(
+            select(RawCategoryAllowableValue)
+            .where(
+                RawCategoryAllowableValue.category_key == category_key,
+                RawCategoryAllowableValue.attribute_key == attribute_key,
+                RawCategoryAllowableValue.value == value
+            )
+        )
+
 
 class RawAttributeAllowableValueApplicableInEveryCategoryRepository(Repository[RawAttributeAllowableValueApplicableInEveryCategory]):
     """Repository for raw attribute allowable value applicable in every category data from CSV"""
@@ -423,6 +498,16 @@ class RawAttributeAllowableValueApplicableInEveryCategoryRepository(Repository[R
             ).all()
         )
 
+    def find_by_attribute_key_and_value(self, attribute_key: str, value: str) -> RawAttributeAllowableValueApplicableInEveryCategory | None:
+        """Find a specific allowable value for an attribute"""
+        return self.session.scalar(
+            select(RawAttributeAllowableValueApplicableInEveryCategory)
+            .where(
+                RawAttributeAllowableValueApplicableInEveryCategory.attribute_key == attribute_key,
+                RawAttributeAllowableValueApplicableInEveryCategory.value == value
+            )
+        )
+
 
 class RawAttributeAllowableValueInAnyCategoryRepository(Repository[RawAttributeAllowableValueInAnyCategory]):
     """Repository for raw attribute allowable value in any category data from CSV"""
@@ -447,6 +532,16 @@ class RawAttributeAllowableValueInAnyCategoryRepository(Repository[RawAttributeA
             self.session.scalars(
                 select(RawAttributeAllowableValueInAnyCategory).where(RawAttributeAllowableValueInAnyCategory.attribute_key == attribute_key)
             ).all()
+        )
+
+    def find_by_attribute_key_and_value(self, attribute_key: str, value: str) -> RawAttributeAllowableValueInAnyCategory | None:
+        """Find a specific allowable value for an attribute"""
+        return self.session.scalar(
+            select(RawAttributeAllowableValueInAnyCategory)
+            .where(
+                RawAttributeAllowableValueInAnyCategory.attribute_key == attribute_key,
+                RawAttributeAllowableValueInAnyCategory.value == value
+            )
         )
 
 
@@ -494,6 +589,19 @@ class RawRecommendationRepository(Repository[RawRecommendation]):
             ).all()
         )
 
+    def find_by_product_key_and_attribute_key_and_value(
+        self, product_key: str, attribute_key: str, value: str
+    ) -> RawRecommendation | None:
+        """Find a specific recommendation for a product attribute"""
+        return self.session.scalar(
+            select(RawRecommendation)
+            .where(
+                RawRecommendation.product_key == product_key,
+                RawRecommendation.attribute_key == attribute_key,
+                RawRecommendation.value == value
+            )
+        )
+
 
 class RawRecommendationRoundRepository(Repository[RawRecommendationRound]):
     """Repository for raw recommendation round data from CSV"""
@@ -520,4 +628,17 @@ class RawRichTextSourceRepository(Repository[RawRichTextSource]):
             self.session.scalars(
                 select(RawRichTextSource).where(RawRichTextSource.product_key == product_key)
             ).all()
+        )
+
+    def find_by_product_key_and_attribute_key_and_source(
+        self, product_key: str, attribute_key: str, source: str
+    ) -> RawRichTextSource | None:
+        """Find a specific rich text source for a product attribute"""
+        return self.session.scalar(
+            select(RawRichTextSource)
+            .where(
+                RawRichTextSource.product_key == product_key,
+                RawRichTextSource.attribute_key == attribute_key,
+                RawRichTextSource.source == source
+            )
         ) 

@@ -7,13 +7,11 @@ def create_product_category(
     product_key: str,
     category_key: str,
 ) -> RawProductCategory | None:
-    """Create a new product-category relationship if it doesn't already exist"""
+    """Create a new product category if it doesn't already exist"""
     with db_session().begin() as session:
         repo = RawProductCategoryRepository(session)
         
-        # Check if relationship already exists
-        existing = repo.find_by_product_key(product_key)
-        if any(pc.category_key == category_key for pc in existing):
+        if repo.find_by_product_key_and_category_key(product_key, category_key) is not None:
             return None
 
         product_category = RawProductCategory(

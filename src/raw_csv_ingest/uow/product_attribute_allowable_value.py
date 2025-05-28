@@ -12,9 +12,7 @@ def create_product_attribute_allowable_value(
     with db_session().begin() as session:
         repo = RawProductAttributeAllowableValueRepository(session)
         
-        # Check if value already exists
-        existing = repo.find_by_product_key(product_key)
-        if any(paav.attribute_key == attribute_key and paav.value == value for paav in existing):
+        if repo.find_by_product_key_and_attribute_key_and_value(product_key, attribute_key, value) is not None:
             return None
 
         product_attribute_allowable_value = RawProductAttributeAllowableValue(

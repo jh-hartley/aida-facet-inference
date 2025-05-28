@@ -12,9 +12,7 @@ def create_product_attribute_value(
     with db_session().begin() as session:
         repo = RawProductAttributeValueRepository(session)
         
-        # Check if value already exists
-        existing = repo.find_by_product_key(product_key)
-        if any(pav.attribute_key == attribute_key and pav.value == value for pav in existing):
+        if repo.find_by_product_key_and_attribute_key_and_value(product_key, attribute_key, value) is not None:
             return None
 
         product_attribute_value = RawProductAttributeValue(

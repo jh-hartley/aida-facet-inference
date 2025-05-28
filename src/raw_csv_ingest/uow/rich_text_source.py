@@ -12,9 +12,8 @@ def create_rich_text_source(
     with db_session().begin() as session:
         repo = RawRichTextSourceRepository(session)
         
-        # Check if source already exists
-        existing = repo.find_by_product_key(product_key)
-        if any(rts.attribute_key == attribute_key and rts.source == source for rts in existing):
+        # Replace inefficient O(N) check with direct database query
+        if repo.find_by_product_key_and_attribute_key_and_source(product_key, attribute_key, source) is not None:
             return None
 
         rich_text_source = RawRichTextSource(

@@ -12,9 +12,7 @@ def create_category_allowable_value(
     with db_session().begin() as session:
         repo = RawCategoryAllowableValueRepository(session)
         
-        # Check if value already exists
-        existing = repo.find_by_category_key(category_key)
-        if any(caav.attribute_key == attribute_key and caav.value == value for caav in existing):
+        if repo.find_by_category_key_and_attribute_key_and_value(category_key, attribute_key, value) is not None:
             return None
 
         category_allowable_value = RawCategoryAllowableValue(
