@@ -1,125 +1,28 @@
-# Facet Inference Experimentation
+# AIDA Facet Inference
 
-(Implementation is a WIP) A product facet inference system that uses vector databases, LLMs, and tool calling to intelligently categorise and enrich product data. The system takes in product information, queries a local database for similar products, searches online for additional context when needed, and uses LLMs to infer missing filters/facets based on the gathered information. Secondarily, it attempts to indicate the confidence of each result and quantify predication accuracy using known ground truth facets.
+A product facet inference system that uses LLMs to intelligently categorise and enrich product data. The system takes in product information and uses LLMs to infer missing facets based on the gathered information, with confidence scoring and validation.
 
-## Initial Planned Features
+## Quick Start
 
-- Local PostgreSQL database with pgvector for vector similarity search
-- LLM-powered inference of product attributes
-- FastAPI backend for programmatic access
-- Streamlit interface for testing and visualisation
-- Online product lookup capabilities
-
-## Installation
-
-1. Clone the repository:
+1. Clone and install:
 ```bash
 git clone https://github.com/yourusername/aida-facet-inference.git
 cd aida-facet-inference
-```
-
-2. Create and activate a virtual environment:
-```bash
-# On macOS/Linux
 python -m venv venv
-source venv/bin/activate
-
-# On Windows
-python -m venv venv
-venv\Scripts\activate
-```
-
-3. Install the package with development dependencies:
-```bash
+source venv/bin/activate  # or `venv\Scripts\activate` on Windows
 pip install -e ".[dev]"
 ```
 
-4. Set up environment variables:
-Create a `.env` file in the project root with the following variables:
+2. Configure environment:
 ```bash
-# Database Configuration
-DB_NAME=aida_db
-DB_USER=aida_user
-DB_PASSWORD=your_secure_password_here
-DB_HOST=localhost
-DB_PORT=5432
-DB_USE_SSL=false
-
-# Database Pool Configuration (optional)
-DB_POOL_SIZE=5
-DB_MAX_OVERFLOW=2
-DB_ASYNC_POOL_SIZE=20
-
-# OpenAI API Configuration (required)
-OPENAI_API_KEY=your_openai_api_key_here
-OPENAI_MODEL=gpt-4
-
-# API Configuration
-API_HOST=0.0.0.0
-API_PORT=8000
-
-# Logging Configuration
-LOG_LEVEL=INFO
+# Copy example env file
+cp .env.example .env
+# Edit .env with your settings
 ```
 
-5. Start the PostgreSQL database with pgvector:
-```bash
-# Start the database service
-docker compose --profile db up -d
-
-# Verify the database is running
-docker ps
-```
-
-6. Test the database connection:
-```bash
-# Connect to the database
-docker exec -it aida-pg-db psql -U aida_user -d aida_db
-
-# Once connected, verify the vector extension is installed
-\dx
-
-# Verify the tables are created
-\dt
-
-# Exit the database
-\q
-```
-
-## Usage
-
-### Running the API Server
-
+3. Run the API:
 ```bash
 uvicorn src.api.main:app --host 0.0.0.0 --port 8000
-```
-
-### Running the Streamlit Interface
-
-```bash
-streamlit run src/streamlit_app.py
-```
-
-## Development
-
-The project uses several standard tools to maintain code quality, all managed through a single check script:
-
-- `black` for code formatting
-- `flake8` for linting
-- `isort` for import sorting
-- `mypy` for type checking
-- `pytest` for testing
-
-To run all checks before pushing changes:
-
-```bash
-./scripts/check.sh
-```
-
-To automatically fix formatting and import sorting issues:
-
-```bash
-./scripts/check.sh --fix
 ```
 
 ## Project Structure
@@ -127,66 +30,30 @@ To automatically fix formatting and import sorting issues:
 ```
 aida-facet-inference/
 ├── src/
-│   ├── api/                    # FastAPI endpoints and routes
+│   ├── api/                    # FastAPI endpoints
 │   ├── core/                   # Core business logic
-│   │   ├── llm/                # LLM integration and abstractions
-│   │   └── ...                 # Other core modules
-│   ├── db/                     # Database operations and models
-│   ├── log_utils/              # Logging configuration and utilities
-│   ├── utils/                  # General utility functions
-│   │   ├── clock.py            # Time-related utilities
-│   │   └── ...                 # Other utility modules
-│   ├── config.py               # Application configuration
-│   ├── types_.py              # Data transfer objects and type definitions
-│   ├── models.py              # Composite models and search results
-│   ├── repositories.py        # SQLAlchemy database models
-│   └── __init__.py
+│   │   ├── facet_inference/    # Facet inference implementation
+│   │   └── llm/                # LLM integration
+│   ├── db/                     # Database operations
+│   └── utils/                  # Utility functions
 ├── tests/                      # Test suite
-│   ├── api/                    # API tests
-│   ├── core/                   # Core logic tests
-│   ├── db/                     # Database tests
-│   └── log_utils/              # Logging tests (to test the CI/CD pipeline)
-├── docs/                       # Documentation
-├── schema/                     # Database schema and migrations
-│   └── 01_init.sql
-├── scripts/                    # Utility scripts
-│   └── check.sh                # Code quality check script
-├── .github/                    # GitHub configuration
-│   └── workflows/              # CI/CD workflows
-├── pyproject.toml              # Project configuration and dependencies
-└── docker-compose.yml          # Docker services configuration
+├── docs/                       # Detailed documentation
+└── scripts/                    # Utility scripts
 ```
 
-## Module Overview
+## Documentation
 
-- **api/**: FastAPI application endpoints and route handlers
-- **core/**: Core business logic and abstractions
-  - **llm/**: LLM client implementation and model definitions
-- **db/**: Database models, operations, and connection management
-- **log_utils/**: Logging configuration and custom filters
-- **utils/**: General utility functions
-  - **clock.py**: UTC timestamp utilities for database operations
-- **config.py**: Centralized configuration management
-- **types_.py**: Data transfer objects and type definitions
-- **models.py**: Composite models and search results
-- **repositories.py**: SQLAlchemy database models
+- [Core Concepts](docs/core_concepts.md) - Overview of facet inference concepts
+- [API Reference](docs/api_reference.md) - Detailed API documentation
+- [Development Guide](docs/development.md) - Setup and contribution guidelines
+- [Architecture](docs/architecture.md) - System architecture and design decisions
 
-## Database Schema
+## Development
 
-The system uses PostgreSQL with the pgvector extension for vector similarity search. The main tables are:
+```bash
+# Run all checks
+./scripts/check.sh
 
-- `retailers`: Stores retailer information (name, URL, country, industry)
-- `products`: Stores core product information (identifiers, name, description, category)
-- `retailer_products`: Links products to retailers with retailer-specific data (price, availability)
-- `retailer_product_attributes`: Stores retailer-specific product attributes
-- `retailer_facets`: Stores retailer-specific facet definitions
-- `attribute_mappings`: Maps retailer-specific attributes to normalized attributes
-- `product_embeddings`: Stores vector embeddings for similarity search
-
-The schema is designed to support:
-- Multiple retailers with their own product data
-- Flexible attribute storage using JSONB
-- Vector similarity search for product matching
-- Attribute normalization across retailers
-
-See `schema/01_init.sql` for the complete schema definition.
+# Fix formatting issues
+./scripts/check.sh --fix
+```
