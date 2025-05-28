@@ -1,100 +1,90 @@
 # Architecture
 
-## Overview
+## System Overview
 
-The AIDA Facet Inference system is designed to predict product facets using LLMs. The system is built with a focus on:
-- Modularity and extensibility
-- Type safety
-- Async operations
-- Clear separation of concerns
+The AIDA Facet Inference system is built with a clean, modular architecture that separates concerns and promotes maintainability. The system consists of several key components:
 
-## Core Components
+1. **API Layer** (`src/api/`)
+   - FastAPI-based HTTP endpoints
+   - Request/response DTOs
+   - Input validation
+   - Route handling
 
-### Facet Inference Module
+2. **Core Layer** (`src/core/`)
+   - Business logic implementation
+   - Facet inference service
+   - LLM integration
+   - Model definitions
 
-```
-src/core/facet_inference/
-├── models.py          # Domain models
-├── prompts.py         # LLM prompts
-├── inference.py       # LLM integration
-└── service.py         # Service layer
-```
+3. **Database Layer** (`src/db/`)
+   - Database operations
+   - Connection management
+   - Query handling
 
-#### Models
-- `ProductInfo`: Product data model
-- `FacetDefinition`: Facet configuration
-- `FacetPrediction`: Prediction results
-- `ConfidenceLevel`: Confidence scoring
-
-#### Service Layer
-- Handles concurrent predictions
-- Manages LLM interactions
-- Provides clean async interface
-
-### LLM Integration
-
-```
-src/core/llm/
-├── client.py          # LLM client
-└── models.py          # LLM models
-```
-
-- Abstracted LLM interactions
-- Configurable model selection
-- Structured output handling
+4. **Utility Layer** (`src/utils/`)
+   - Shared utilities
+   - Helper functions
+   - Common types
 
 ## Data Flow
 
-1. **Input**
-   - Product information
-   - Facet definitions
-   - Configuration
+1. **HTTP Request Flow**
+   ```
+   Client Request
+   → API Endpoint
+   → Request DTO Validation
+   → Service Layer
+   → LLM Processing
+   → Response DTO
+   → Client Response
+   ```
 
-2. **Processing**
-   - Format prompt
-   - Call LLM
-   - Parse response
-
-3. **Output**
-   - Structured predictions
-   - Confidence scores
-   - Reasoning
+2. **Facet Inference Flow**
+   ```
+   Product Info + Facet Definition
+   → FacetInferenceService
+   → ProductFacetPredictor
+   → LLM Processing
+   → Confidence Scoring
+   → FacetPrediction
+   ```
 
 ## Design Decisions
 
-### Async Architecture
-- All I/O operations are async
-- Concurrent facet predictions
-- Efficient resource usage
+1. **API Design**
+   - RESTful endpoints for facet inference
+   - Async processing for concurrent predictions
+   - Pydantic models for request/response validation
+   - Clear separation between API and business logic
 
-### Type Safety
-- Strict type checking
-- Pydantic models
-- Clear interfaces
+2. **Service Layer**
+   - Dependency injection for flexibility
+   - Async-first design for performance
+   - Clear interfaces for testing
+   - Modular predictor implementation
 
-### Prompt Engineering
-- Structured prompts
-- Clear examples
-- Consistent formatting
-
-### Error Handling
-- Graceful failure
-- Clear error messages
-- Type-safe error handling
+3. **LLM Integration**
+   - Abstracted LLM interface
+   - Configurable model selection
+   - Structured prompt management
+   - Confidence scoring system
 
 ## Future Considerations
 
-1. **Performance**
-   - Caching predictions
-   - Batch processing
+1. **API Enhancements**
+   - Authentication/authorization
    - Rate limiting
+   - Request validation middleware
+   - API versioning
 
-2. **Reliability**
-   - Retry mechanisms
-   - Fallback strategies
-   - Monitoring
+2. **Performance**
+   - Caching layer
+   - Batch processing optimization
+   - Connection pooling
+   - Response compression
 
-3. **Extensibility**
-   - Plugin system
-   - Custom models
-   - Additional features 
+3. **Monitoring**
+   - Request logging
+   - Performance metrics
+   - Error tracking
+   - Usage analytics 
