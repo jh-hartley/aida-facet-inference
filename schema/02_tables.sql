@@ -1,102 +1,101 @@
-CREATE TABLE retailers (
-    id SERIAL PRIMARY KEY,
-    name TEXT NOT NULL,
-    url TEXT NOT NULL,
-    is_client BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+CREATE TABLE raw_products (
+    product_key TEXT PRIMARY KEY,
+    system_name TEXT,
+    friendly_name TEXT
 );
 
-CREATE TABLE products (
-    id SERIAL PRIMARY KEY,
-    name TEXT NOT NULL,
-    identifier_value TEXT NOT NULL,  -- EAN/GTIN
-    identifier_type TEXT NOT NULL,   -- 'EAN', 'UPC', etc.
-    category TEXT,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(identifier_value, identifier_type)
+CREATE TABLE raw_categories (
+    category_key TEXT PRIMARY KEY,
+    system_name TEXT,
+    friendly_name TEXT
 );
 
-CREATE TABLE retailer_products (
-    id SERIAL PRIMARY KEY,
-    retailer_id INTEGER REFERENCES retailers(id),
-    product_id INTEGER REFERENCES products(id),
-    retailer_product_id TEXT NOT NULL,
-    url TEXT,
-    price FLOAT,
-    availability BOOLEAN,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(retailer_id, retailer_product_id)
+CREATE TABLE raw_attributes (
+    attribute_key TEXT PRIMARY KEY,
+    system_name TEXT,
+    friendly_name TEXT,
+    attribute_type TEXT,
+    unit_measure_type TEXT
 );
 
-CREATE TABLE categories (
-    id SERIAL PRIMARY KEY,
-    retailer_id INTEGER REFERENCES retailers(id),
-    parent_id INTEGER REFERENCES categories(id),
-    name TEXT NOT NULL,
-    system_name TEXT,  -- Original category path from retailer
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(retailer_id, system_name)
+CREATE TABLE raw_product_categories (
+    product_key TEXT, -- REFERENCES raw_products(product_key)
+    category_key TEXT, -- REFERENCES raw_categories(category_key)
+    PRIMARY KEY (product_key, category_key)
 );
 
--- Facet definitions
-CREATE TABLE facets (
-    id SERIAL PRIMARY KEY,
-    retailer_id INTEGER REFERENCES retailers(id),
-    name TEXT NOT NULL,
-    description TEXT,
-    attribute_type TEXT,  -- e.g., 'numeric', 'categorical', 'boolean'
-    unit_measure_type TEXT,  -- e.g., 'CM', 'KG'
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(retailer_id, name)
+-- Category-Attribute relationships
+CREATE TABLE raw_category_attributes (
+    category_attribute_key TEXT PRIMARY KEY,
+    category_key TEXT, -- REFERENCES raw_categories(category_key)
+    attribute_key TEXT -- REFERENCES raw_attributes(attribute_key)
 );
 
-CREATE TABLE facet_allowed_values (
-    id SERIAL PRIMARY KEY,
-    facet_id INTEGER REFERENCES facets(id),
-    value TEXT NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(facet_id, value)
+-- Product Attribute Values
+CREATE TABLE raw_product_attribute_values (
+    product_key TEXT, -- REFERENCES raw_products(product_key)
+    attribute_key TEXT, -- REFERENCES raw_attributes(attribute_key)
+    value TEXT,
+    PRIMARY KEY (product_key, attribute_key)
 );
 
-CREATE TABLE category_facets (
-    category_id INTEGER REFERENCES categories(id),
-    facet_id INTEGER REFERENCES facets(id),
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (category_id, facet_id)
+CREATE TABLE raw_product_attribute_gaps (
+    product_key TEXT, -- REFERENCES raw_products(product_key)
+    attribute_key TEXT, -- REFERENCES raw_attributes(attribute_key)
+    PRIMARY KEY (product_key, attribute_key)
 );
 
-CREATE TABLE product_metadata (
-    id SERIAL PRIMARY KEY,
-    retailer_id INTEGER REFERENCES retailers(id),
-    product_id INTEGER REFERENCES products(id),
-    facet_id INTEGER REFERENCES facets(id),
-    value TEXT NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(retailer_id, product_id, facet_id)
+CREATE TABLE raw_product_attribute_allowable_values (
+    product_key TEXT, -- REFERENCES raw_products(product_key)
+    attribute_key TEXT, -- REFERENCES raw_attributes(attribute_key)
+    value TEXT,
+    PRIMARY KEY (product_key, attribute_key, value)
 );
 
-CREATE TABLE product_embeddings (
-    id SERIAL PRIMARY KEY,
-    retailer_id INTEGER REFERENCES retailers(id),
-    product_id INTEGER REFERENCES products(id),
-    embedding_model TEXT NOT NULL,  -- e.g., 'openai-ada-002'
-    embedding vector(1536),  -- Adjust dimension based on model
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(retailer_id, product_id, embedding_model)
+CREATE TABLE raw_category_allowable_values (
+    category_key TEXT, -- REFERENCES raw_categories(category_key)
+    attribute_key TEXT, -- REFERENCES raw_attributes(attribute_key)
+    value TEXT,
+    unit_type TEXT,
+    minimum_value FLOAT,
+    minimum_unit TEXT,
+    maximum_value FLOAT,
+    maximum_unit TEXT,
+    range_qualifier TEXT,
+    PRIMARY KEY (category_key, attribute_key, value)
 );
 
-CREATE TABLE facet_predictions (
-    id SERIAL PRIMARY KEY,
-    retailer_id INTEGER REFERENCES retailers(id),
-    product_id INTEGER REFERENCES products(id),
-    facet_id INTEGER REFERENCES facets(id),
-    predicted_value TEXT NOT NULL,
+CREATE TABLE raw_attribute_allowable_values_applicable_in_every_category (
+    attribute_key TEXT, -- REFERENCES raw_attributes(attribute_key)
+    value TEXT,
+    PRIMARY KEY (attribute_key, value)
+);
+
+CREATE TABLE raw_attribute_allowable_values_in_any_category (
+    attribute_key TEXT, -- REFERENCES raw_attributes(attribute_key)
+    value TEXT,
+    PRIMARY KEY (attribute_key, value)
+);
+
+CREATE TABLE raw_recommendations (
+    recommendation_key TEXT PRIMARY KEY,
+    product_key TEXT, -- REFERENCES raw_products(product_key)
+    attribute_key TEXT, -- REFERENCES raw_attributes(attribute_key)
+    value TEXT,
     confidence FLOAT,
-    model_version TEXT,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(retailer_id, product_id, facet_id, model_version)
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE raw_recommendation_rounds (
+    round_key TEXT PRIMARY KEY,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE raw_rich_text_sources (
+    source_key TEXT PRIMARY KEY,
+    product_key TEXT,
+    content TEXT,
+    name TEXT,
+    priority INTEGER,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
