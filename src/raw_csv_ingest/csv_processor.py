@@ -6,7 +6,6 @@ from typing import Any, Callable, Type, cast
 from tqdm import tqdm
 
 from src.raw_csv_ingest.config import CSVConfig
-from src.raw_csv_ingest.models import Base
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +34,7 @@ def count_lines(file_path: Path) -> int:
 
 def process_csv_file(
     file_path: Path,
-    model_type: Type[Base],
+    model_type: Type[Any],
     create_func: Callable[..., Any],
     batch_size: int = 1000,
     column_mapping: dict[str, str] | None = None,
@@ -52,18 +51,15 @@ def process_csv_file(
     with open(file_path, newline="", encoding="utf-8-sig") as csvfile:
         reader = csv.DictReader(csvfile)
         
-        if row_limit:
-            total_lines = row_limit
-        else:
-            total_lines = count_lines(file_path)
-
         logger.debug(f"Processing {file_path} (limit: {row_limit or 'none'})")
 
         pbar = tqdm(
-            total=total_lines, 
-            desc=file_path.name, 
+            desc=file_path.name,
             unit="rows",
-            leave=True
+            leave=True,
+            bar_format='{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_fmt}]',
+            dynamic_ncols=True,
+            total=float('inf')
         )
 
         while True:
@@ -121,7 +117,7 @@ def ingest_csv_files(
         try:
             logger.debug(f"Starting to process {filename}")
             file_path = directory / filename
-            model = cast(Type[Base], config["model"])
+            model = cast(Type[Any], config["model"])
             create_func = cast(Callable[..., Any], config["create_func"])
             column_mapping = cast(
                 dict[str, str] | None, config.get("column_mapping")

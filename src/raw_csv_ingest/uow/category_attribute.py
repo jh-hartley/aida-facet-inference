@@ -1,5 +1,5 @@
 from src.db.connection import db_session
-from src.raw_csv_ingest.models import RawCategoryAttribute
+from raw_csv_ingest.records import RawCategoryAttributeRecord
 from src.raw_csv_ingest.repositories import RawCategoryAttributeRepository
 
 
@@ -7,7 +7,7 @@ def create_category_attribute(
     category_attribute_key: str,
     category_key: str,
     attribute_key: str,
-) -> RawCategoryAttribute | None:
+) -> RawCategoryAttributeRecord | None:
     """Create a new category attribute if it doesn't already exist"""
     with db_session().begin() as session:
         repo = RawCategoryAttributeRepository(session)
@@ -17,7 +17,7 @@ def create_category_attribute(
         ):
             return None
 
-        category_attribute = RawCategoryAttribute(
+        category_attribute = RawCategoryAttributeRecord(
             category_attribute_key=category_attribute_key,
             category_key=category_key,
             attribute_key=attribute_key,

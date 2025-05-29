@@ -1,7 +1,7 @@
 from uuid import uuid4
 
 from src.db.connection import db_session
-from src.raw_csv_ingest.models import RawRichTextSource
+from raw_csv_ingest.records import RawRichTextSourceRecord
 from src.raw_csv_ingest.repositories import RawRichTextSourceRepository
 
 
@@ -10,7 +10,7 @@ def create_rich_text_source(
     content: str,
     name: str,
     priority: int,
-) -> RawRichTextSource | None:
+) -> RawRichTextSourceRecord | None:
     """Create a new rich text source if it doesn't already exist"""
     with db_session().begin() as session:
         repo = RawRichTextSourceRepository(session)
@@ -18,7 +18,7 @@ def create_rich_text_source(
         if repo.find_by_product_key_and_name(product_key, name) is not None:
             return None
 
-        source = RawRichTextSource(
+        source = RawRichTextSourceRecord(
             source_key=str(uuid4()),
             product_key=product_key,
             content=content,

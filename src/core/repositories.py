@@ -1,11 +1,11 @@
 from sqlalchemy.orm import Session
 
-from src.raw_csv_ingest.types import (
-    RawProductBase,
-    RawCategoryBase,
-    RawAttributeBase,
-    RawProductAttributeValueBase,
-    RawRichTextSourceBase
+from raw_csv_ingest.models import (
+    RawProduct,
+    RawCategory,
+    RawAttribute,
+    RawProductAttributeValue,
+    RawRichTextSource
 )
 from src.raw_csv_ingest.repositories import (
     RawProductRepository,
@@ -40,7 +40,7 @@ class ProductRepository:
 
         product_categories = self.product_category_repo.find_by_product_key(product_key)
         categories = [
-            RawCategoryBase(
+            RawCategory(
                 category_key=c.category_key,
                 system_name=c.system_name,
                 friendly_name=c.friendly_name
@@ -54,7 +54,7 @@ class ProductRepository:
         for av in attribute_values:
             if attribute := self.attribute_repo.find_by_id(av.attribute_key):
                 attributes.append(
-                    RawProductAttributeValueBase(
+                    RawProductAttributeValue(
                         product_key=product_key,
                         attribute_key=attribute.attribute_key,
                         value=av.value
@@ -62,7 +62,7 @@ class ProductRepository:
                 )
 
         rich_texts = [
-            RawRichTextSourceBase(
+            RawRichTextSource(
                 source_key=rt.source_key,
                 product_key=product_key,
                 content=rt.content,
@@ -74,7 +74,7 @@ class ProductRepository:
         ]
 
         return {
-            'product': RawProductBase(
+            'product': RawProduct(
                 product_key=product.product_key,
                 system_name=product.system_name,
                 friendly_name=product.friendly_name

@@ -1,12 +1,12 @@
 from src.db.connection import db_session
-from src.raw_csv_ingest.models import RawProductAttributeGap
+from raw_csv_ingest.records import RawProductAttributeGapRecord
 from src.raw_csv_ingest.repositories import RawProductAttributeGapRepository
 
 
 def create_product_attribute_gap(
     product_key: str,
     attribute_key: str,
-) -> RawProductAttributeGap | None:
+) -> RawProductAttributeGapRecord | None:
     """Create a new product attribute gap if it doesn't already exist"""
     with db_session().begin() as session:
         repo = RawProductAttributeGapRepository(session)
@@ -19,7 +19,7 @@ def create_product_attribute_gap(
         ):
             return None
 
-        product_attribute_gap = RawProductAttributeGap(
+        product_attribute_gap = RawProductAttributeGapRecord(
             product_key=product_key,
             attribute_key=attribute_key,
         )

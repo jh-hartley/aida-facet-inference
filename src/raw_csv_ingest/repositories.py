@@ -1,30 +1,29 @@
-from typing import Generic, TypeVar
+from typing import Generic, TypeVar, Type, Any
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from src.raw_csv_ingest.models import (
-    Base,
-    RawAttribute,
-    RawCategory,
-    RawCategoryAllowableValue,
-    RawCategoryAttribute,
-    RawProduct,
-    RawProductAttributeAllowableValue,
-    RawProductAttributeGap,
-    RawProductAttributeValue,
-    RawProductCategory,
-    RawRecommendation,
-    RawRichTextSource,
+from raw_csv_ingest.records import (
+    RawAttributeRecord,
+    RawCategoryRecord,
+    RawCategoryAllowableValueRecord,
+    RawCategoryAttributeRecord,
+    RawProductRecord,
+    RawProductAttributeAllowableValueRecord,
+    RawProductAttributeGapRecord,
+    RawProductAttributeValueRecord,
+    RawProductCategoryRecord,
+    RawRecommendationRecord,
+    RawRichTextSourceRecord,
 )
 
-T = TypeVar("T", bound=Base)
+T = TypeVar("T", bound=Any)
 
 
 class Repository(Generic[T]):
     """Repository class with common functionality"""
 
-    def __init__(self, session: Session, model: type[T]):
+    def __init__(self, session: Session, model: Type[T]):
         self.session = session
         self.model = model
 
@@ -51,15 +50,15 @@ class Repository(Generic[T]):
         return list(self.session.scalars(select(self.model)).all())
 
 
-class RawProductRepository(Repository[RawProduct]):
+class RawProductRepository(Repository[RawProductRecord]):
     """Repository for raw product data from CSV"""
 
     def __init__(self, session: Session):
-        super().__init__(session, RawProduct)
+        super().__init__(session, RawProductRecord)
 
-    def get_by_system_name(self, system_name: str) -> RawProduct:
+    def get_by_system_name(self, system_name: str) -> RawProductRecord:
         result = self.session.scalar(
-            select(RawProduct).where(RawProduct.system_name == system_name)
+            select(RawProductRecord).where(RawProductRecord.system_name == system_name)
         )
         if result is None:
             raise ValueError(
@@ -67,21 +66,21 @@ class RawProductRepository(Repository[RawProduct]):
             )
         return result
 
-    def find_by_system_name(self, system_name: str) -> RawProduct | None:
+    def find_by_system_name(self, system_name: str) -> RawProductRecord | None:
         return self.session.scalar(
-            select(RawProduct).where(RawProduct.system_name == system_name)
+            select(RawProductRecord).where(RawProductRecord.system_name == system_name)
         )
 
 
-class RawCategoryRepository(Repository[RawCategory]):
+class RawCategoryRepository(Repository[RawCategoryRecord]):
     """Repository for raw category data from CSV"""
 
     def __init__(self, session: Session):
-        super().__init__(session, RawCategory)
+        super().__init__(session, RawCategoryRecord)
 
-    def get_by_system_name(self, system_name: str) -> RawCategory:
+    def get_by_system_name(self, system_name: str) -> RawCategoryRecord:
         result = self.session.scalar(
-            select(RawCategory).where(RawCategory.system_name == system_name)
+            select(RawCategoryRecord).where(RawCategoryRecord.system_name == system_name)
         )
         if result is None:
             raise ValueError(
@@ -89,21 +88,21 @@ class RawCategoryRepository(Repository[RawCategory]):
             )
         return result
 
-    def find_by_system_name(self, system_name: str) -> RawCategory | None:
+    def find_by_system_name(self, system_name: str) -> RawCategoryRecord | None:
         return self.session.scalar(
-            select(RawCategory).where(RawCategory.system_name == system_name)
+            select(RawCategoryRecord).where(RawCategoryRecord.system_name == system_name)
         )
 
 
-class RawAttributeRepository(Repository[RawAttribute]):
+class RawAttributeRepository(Repository[RawAttributeRecord]):
     """Repository for raw attribute data from CSV"""
 
     def __init__(self, session: Session):
-        super().__init__(session, RawAttribute)
+        super().__init__(session, RawAttributeRecord)
 
-    def get_by_system_name(self, system_name: str) -> RawAttribute:
+    def get_by_system_name(self, system_name: str) -> RawAttributeRecord:
         result = self.session.scalar(
-            select(RawAttribute).where(RawAttribute.system_name == system_name)
+            select(RawAttributeRecord).where(RawAttributeRecord.system_name == system_name)
         )
         if result is None:
             raise ValueError(
@@ -111,23 +110,23 @@ class RawAttributeRepository(Repository[RawAttribute]):
             )
         return result
 
-    def find_by_system_name(self, system_name: str) -> RawAttribute | None:
+    def find_by_system_name(self, system_name: str) -> RawAttributeRecord | None:
         return self.session.scalar(
-            select(RawAttribute).where(RawAttribute.system_name == system_name)
+            select(RawAttributeRecord).where(RawAttributeRecord.system_name == system_name)
         )
 
 
-class RawProductCategoryRepository(Repository[RawProductCategory]):
+class RawProductCategoryRepository(Repository[RawProductCategoryRecord]):
     """Repository for raw product-category relationship data from CSV"""
 
     def __init__(self, session: Session):
-        super().__init__(session, RawProductCategory)
+        super().__init__(session, RawProductCategoryRecord)
 
-    def get_by_product_key(self, product_key: str) -> list[RawProductCategory]:
+    def get_by_product_key(self, product_key: str) -> list[RawProductCategoryRecord]:
         result = list(
             self.session.scalars(
-                select(RawProductCategory).where(
-                    RawProductCategory.product_key == product_key
+                select(RawProductCategoryRecord).where(
+                    RawProductCategoryRecord.product_key == product_key
                 )
             ).all()
         )
@@ -137,22 +136,22 @@ class RawProductCategoryRepository(Repository[RawProductCategory]):
 
     def find_by_product_key(
         self, product_key: str
-    ) -> list[RawProductCategory]:
+    ) -> list[RawProductCategoryRecord]:
         return list(
             self.session.scalars(
-                select(RawProductCategory).where(
-                    RawProductCategory.product_key == product_key
+                select(RawProductCategoryRecord).where(
+                    RawProductCategoryRecord.product_key == product_key
                 )
             ).all()
         )
 
     def get_by_category_key(
         self, category_key: str
-    ) -> list[RawProductCategory]:
+    ) -> list[RawProductCategoryRecord]:
         result = list(
             self.session.scalars(
-                select(RawProductCategory).where(
-                    RawProductCategory.category_key == category_key
+                select(RawProductCategoryRecord).where(
+                    RawProductCategoryRecord.category_key == category_key
                 )
             ).all()
         )
@@ -162,39 +161,39 @@ class RawProductCategoryRepository(Repository[RawProductCategory]):
 
     def find_by_category_key(
         self, category_key: str
-    ) -> list[RawProductCategory]:
+    ) -> list[RawProductCategoryRecord]:
         return list(
             self.session.scalars(
-                select(RawProductCategory).where(
-                    RawProductCategory.category_key == category_key
+                select(RawProductCategoryRecord).where(
+                    RawProductCategoryRecord.category_key == category_key
                 )
             ).all()
         )
 
     def find_by_product_key_and_category_key(
         self, product_key: str, category_key: str
-    ) -> RawProductCategory | None:
+    ) -> RawProductCategoryRecord | None:
         return self.session.scalar(
-            select(RawProductCategory).where(
-                RawProductCategory.product_key == product_key,
-                RawProductCategory.category_key == category_key,
+            select(RawProductCategoryRecord).where(
+                RawProductCategoryRecord.product_key == product_key,
+                RawProductCategoryRecord.category_key == category_key,
             )
         )
 
 
-class RawCategoryAttributeRepository(Repository[RawCategoryAttribute]):
+class RawCategoryAttributeRepository(Repository[RawCategoryAttributeRecord]):
     """Repository for raw category-attribute relationship data from CSV"""
 
     def __init__(self, session: Session):
-        super().__init__(session, RawCategoryAttribute)
+        super().__init__(session, RawCategoryAttributeRecord)
 
     def get_by_category_key(
         self, category_key: str
-    ) -> list[RawCategoryAttribute]:
+    ) -> list[RawCategoryAttributeRecord]:
         result = list(
             self.session.scalars(
-                select(RawCategoryAttribute).where(
-                    RawCategoryAttribute.category_key == category_key
+                select(RawCategoryAttributeRecord).where(
+                    RawCategoryAttributeRecord.category_key == category_key
                 )
             ).all()
         )
@@ -206,22 +205,22 @@ class RawCategoryAttributeRepository(Repository[RawCategoryAttribute]):
 
     def find_by_category_key(
         self, category_key: str
-    ) -> list[RawCategoryAttribute]:
+    ) -> list[RawCategoryAttributeRecord]:
         return list(
             self.session.scalars(
-                select(RawCategoryAttribute).where(
-                    RawCategoryAttribute.category_key == category_key
+                select(RawCategoryAttributeRecord).where(
+                    RawCategoryAttributeRecord.category_key == category_key
                 )
             ).all()
         )
 
     def get_by_attribute_key(
         self, attribute_key: str
-    ) -> list[RawCategoryAttribute]:
+    ) -> list[RawCategoryAttributeRecord]:
         result = list(
             self.session.scalars(
-                select(RawCategoryAttribute).where(
-                    RawCategoryAttribute.attribute_key == attribute_key
+                select(RawCategoryAttributeRecord).where(
+                    RawCategoryAttributeRecord.attribute_key == attribute_key
                 )
             ).all()
         )
@@ -233,39 +232,39 @@ class RawCategoryAttributeRepository(Repository[RawCategoryAttribute]):
 
     def find_by_attribute_key(
         self, attribute_key: str
-    ) -> list[RawCategoryAttribute]:
+    ) -> list[RawCategoryAttributeRecord]:
         return list(
             self.session.scalars(
-                select(RawCategoryAttribute).where(
-                    RawCategoryAttribute.attribute_key == attribute_key
+                select(RawCategoryAttributeRecord).where(
+                    RawCategoryAttributeRecord.attribute_key == attribute_key
                 )
             ).all()
         )
 
     def find_by_category_key_and_attribute_key(
         self, category_key: str, attribute_key: str
-    ) -> RawCategoryAttribute | None:
+    ) -> RawCategoryAttributeRecord | None:
         return self.session.scalar(
-            select(RawCategoryAttribute).where(
-                RawCategoryAttribute.category_key == category_key,
-                RawCategoryAttribute.attribute_key == attribute_key,
+            select(RawCategoryAttributeRecord).where(
+                RawCategoryAttributeRecord.category_key == category_key,
+                RawCategoryAttributeRecord.attribute_key == attribute_key,
             )
         )
 
 
-class RawProductAttributeValueRepository(Repository[RawProductAttributeValue]):
+class RawProductAttributeValueRepository(Repository[RawProductAttributeValueRecord]):
     """Repository for raw product attribute value data from CSV"""
 
     def __init__(self, session: Session):
-        super().__init__(session, RawProductAttributeValue)
+        super().__init__(session, RawProductAttributeValueRecord)
 
     def get_by_product_key(
         self, product_key: str
-    ) -> list[RawProductAttributeValue]:
+    ) -> list[RawProductAttributeValueRecord]:
         result = list(
             self.session.scalars(
-                select(RawProductAttributeValue).where(
-                    RawProductAttributeValue.product_key == product_key
+                select(RawProductAttributeValueRecord).where(
+                    RawProductAttributeValueRecord.product_key == product_key
                 )
             ).all()
         )
@@ -277,22 +276,22 @@ class RawProductAttributeValueRepository(Repository[RawProductAttributeValue]):
 
     def find_by_product_key(
         self, product_key: str
-    ) -> list[RawProductAttributeValue]:
+    ) -> list[RawProductAttributeValueRecord]:
         return list(
             self.session.scalars(
-                select(RawProductAttributeValue).where(
-                    RawProductAttributeValue.product_key == product_key
+                select(RawProductAttributeValueRecord).where(
+                    RawProductAttributeValueRecord.product_key == product_key
                 )
             ).all()
         )
 
     def get_by_attribute_key(
         self, attribute_key: str
-    ) -> list[RawProductAttributeValue]:
+    ) -> list[RawProductAttributeValueRecord]:
         result = list(
             self.session.scalars(
-                select(RawProductAttributeValue).where(
-                    RawProductAttributeValue.attribute_key == attribute_key
+                select(RawProductAttributeValueRecord).where(
+                    RawProductAttributeValueRecord.attribute_key == attribute_key
                 )
             ).all()
         )
@@ -304,40 +303,40 @@ class RawProductAttributeValueRepository(Repository[RawProductAttributeValue]):
 
     def find_by_attribute_key(
         self, attribute_key: str
-    ) -> list[RawProductAttributeValue]:
+    ) -> list[RawProductAttributeValueRecord]:
         return list(
             self.session.scalars(
-                select(RawProductAttributeValue).where(
-                    RawProductAttributeValue.attribute_key == attribute_key
+                select(RawProductAttributeValueRecord).where(
+                    RawProductAttributeValueRecord.attribute_key == attribute_key
                 )
             ).all()
         )
 
     def find_by_product_key_and_attribute_key_and_value(
         self, product_key: str, attribute_key: str, value: str
-    ) -> RawProductAttributeValue | None:
+    ) -> RawProductAttributeValueRecord | None:
         return self.session.scalar(
-            select(RawProductAttributeValue).where(
-                RawProductAttributeValue.product_key == product_key,
-                RawProductAttributeValue.attribute_key == attribute_key,
-                RawProductAttributeValue.value == value,
+            select(RawProductAttributeValueRecord).where(
+                RawProductAttributeValueRecord.product_key == product_key,
+                RawProductAttributeValueRecord.attribute_key == attribute_key,
+                RawProductAttributeValueRecord.value == value,
             )
         )
 
 
-class RawProductAttributeGapRepository(Repository[RawProductAttributeGap]):
+class RawProductAttributeGapRepository(Repository[RawProductAttributeGapRecord]):
     """Repository for raw product attribute gap data from CSV"""
 
     def __init__(self, session: Session):
-        super().__init__(session, RawProductAttributeGap)
+        super().__init__(session, RawProductAttributeGapRecord)
 
     def get_by_product_key(
         self, product_key: str
-    ) -> list[RawProductAttributeGap]:
+    ) -> list[RawProductAttributeGapRecord]:
         result = list(
             self.session.scalars(
-                select(RawProductAttributeGap).where(
-                    RawProductAttributeGap.product_key == product_key
+                select(RawProductAttributeGapRecord).where(
+                    RawProductAttributeGapRecord.product_key == product_key
                 )
             ).all()
         )
@@ -349,22 +348,22 @@ class RawProductAttributeGapRepository(Repository[RawProductAttributeGap]):
 
     def find_by_product_key(
         self, product_key: str
-    ) -> list[RawProductAttributeGap]:
+    ) -> list[RawProductAttributeGapRecord]:
         return list(
             self.session.scalars(
-                select(RawProductAttributeGap).where(
-                    RawProductAttributeGap.product_key == product_key
+                select(RawProductAttributeGapRecord).where(
+                    RawProductAttributeGapRecord.product_key == product_key
                 )
             ).all()
         )
 
     def get_by_attribute_key(
         self, attribute_key: str
-    ) -> list[RawProductAttributeGap]:
+    ) -> list[RawProductAttributeGapRecord]:
         result = list(
             self.session.scalars(
-                select(RawProductAttributeGap).where(
-                    RawProductAttributeGap.attribute_key == attribute_key
+                select(RawProductAttributeGapRecord).where(
+                    RawProductAttributeGapRecord.attribute_key == attribute_key
                 )
             ).all()
         )
@@ -376,43 +375,43 @@ class RawProductAttributeGapRepository(Repository[RawProductAttributeGap]):
 
     def find_by_attribute_key(
         self, attribute_key: str
-    ) -> list[RawProductAttributeGap]:
+    ) -> list[RawProductAttributeGapRecord]:
         return list(
             self.session.scalars(
-                select(RawProductAttributeGap).where(
-                    RawProductAttributeGap.attribute_key == attribute_key
+                select(RawProductAttributeGapRecord).where(
+                    RawProductAttributeGapRecord.attribute_key == attribute_key
                 )
             ).all()
         )
 
     def find_by_product_key_and_attribute_key(
         self, product_key: str, attribute_key: str
-    ) -> RawProductAttributeGap | None:
+    ) -> RawProductAttributeGapRecord | None:
         return self.session.scalar(
-            select(RawProductAttributeGap).where(
-                RawProductAttributeGap.product_key == product_key,
-                RawProductAttributeGap.attribute_key == attribute_key,
+            select(RawProductAttributeGapRecord).where(
+                RawProductAttributeGapRecord.product_key == product_key,
+                RawProductAttributeGapRecord.attribute_key == attribute_key,
             )
         )
 
 
 class RawProductAttributeAllowableValueRepository(
-    Repository[RawProductAttributeAllowableValue]
+    Repository[RawProductAttributeAllowableValueRecord]
 ):
     """
     Repository for raw product attribute allowable value data from CSV
     """
 
     def __init__(self, session: Session):
-        super().__init__(session, RawProductAttributeAllowableValue)
+        super().__init__(session, RawProductAttributeAllowableValueRecord)
 
     def get_by_product_key(
         self, product_key: str
-    ) -> list[RawProductAttributeAllowableValue]:
+    ) -> list[RawProductAttributeAllowableValueRecord]:
         result = list(
             self.session.scalars(
-                select(RawProductAttributeAllowableValue).where(
-                    RawProductAttributeAllowableValue.product_key
+                select(RawProductAttributeAllowableValueRecord).where(
+                    RawProductAttributeAllowableValueRecord.product_key
                     == product_key
                 )
             ).all()
@@ -425,12 +424,12 @@ class RawProductAttributeAllowableValueRepository(
 
     def find_by_product_key(
         self, product_key: str
-    ) -> list[RawProductAttributeAllowableValue]:
+    ) -> list[RawProductAttributeAllowableValueRecord]:
         """Find all allowable values for a product"""
         return list(
             self.session.scalars(
-                select(RawProductAttributeAllowableValue).where(
-                    RawProductAttributeAllowableValue.product_key
+                select(RawProductAttributeAllowableValueRecord).where(
+                    RawProductAttributeAllowableValueRecord.product_key
                     == product_key
                 )
             ).all()
@@ -438,11 +437,11 @@ class RawProductAttributeAllowableValueRepository(
 
     def get_by_attribute_key(
         self, attribute_key: str
-    ) -> list[RawProductAttributeAllowableValue]:
+    ) -> list[RawProductAttributeAllowableValueRecord]:
         result = list(
             self.session.scalars(
-                select(RawProductAttributeAllowableValue).where(
-                    RawProductAttributeAllowableValue.attribute_key
+                select(RawProductAttributeAllowableValueRecord).where(
+                    RawProductAttributeAllowableValueRecord.attribute_key
                     == attribute_key
                 )
             ).all()
@@ -456,12 +455,12 @@ class RawProductAttributeAllowableValueRepository(
 
     def find_by_attribute_key(
         self, attribute_key: str
-    ) -> list[RawProductAttributeAllowableValue]:
+    ) -> list[RawProductAttributeAllowableValueRecord]:
         """Find all product allowable values for an attribute"""
         return list(
             self.session.scalars(
-                select(RawProductAttributeAllowableValue).where(
-                    RawProductAttributeAllowableValue.attribute_key
+                select(RawProductAttributeAllowableValueRecord).where(
+                    RawProductAttributeAllowableValueRecord.attribute_key
                     == attribute_key
                 )
             ).all()
@@ -469,32 +468,32 @@ class RawProductAttributeAllowableValueRepository(
 
     def find_by_product_key_and_attribute_key_and_value(
         self, product_key: str, attribute_key: str, value: str
-    ) -> RawProductAttributeAllowableValue | None:
+    ) -> RawProductAttributeAllowableValueRecord | None:
         return self.session.scalar(
-            select(RawProductAttributeAllowableValue).where(
-                RawProductAttributeAllowableValue.product_key == product_key,
-                RawProductAttributeAllowableValue.attribute_key
+            select(RawProductAttributeAllowableValueRecord).where(
+                RawProductAttributeAllowableValueRecord.product_key == product_key,
+                RawProductAttributeAllowableValueRecord.attribute_key
                 == attribute_key,
-                RawProductAttributeAllowableValue.value == value,
+                RawProductAttributeAllowableValueRecord.value == value,
             )
         )
 
 
 class RawCategoryAllowableValueRepository(
-    Repository[RawCategoryAllowableValue]
+    Repository[RawCategoryAllowableValueRecord]
 ):
     """Repository for raw category allowable value data from CSV"""
 
     def __init__(self, session: Session):
-        super().__init__(session, RawCategoryAllowableValue)
+        super().__init__(session, RawCategoryAllowableValueRecord)
 
     def get_by_category_key(
         self, category_key: str
-    ) -> list[RawCategoryAllowableValue]:
+    ) -> list[RawCategoryAllowableValueRecord]:
         result = list(
             self.session.scalars(
-                select(RawCategoryAllowableValue).where(
-                    RawCategoryAllowableValue.category_key == category_key
+                select(RawCategoryAllowableValueRecord).where(
+                    RawCategoryAllowableValueRecord.category_key == category_key
                 )
             ).all()
         )
@@ -506,22 +505,22 @@ class RawCategoryAllowableValueRepository(
 
     def find_by_category_key(
         self, category_key: str
-    ) -> list[RawCategoryAllowableValue]:
+    ) -> list[RawCategoryAllowableValueRecord]:
         return list(
             self.session.scalars(
-                select(RawCategoryAllowableValue).where(
-                    RawCategoryAllowableValue.category_key == category_key
+                select(RawCategoryAllowableValueRecord).where(
+                    RawCategoryAllowableValueRecord.category_key == category_key
                 )
             ).all()
         )
 
     def get_by_attribute_key(
         self, attribute_key: str
-    ) -> list[RawCategoryAllowableValue]:
+    ) -> list[RawCategoryAllowableValueRecord]:
         result = list(
             self.session.scalars(
-                select(RawCategoryAllowableValue).where(
-                    RawCategoryAllowableValue.attribute_key == attribute_key
+                select(RawCategoryAllowableValueRecord).where(
+                    RawCategoryAllowableValueRecord.attribute_key == attribute_key
                 )
             ).all()
         )
@@ -534,38 +533,38 @@ class RawCategoryAllowableValueRepository(
 
     def find_by_attribute_key(
         self, attribute_key: str
-    ) -> list[RawCategoryAllowableValue]:
+    ) -> list[RawCategoryAllowableValueRecord]:
         return list(
             self.session.scalars(
-                select(RawCategoryAllowableValue).where(
-                    RawCategoryAllowableValue.attribute_key == attribute_key
+                select(RawCategoryAllowableValueRecord).where(
+                    RawCategoryAllowableValueRecord.attribute_key == attribute_key
                 )
             ).all()
         )
 
     def find_by_category_key_and_attribute_key_and_value(
         self, category_key: str, attribute_key: str, value: str
-    ) -> RawCategoryAllowableValue | None:
+    ) -> RawCategoryAllowableValueRecord | None:
         return self.session.scalar(
-            select(RawCategoryAllowableValue).where(
-                RawCategoryAllowableValue.category_key == category_key,
-                RawCategoryAllowableValue.attribute_key == attribute_key,
-                RawCategoryAllowableValue.value == value,
+            select(RawCategoryAllowableValueRecord).where(
+                RawCategoryAllowableValueRecord.category_key == category_key,
+                RawCategoryAllowableValueRecord.attribute_key == attribute_key,
+                RawCategoryAllowableValueRecord.value == value,
             )
         )
 
 
-class RawRecommendationRepository(Repository[RawRecommendation]):
+class RawRecommendationRepository(Repository[RawRecommendationRecord]):
     """Repository for raw recommendation data"""
 
     def __init__(self, session: Session):
-        super().__init__(session, RawRecommendation)
+        super().__init__(session, RawRecommendationRecord)
 
-    def get_by_product_key(self, product_key: str) -> list[RawRecommendation]:
+    def get_by_product_key(self, product_key: str) -> list[RawRecommendationRecord]:
         result = list(
             self.session.scalars(
-                select(RawRecommendation).where(
-                    RawRecommendation.product_key == product_key
+                select(RawRecommendationRecord).where(
+                    RawRecommendationRecord.product_key == product_key
                 )
             ).all()
         )
@@ -575,22 +574,22 @@ class RawRecommendationRepository(Repository[RawRecommendation]):
             )
         return result
 
-    def find_by_product_key(self, product_key: str) -> list[RawRecommendation]:
+    def find_by_product_key(self, product_key: str) -> list[RawRecommendationRecord]:
         return list(
             self.session.scalars(
-                select(RawRecommendation).where(
-                    RawRecommendation.product_key == product_key
+                select(RawRecommendationRecord).where(
+                    RawRecommendationRecord.product_key == product_key
                 )
             ).all()
         )
 
     def get_by_attribute_key(
         self, attribute_key: str
-    ) -> list[RawRecommendation]:
+    ) -> list[RawRecommendationRecord]:
         result = list(
             self.session.scalars(
-                select(RawRecommendation).where(
-                    RawRecommendation.attribute_key == attribute_key
+                select(RawRecommendationRecord).where(
+                    RawRecommendationRecord.attribute_key == attribute_key
                 )
             ).all()
         )
@@ -602,49 +601,49 @@ class RawRecommendationRepository(Repository[RawRecommendation]):
 
     def find_by_attribute_key(
         self, attribute_key: str
-    ) -> list[RawRecommendation]:
+    ) -> list[RawRecommendationRecord]:
         return list(
             self.session.scalars(
-                select(RawRecommendation).where(
-                    RawRecommendation.attribute_key == attribute_key
+                select(RawRecommendationRecord).where(
+                    RawRecommendationRecord.attribute_key == attribute_key
                 )
             ).all()
         )
 
     def find_by_product_key_and_attribute_key_and_value(
         self, product_key: str, attribute_key: str, value: str
-    ) -> RawRecommendation | None:
+    ) -> RawRecommendationRecord | None:
         return self.session.scalar(
-            select(RawRecommendation).where(
-                RawRecommendation.product_key == product_key,
-                RawRecommendation.attribute_key == attribute_key,
-                RawRecommendation.value == value,
+            select(RawRecommendationRecord).where(
+                RawRecommendationRecord.product_key == product_key,
+                RawRecommendationRecord.attribute_key == attribute_key,
+                RawRecommendationRecord.value == value,
             )
         )
 
 
-class RawRichTextSourceRepository(Repository[RawRichTextSource]):
+class RawRichTextSourceRepository(Repository[RawRichTextSourceRecord]):
     """Repository for raw rich text source data"""
 
     def __init__(self, session: Session):
-        super().__init__(session, RawRichTextSource)
+        super().__init__(session, RawRichTextSourceRecord)
 
-    def find_by_product_key(self, product_key: str) -> list[RawRichTextSource]:
+    def find_by_product_key(self, product_key: str) -> list[RawRichTextSourceRecord]:
         """Find all rich text sources for a product"""
         return list(
             self.session.scalars(
-                select(RawRichTextSource).where(
-                    RawRichTextSource.product_key == product_key
+                select(RawRichTextSourceRecord).where(
+                    RawRichTextSourceRecord.product_key == product_key
                 )
             ).all()
         )
 
     def find_by_product_key_and_name(
         self, product_key: str, name: str
-    ) -> RawRichTextSource | None:
+    ) -> RawRichTextSourceRecord | None:
         return self.session.scalar(
-            select(RawRichTextSource).where(
-                RawRichTextSource.product_key == product_key,
-                RawRichTextSource.name == name,
+            select(RawRichTextSourceRecord).where(
+                RawRichTextSourceRecord.product_key == product_key,
+                RawRichTextSourceRecord.name == name,
             )
         )

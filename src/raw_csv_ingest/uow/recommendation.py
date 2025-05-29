@@ -1,7 +1,7 @@
 from uuid import uuid4
 
 from src.db.connection import db_session
-from src.raw_csv_ingest.models import RawRecommendation
+from raw_csv_ingest.records import RawRecommendationRecord
 from src.raw_csv_ingest.repositories import RawRecommendationRepository
 
 
@@ -10,7 +10,7 @@ def create_recommendation(
     attribute_key: str,
     value: str,
     confidence: float,
-) -> RawRecommendation | None:
+) -> RawRecommendationRecord | None:
     """Create a new recommendation if it doesn't already exist"""
     with db_session().begin() as session:
         repo = RawRecommendationRepository(session)
@@ -23,7 +23,7 @@ def create_recommendation(
         ):
             return None
 
-        recommendation = RawRecommendation(
+        recommendation = RawRecommendationRecord(
             recommendation_key=str(uuid4()),
             product_key=product_key,
             attribute_key=attribute_key,

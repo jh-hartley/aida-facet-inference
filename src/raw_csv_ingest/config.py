@@ -1,15 +1,15 @@
-from src.raw_csv_ingest.models import (
-    RawAttribute,
-    RawCategory,
-    RawCategoryAllowableValue,
-    RawCategoryAttribute,
-    RawProduct,
-    RawProductAttributeAllowableValue,
-    RawProductAttributeGap,
-    RawProductAttributeValue,
-    RawProductCategory,
-    RawRecommendation,
-    RawRichTextSource,
+from raw_csv_ingest.records import (
+    RawAttributeRecord,
+    RawCategoryRecord,
+    RawCategoryAllowableValueRecord,
+    RawCategoryAttributeRecord,
+    RawProductRecord,
+    RawProductAttributeAllowableValueRecord,
+    RawProductAttributeGapRecord,
+    RawProductAttributeValueRecord,
+    RawProductCategoryRecord,
+    RawRecommendationRecord,
+    RawRichTextSourceRecord,
 )
 from src.raw_csv_ingest.uow import (
     create_attribute,
@@ -31,7 +31,7 @@ class CSVConfig:
 
     FILE_CONFIGS = {
         "Product.csv": {
-            "model": RawProduct,
+            "model": RawProductRecord,
             "create_func": create_product,
             "column_mapping": {
                 "ProductKey": "product_key",
@@ -40,7 +40,7 @@ class CSVConfig:
             },
         },
         "Category.csv": {
-            "model": RawCategory,
+            "model": RawCategoryRecord,
             "create_func": create_category,
             "column_mapping": {
                 "CategoryKey": "category_key",
@@ -49,7 +49,7 @@ class CSVConfig:
             },
         },
         "Attribute.csv": {
-            "model": RawAttribute,
+            "model": RawAttributeRecord,
             "create_func": create_attribute,
             "column_mapping": {
                 "AttributeKey": "attribute_key",
@@ -60,7 +60,7 @@ class CSVConfig:
             },
         },
         "ProductCategory.csv": {
-            "model": RawProductCategory,
+            "model": RawProductCategoryRecord,
             "create_func": create_product_category,
             "column_mapping": {
                 "ProductKey": "product_key",
@@ -68,7 +68,7 @@ class CSVConfig:
             },
         },
         "CategoryAttribute.csv": {
-            "model": RawCategoryAttribute,
+            "model": RawCategoryAttributeRecord,
             "create_func": create_category_attribute,
             "column_mapping": {
                 "CategoryAttributeKey": "category_attribute_key",
@@ -77,7 +77,7 @@ class CSVConfig:
             },
         },
         "ProductAttributeValue.csv": {
-            "model": RawProductAttributeValue,
+            "model": RawProductAttributeValueRecord,
             "create_func": create_product_attribute_value,
             "column_mapping": {
                 "ProductKey": "product_key",
@@ -86,7 +86,7 @@ class CSVConfig:
             },
         },
         "ProductAttributeGaps.csv": {
-            "model": RawProductAttributeGap,
+            "model": RawProductAttributeGapRecord,
             "create_func": create_product_attribute_gap,
             "column_mapping": {
                 "ProductKey": "product_key",
@@ -94,7 +94,7 @@ class CSVConfig:
             },
         },
         "ProductAttributeAllowableValue.csv": {
-            "model": RawProductAttributeAllowableValue,
+            "model": RawProductAttributeAllowableValueRecord,
             "create_func": create_product_attribute_allowable_value,
             "column_mapping": {
                 "ProductKey": "product_key",
@@ -103,7 +103,7 @@ class CSVConfig:
             },
         },
         "CategoryAllowableValue.csv": {
-            "model": RawCategoryAllowableValue,
+            "model": RawCategoryAllowableValueRecord,
             "create_func": create_category_allowable_value,
             "column_mapping": {
                 "CategoryAttributeKey": "category_attribute_key",
@@ -117,7 +117,7 @@ class CSVConfig:
             },
         },
         "Recommendation.csv": {
-            "model": RawRecommendation,
+            "model": RawRecommendationRecord,
             "create_func": create_recommendation,
             "column_mapping": {
                 "ProductKey": "product_key",
@@ -127,7 +127,7 @@ class CSVConfig:
             },
         },
         "RichTextSource.csv": {
-            "model": RawRichTextSource,
+            "model": RawRichTextSourceRecord,
             "create_func": create_rich_text_source,
             "column_mapping": {
                 "ProductKey": "product_key",

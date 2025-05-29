@@ -1,5 +1,5 @@
 from src.db.connection import db_session
-from src.raw_csv_ingest.models import RawProductAttributeValue
+from raw_csv_ingest.records import RawProductAttributeValueRecord
 from src.raw_csv_ingest.repositories import RawProductAttributeValueRepository
 
 
@@ -7,7 +7,7 @@ def create_product_attribute_value(
     product_key: str,
     attribute_key: str,
     value: str,
-) -> RawProductAttributeValue | None:
+) -> RawProductAttributeValueRecord | None:
     """Create a new product attribute value if it doesn't already exist"""
     with db_session().begin() as session:
         repo = RawProductAttributeValueRepository(session)
@@ -20,7 +20,7 @@ def create_product_attribute_value(
         ):
             return None
 
-        product_attribute_value = RawProductAttributeValue(
+        product_attribute_value = RawProductAttributeValueRecord(
             product_key=product_key,
             attribute_key=attribute_key,
             value=value,

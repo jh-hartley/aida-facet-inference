@@ -1,5 +1,5 @@
 from src.db.connection import db_session
-from src.raw_csv_ingest.models import RawCategoryAllowableValue, RawCategoryAttribute
+from raw_csv_ingest.records import RawCategoryAllowableValueRecord, RawCategoryAttributeRecord
 from src.raw_csv_ingest.repositories import RawCategoryAllowableValueRepository
 
 
@@ -12,11 +12,11 @@ def create_category_allowable_value(
     maximum_value: str = "",
     maximum_unit: str = "",
     range_qualifier: str = "",
-) -> RawCategoryAllowableValue | None:
+) -> RawCategoryAllowableValueRecord | None:
     """Create a new category allowable value if it doesn't already exist"""
     with db_session().begin() as session:
         # First get the category and attribute keys from the category_attribute table
-        category_attribute = session.get(RawCategoryAttribute, category_attribute_key)
+        category_attribute = session.get(RawCategoryAttributeRecord, category_attribute_key)
         if category_attribute is None:
             return None
 
@@ -36,7 +36,7 @@ def create_category_allowable_value(
         minimum_value_float = float(minimum_value) if minimum_value.strip() else None
         maximum_value_float = float(maximum_value) if maximum_value.strip() else None
 
-        category_allowable_value = RawCategoryAllowableValue(
+        category_allowable_value = RawCategoryAllowableValueRecord(
             category_key=category_attribute.category_key,
             attribute_key=category_attribute.attribute_key,
             value=value,
