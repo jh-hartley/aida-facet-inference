@@ -2,6 +2,10 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from src.core.models import ProductDetails, ProductGaps
+from src.core.records import (
+    PredictionExperimentRecord,
+    PredictionResultRecord,
+)
 from src.core.types import (
     ProductAttributeGap,
     ProductAttributeValue,
@@ -13,11 +17,11 @@ from src.raw_csv_ingestion.records import (
     RawAttributeRecord,
     RawCategoryAllowableValueRecord,
     RawCategoryRecord,
+    RawProductAttributeGapRecord,
     RawProductAttributeValueRecord,
     RawProductCategoryRecord,
-    RawRichTextSourceRecord,
-    RawProductAttributeGapRecord,
     RawRecommendationRecord,
+    RawRichTextSourceRecord,
 )
 from src.raw_csv_ingestion.repositories import (
     RawAttributeRepository,
@@ -28,6 +32,7 @@ from src.raw_csv_ingestion.repositories import (
     RawProductCategoryRepository,
     RawProductRepository,
     RawRichTextSourceRepository,
+    Repository,
 )
 
 # Type aliases for long record names
@@ -242,8 +247,101 @@ class FacetIdentificationRepository:
             (
                 gap,
                 recommendation_lookup.get(
-                    self.attribute_repo.get_by_friendly_name(gap.attribute).attribute_key
+                    self.attribute_repo.get_by_friendly_name(
+                        gap.attribute
+                    ).attribute_key
                 ),
             )
             for gap in gaps.gaps
         ]
+
+
+class PredictionExperimentRepository(Repository[PredictionExperimentRecord]):
+    """Repository for prediction experiment data"""
+
+    def __init__(self, session: Session):
+        super().__init__(session, PredictionExperimentRecord)
+
+    def get_by_experiment_key(
+        self, experiment_key: str
+    ) -> PredictionExperimentRecord:
+        result = self.session.get(self.model, experiment_key)
+        if result is None:
+            raise ValueError(f"No experiment found with key {experiment_key}")
+        return result
+
+    def find_by_experiment_key(
+        self, experiment_key: str
+    ) -> PredictionExperimentRecord | None:
+        return self.session.get(self.model, experiment_key)
+
+
+class PredictionResultRepository(Repository[PredictionResultRecord]):
+    """Repository for prediction result data"""
+
+    def __init__(self, session: Session):
+        super().__init__(session, PredictionResultRecord)
+
+    def get_by_experiment_key(
+        self, experiment_key: str
+    ) -> list[PredictionResultRecord]:
+        result = list(
+            self.session.scalars(
+                select(PredictionResultRecord).where(
+                    PredictionResultRecord.experiment_key == experiment_key
+                )
+            ).all()
+        )
+        if not result:
+            raise ValueError(
+                f"No predictions found for experiment {experiment_key}"
+            )
+        return result
+
+    def find_by_experiment_key(
+        self, experiment_key: str
+    ) -> list[PredictionResultRecord]:
+        return list(
+            self.session.scalars(
+                select(PredictionResultRecord).where(
+                    PredictionResultRecord.experiment_key == experiment_key
+                )
+            ).all()
+        )
+
+    def get_by_product_key(
+        self, product_key: str
+    ) -> list[PredictionResultRecord]:
+        result = list(
+            self.session.scalars(
+                select(PredictionResultRecord).where(
+                    PredictionResultRecord.product_key == product_key
+                )
+            ).all()
+        )
+        if not result:
+            raise ValueError(f"No predictions found for product {product_key}")
+        return result
+
+    def find_by_product_key(
+        self, product_key: str
+    ) -> list[PredictionResultRecord]:
+        return list(
+            self.session.scalars(
+                select(PredictionResultRecord).where(
+                    PredictionResultRecord.product_key == product_key
+                )
+            ).all()
+        )
+
+    def find_by_recommendation_key(
+        self, recommendation_key: str
+    ) -> list[PredictionResultRecord]:
+        return list(
+            self.session.scalars(
+                select(PredictionResultRecord).where(
+                    PredictionResultRecord.recommendation_key
+                    == recommendation_key
+                )
+            ).all()
+        )
