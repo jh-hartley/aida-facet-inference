@@ -1,16 +1,25 @@
-from pydantic import BaseModel
-
-from raw_csv_ingest.models import (
-    RawProduct,
-    RawCategory,
-    RawProductAttributeValue,
-    RawRichTextSource
-)
+from dataclasses import dataclass
 
 
-class ProductDetails(BaseModel):
+@dataclass
+class ProductAttributeValue:
     """Complete product information including all related data"""
-    product: RawProduct
-    categories: list[RawCategory]
-    attributes: list[RawProductAttributeValue]
-    rich_texts: list[RawRichTextSource] 
+
+    attribute: str
+    value: str
+
+
+@dataclass
+class ProductDescriptor:
+    """Complete product information including all related data"""
+
+    descriptor: str
+    value: str
+
+
+@dataclass
+class ProductAttributeGap:
+    """Information about a missing attribute value and its possible values"""
+
+    attribute: str
+    allowable_values: list[str]

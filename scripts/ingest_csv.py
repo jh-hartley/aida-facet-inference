@@ -47,7 +47,7 @@ def main():
         ingest_csv_files(
             directory=args.directory,
             batch_size=args.batch_size,
-            row_limit=args.row_limit
+            row_limit=args.row_limit,
         )
     except Exception as e:
         logger.error(f"Error during CSV ingestion: {str(e)}")

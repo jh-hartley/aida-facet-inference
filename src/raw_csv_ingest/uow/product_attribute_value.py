@@ -1,5 +1,5 @@
 from src.db.connection import db_session
-from raw_csv_ingest.records import RawProductAttributeValueRecord
+from src.raw_csv_ingest.records import RawProductAttributeValueRecord
 from src.raw_csv_ingest.repositories import RawProductAttributeValueRepository
 
 

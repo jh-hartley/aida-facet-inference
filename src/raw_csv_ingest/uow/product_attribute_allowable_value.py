@@ -1,5 +1,7 @@
 from src.db.connection import db_session
-from raw_csv_ingest.records import RawProductAttributeAllowableValueRecord
+from src.raw_csv_ingest.records import (
+    RawProductAttributeAllowableValueRecord,
+)
 from src.raw_csv_ingest.repositories import (
     RawProductAttributeAllowableValueRepository,
 )
@@ -24,10 +26,12 @@ def create_product_attribute_allowable_value(
         ):
             return None
 
-        product_attribute_allowable_value = RawProductAttributeAllowableValueRecord(
-            product_key=product_key,
-            attribute_key=attribute_key,
-            value=value,
+        product_attribute_allowable_value = (
+            RawProductAttributeAllowableValueRecord(
+                product_key=product_key,
+                attribute_key=attribute_key,
+                value=value,
+            )
         )
 
         return repo.create(product_attribute_allowable_value)

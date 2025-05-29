@@ -50,16 +50,19 @@ def process_csv_file(
 
     with open(file_path, newline="", encoding="utf-8-sig") as csvfile:
         reader = csv.DictReader(csvfile)
-        
+
         logger.debug(f"Processing {file_path} (limit: {row_limit or 'none'})")
 
         pbar = tqdm(
             desc=file_path.name,
             unit="rows",
             leave=True,
-            bar_format='{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_fmt}]',
+            bar_format=(
+                "{l_bar}{bar}| {n_fmt}/{total_fmt} "
+                "[{elapsed}<{remaining}, {rate_fmt}]"
+            ),
             dynamic_ncols=True,
-            total=float('inf')
+            total=float("inf"),
         )
 
         while True:
@@ -123,7 +126,12 @@ def ingest_csv_files(
                 dict[str, str] | None, config.get("column_mapping")
             )
             rows_processed, rows_skipped = process_csv_file(
-                file_path, model, create_func, batch_size, column_mapping, row_limit
+                file_path,
+                model,
+                create_func,
+                batch_size,
+                column_mapping,
+                row_limit,
             )
             logger.info(
                 f"Processed {rows_processed} rows from {filename} "

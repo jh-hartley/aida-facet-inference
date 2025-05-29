@@ -1,9 +1,9 @@
 from datetime import UTC, datetime
 
-from src.db.connection import Base
-
 from sqlalchemy import DateTime, Float, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
+
+from src.db.connection import Base
 
 
 class RawProductRecord(Base):

@@ -1,13 +1,13 @@
-from raw_csv_ingest.records import (
+from src.raw_csv_ingest.records import (
     RawAttributeRecord,
-    RawCategoryRecord,
     RawCategoryAllowableValueRecord,
     RawCategoryAttributeRecord,
-    RawProductRecord,
+    RawCategoryRecord,
     RawProductAttributeAllowableValueRecord,
     RawProductAttributeGapRecord,
     RawProductAttributeValueRecord,
     RawProductCategoryRecord,
+    RawProductRecord,
     RawRecommendationRecord,
     RawRichTextSourceRecord,
 )

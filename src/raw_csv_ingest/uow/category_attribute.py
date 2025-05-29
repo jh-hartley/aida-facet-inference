@@ -1,5 +1,5 @@
 from src.db.connection import db_session
-from raw_csv_ingest.records import RawCategoryAttributeRecord
+from src.raw_csv_ingest.records import RawCategoryAttributeRecord
 from src.raw_csv_ingest.repositories import RawCategoryAttributeRepository
 
 
