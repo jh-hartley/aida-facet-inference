@@ -108,6 +108,12 @@ class CSVConfig:
             "column_mapping": {
                 "CategoryAttributeKey": "category_attribute_key",
                 "AllowableValue": "value",
+                "AllowableUnitType": "unit_type",
+                "MinimumValue": "minimum_value",
+                "MinimumUnit": "minimum_unit",
+                "MaximumValue": "maximum_value",
+                "MaximumUnit": "maximum_unit",
+                "RangeQualifierEnum": "range_qualifier",
             },
         },
         "Recommendation.csv": {

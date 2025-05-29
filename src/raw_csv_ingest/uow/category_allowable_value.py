@@ -1,29 +1,51 @@
 from src.db.connection import db_session
-from src.raw_csv_ingest.models import RawCategoryAllowableValue
+from src.raw_csv_ingest.models import RawCategoryAllowableValue, RawCategoryAttribute
 from src.raw_csv_ingest.repositories import RawCategoryAllowableValueRepository
 
 
 def create_category_allowable_value(
-    category_key: str,
-    attribute_key: str,
+    category_attribute_key: str,
     value: str,
+    unit_type: str = "",
+    minimum_value: str = "",
+    minimum_unit: str = "",
+    maximum_value: str = "",
+    maximum_unit: str = "",
+    range_qualifier: str = "",
 ) -> RawCategoryAllowableValue | None:
     """Create a new category allowable value if it doesn't already exist"""
     with db_session().begin() as session:
+        # First get the category and attribute keys from the category_attribute table
+        category_attribute = session.get(RawCategoryAttribute, category_attribute_key)
+        if category_attribute is None:
+            return None
+
         repo = RawCategoryAllowableValueRepository(session)
 
         if (
             repo.find_by_category_key_and_attribute_key_and_value(
-                category_key, attribute_key, value
+                category_attribute.category_key, 
+                category_attribute.attribute_key,
+                value
             )
             is not None
         ):
             return None
 
+        # Convert numeric strings to float, empty strings remain empty
+        minimum_value_float = float(minimum_value) if minimum_value.strip() else None
+        maximum_value_float = float(maximum_value) if maximum_value.strip() else None
+
         category_allowable_value = RawCategoryAllowableValue(
-            category_key=category_key,
-            attribute_key=attribute_key,
+            category_key=category_attribute.category_key,
+            attribute_key=category_attribute.attribute_key,
             value=value,
+            unit_type=unit_type.strip(),
+            minimum_value=minimum_value_float,
+            minimum_unit=minimum_unit.strip(),
+            maximum_value=maximum_value_float,
+            maximum_unit=maximum_unit.strip(),
+            range_qualifier=range_qualifier.strip(),
         )
 
         return repo.create(category_allowable_value)

@@ -39,6 +39,7 @@ def process_csv_file(
     create_func: Callable[..., Any],
     batch_size: int = 1000,
     column_mapping: dict[str, str] | None = None,
+    row_limit: int | None = None,
 ) -> tuple[int, int]:
     """
     Process a single CSV file, streaming it line by line and return
@@ -46,44 +47,59 @@ def process_csv_file(
     """
     rows_processed = 0
     rows_skipped = 0
-
-    total_lines = count_lines(file_path)
+    total_processed = 0
 
     with open(file_path, newline="", encoding="utf-8-sig") as csvfile:
         reader = csv.DictReader(csvfile)
+        
+        if row_limit:
+            total_lines = row_limit
+        else:
+            total_lines = count_lines(file_path)
+
+        logger.debug(f"Processing {file_path} (limit: {row_limit or 'none'})")
 
         pbar = tqdm(
-            total=total_lines, desc=file_path.name, unit="rows", leave=False
+            total=total_lines, 
+            desc=file_path.name, 
+            unit="rows",
+            leave=True
         )
 
-        batch = []
-        for line in reader:
-            if column_mapping:
-                mapped_line = {
-                    param_name: line[col_name]
-                    for col_name, param_name in column_mapping.items()
-                }
-            else:
-                mapped_line = line
-            batch.append(mapped_line)
-
-            if len(batch) >= batch_size:
-                for line in batch:
-                    result = create_func(**line)
-                    if result is None:
-                        rows_skipped += 1
+        while True:
+            # Read next batch
+            batch = []
+            for _ in range(batch_size):
+                try:
+                    line = next(reader)
+                    if column_mapping:
+                        mapped_line = {
+                            param_name: line[col_name]
+                            for col_name, param_name in column_mapping.items()
+                        }
                     else:
-                        rows_processed += 1
-                    pbar.update(1)
-                batch = []
+                        mapped_line = line
+                    batch.append(mapped_line)
+                except StopIteration:
+                    break
 
-        for line in batch:
-            result = create_func(**line)
-            if result is None:
-                rows_skipped += 1
-            else:
-                rows_processed += 1
-            pbar.update(1)
+            if not batch:
+                break
+
+            # Process batch
+            for line in batch:
+                if row_limit and total_processed >= row_limit:
+                    break
+                result = create_func(**line)
+                if result is None:
+                    rows_skipped += 1
+                else:
+                    rows_processed += 1
+                total_processed += 1
+                pbar.update(1)
+
+            if row_limit and total_processed >= row_limit:
+                break
 
         pbar.close()
 
@@ -93,6 +109,7 @@ def process_csv_file(
 def ingest_csv_files(
     directory: Path | str = Path("data"),
     batch_size: int = 1000,
+    row_limit: int | None = None,
 ) -> None:
     """
     Ingest all CSV files from the specified directory into the database.
@@ -105,13 +122,12 @@ def ingest_csv_files(
             logger.debug(f"Starting to process {filename}")
             file_path = directory / filename
             model = cast(Type[Base], config["model"])
-            # Workaround as mypy does not like the config
             create_func = cast(Callable[..., Any], config["create_func"])
             column_mapping = cast(
                 dict[str, str] | None, config.get("column_mapping")
             )
             rows_processed, rows_skipped = process_csv_file(
-                file_path, model, create_func, batch_size, column_mapping
+                file_path, model, create_func, batch_size, column_mapping, row_limit
             )
             logger.info(
                 f"Processed {rows_processed} rows from {filename} "

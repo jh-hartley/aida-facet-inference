@@ -124,6 +124,12 @@ class RawCategoryAllowableValue(Base):
         String, ForeignKey("raw_attributes.attribute_key"), primary_key=True
     )
     value: Mapped[str] = mapped_column(Text, primary_key=True)
+    unit_type: Mapped[str | None] = mapped_column(String, nullable=True)
+    minimum_value: Mapped[float | None] = mapped_column(Float, nullable=True)
+    minimum_unit: Mapped[str | None] = mapped_column(String, nullable=True)
+    maximum_value: Mapped[float | None] = mapped_column(Float, nullable=True)
+    maximum_unit: Mapped[str | None] = mapped_column(String, nullable=True)
+    range_qualifier: Mapped[str | None] = mapped_column(String, nullable=True)
 
 
 class RawRecommendation(Base):
