@@ -1,6 +1,6 @@
 from datetime import UTC, datetime
 
-from sqlalchemy import DateTime, Float, ForeignKey, String, Text
+from sqlalchemy import DateTime, Float, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
@@ -140,6 +140,25 @@ class RawRecommendation(Base):
     )
     value: Mapped[str] = mapped_column(Text)
     confidence: Mapped[float] = mapped_column(Float)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(UTC),
+        nullable=False,
+    )
+
+
+class RawRichTextSource(Base):
+    """Model for raw rich text source data from CSV"""
+
+    __tablename__ = "raw_rich_text_sources"
+
+    source_key: Mapped[str] = mapped_column(String, primary_key=True)
+    product_key: Mapped[str] = mapped_column(
+        String, ForeignKey("raw_products.product_key")
+    )
+    content: Mapped[str] = mapped_column(Text)
+    name: Mapped[str] = mapped_column(String)
+    priority: Mapped[int] = mapped_column(Integer)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         default=lambda: datetime.now(UTC),

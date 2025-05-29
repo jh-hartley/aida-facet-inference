@@ -16,6 +16,7 @@ from src.raw_csv_ingest.uow.product_attribute_value import (
 )
 from src.raw_csv_ingest.uow.product_category import create_product_category
 from src.raw_csv_ingest.uow.recommendation import create_recommendation
+from src.raw_csv_ingest.uow.rich_text_source import create_rich_text_source
 
 __all__ = [
     "create_product",
@@ -28,4 +29,5 @@ __all__ = [
     "create_product_attribute_allowable_value",
     "create_category_allowable_value",
     "create_recommendation",
+    "create_rich_text_source",
 ]

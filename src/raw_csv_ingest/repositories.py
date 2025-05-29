@@ -15,6 +15,7 @@ from src.raw_csv_ingest.models import (
     RawProductAttributeValue,
     RawProductCategory,
     RawRecommendation,
+    RawRichTextSource,
 )
 
 T = TypeVar("T", bound=Base)
@@ -555,7 +556,7 @@ class RawCategoryAllowableValueRepository(
 
 
 class RawRecommendationRepository(Repository[RawRecommendation]):
-    """Repository for raw recommendation data from CSV"""
+    """Repository for raw recommendation data"""
 
     def __init__(self, session: Session):
         super().__init__(session, RawRecommendation)
@@ -586,7 +587,6 @@ class RawRecommendationRepository(Repository[RawRecommendation]):
     def get_by_attribute_key(
         self, attribute_key: str
     ) -> list[RawRecommendation]:
-        """Get all recommendations for an attribute"""
         result = list(
             self.session.scalars(
                 select(RawRecommendation).where(
@@ -619,5 +619,32 @@ class RawRecommendationRepository(Repository[RawRecommendation]):
                 RawRecommendation.product_key == product_key,
                 RawRecommendation.attribute_key == attribute_key,
                 RawRecommendation.value == value,
+            )
+        )
+
+
+class RawRichTextSourceRepository(Repository[RawRichTextSource]):
+    """Repository for raw rich text source data"""
+
+    def __init__(self, session: Session):
+        super().__init__(session, RawRichTextSource)
+
+    def find_by_product_key(self, product_key: str) -> list[RawRichTextSource]:
+        """Find all rich text sources for a product"""
+        return list(
+            self.session.scalars(
+                select(RawRichTextSource).where(
+                    RawRichTextSource.product_key == product_key
+                )
+            ).all()
+        )
+
+    def find_by_product_key_and_name(
+        self, product_key: str, name: str
+    ) -> RawRichTextSource | None:
+        return self.session.scalar(
+            select(RawRichTextSource).where(
+                RawRichTextSource.product_key == product_key,
+                RawRichTextSource.name == name,
             )
         )

@@ -1,3 +1,5 @@
+from uuid import uuid4
+
 from src.db.connection import db_session
 from src.raw_csv_ingest.models import RawRecommendation
 from src.raw_csv_ingest.repositories import RawRecommendationRepository
@@ -22,6 +24,7 @@ def create_recommendation(
             return None
 
         recommendation = RawRecommendation(
+            recommendation_key=str(uuid4()),
             product_key=product_key,
             attribute_key=attribute_key,
             value=value,

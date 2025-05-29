@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from pydantic import BaseModel, Field
 
 
@@ -81,8 +79,17 @@ class RawRecommendationBase(BaseModel):
     product_key: str
     attribute_key: str
     value: str
-    confidence: float
-    created_at: datetime = Field(default_factory=lambda: datetime.now())
+    confidence: float = Field(alias="ConfidenceScore")
+
+
+class RawRichTextSourceBase(BaseModel):
+    """Base model for raw rich text source data from CSV"""
+
+    source_key: str
+    product_key: str
+    content: str = Field(alias="RichText")
+    name: str = Field(alias="RichTextName")
+    priority: int = Field(alias="RichTextPriority")
 
 
 class RawProductCreate(RawProductBase):
@@ -143,5 +150,11 @@ class RawCategoryAllowableValueCreate(RawCategoryAllowableValueBase):
 
 class RawRecommendationCreate(RawRecommendationBase):
     """DTO for creating a new raw recommendation"""
+
+    pass
+
+
+class RawRichTextSourceCreate(RawRichTextSourceBase):
+    """DTO for creating a new raw rich text source"""
 
     pass

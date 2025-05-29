@@ -9,6 +9,7 @@ from src.raw_csv_ingest.models import (
     RawProductAttributeValue,
     RawProductCategory,
     RawRecommendation,
+    RawRichTextSource,
 )
 from src.raw_csv_ingest.uow import (
     create_attribute,
@@ -21,6 +22,7 @@ from src.raw_csv_ingest.uow import (
     create_product_attribute_value,
     create_product_category,
     create_recommendation,
+    create_rich_text_source,
 )
 
 
@@ -115,6 +117,17 @@ class CSVConfig:
                 "ProductKey": "product_key",
                 "AttributeKey": "attribute_key",
                 "RecommendedValue": "value",
+                "ConfidenceScore": "confidence",
+            },
+        },
+        "RichTextSource.csv": {
+            "model": RawRichTextSource,
+            "create_func": create_rich_text_source,
+            "column_mapping": {
+                "ProductKey": "product_key",
+                "RichText": "content",
+                "RichTextName": "name",
+                "RichTextPriority": "priority",
             },
         },
     }
