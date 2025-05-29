@@ -16,6 +16,8 @@ from src.raw_csv_ingestion.records import (
     RawProductAttributeValueRecord,
     RawProductCategoryRecord,
     RawRichTextSourceRecord,
+    RawProductAttributeGapRecord,
+    RawRecommendationRecord,
 )
 from src.raw_csv_ingestion.repositories import (
     RawAttributeRepository,
@@ -203,3 +205,47 @@ class FacetIdentificationRepository:
             return self.get_product_gaps(product_key)
         except ValueError:
             return None
+
+    def get_products_with_gaps(self) -> list[str]:
+        """
+        Get a list of all product keys that have at least one attribute gap.
+        """
+        return list(
+            self.session.scalars(
+                select(RawProductAttributeGapRecord.product_key).distinct()
+            ).all()
+        )
+
+    def get_product_gaps_with_ground_truth(
+        self, product_key: str
+    ) -> list[tuple[ProductAttributeGap, str | None]]:
+        """
+        Get all gaps for a product along with their ground truth values from
+        recommendations.
+
+        Returns:
+            A list of tuples containing (gap, ground_truth_value). The ground
+            truth value will be None if no recommendation exists.
+        """
+        gaps = self.get_product_gaps(product_key)
+        recommendations = self.session.scalars(
+            select(RawRecommendationRecord).where(
+                RawRecommendationRecord.product_key == product_key
+            )
+        ).all()
+
+        # Create a lookup of recommendations by attribute key
+        recommendation_lookup = {
+            rec.attribute_key: rec.value for rec in recommendations
+        }
+
+        # Match gaps with their ground truth values
+        return [
+            (
+                gap,
+                recommendation_lookup.get(
+                    self.attribute_repo.get_by_friendly_name(gap.attribute).attribute_key
+                ),
+            )
+            for gap in gaps.gaps
+        ]

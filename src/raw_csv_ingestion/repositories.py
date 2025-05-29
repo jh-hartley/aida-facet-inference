@@ -137,6 +137,17 @@ class RawAttributeRepository(Repository[RawAttributeRecord]):
             )
         )
 
+    def get_by_friendly_name(self, friendly_name: str) -> RawAttributeRecord:
+        """Get an attribute by its friendly name"""
+        result = self.session.scalar(
+            select(RawAttributeRecord).where(
+                RawAttributeRecord.friendly_name == friendly_name
+            )
+        )
+        if result is None:
+            raise ValueError(f"No attribute found with friendly name {friendly_name}")
+        return result
+
 
 class RawProductCategoryRepository(Repository[RawProductCategoryRecord]):
     """Repository for raw product-category relationship data from CSV"""
