@@ -1,6 +1,6 @@
 from src.db.connection import db_session
-from src.raw_csv_ingest.records import RawProductCategoryRecord
-from src.raw_csv_ingest.repositories import RawProductCategoryRepository
+from src.raw_csv_ingestion.records import RawProductCategoryRecord
+from src.raw_csv_ingestion.repositories import RawProductCategoryRepository
 
 
 def create_product_category(

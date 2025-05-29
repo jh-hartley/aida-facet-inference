@@ -1,8 +1,8 @@
 from uuid import uuid4
 
 from src.db.connection import db_session
-from src.raw_csv_ingest.records import RawRichTextSourceRecord
-from src.raw_csv_ingest.repositories import RawRichTextSourceRepository
+from src.raw_csv_ingestion.records import RawRichTextSourceRecord
+from src.raw_csv_ingestion.repositories import RawRichTextSourceRepository
 
 
 def create_rich_text_source(

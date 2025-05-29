@@ -166,3 +166,27 @@ class RawRichTextSourceRecord(Base):
         default=lambda: datetime.now(UTC),
         nullable=False,
     )
+
+
+class RawAttributeAllowableValueApplicableInEveryCategoryRecord(Base):
+    """Model for attribute values that are valid in every category"""
+
+    __tablename__ = (
+        "raw_attribute_allowable_values_applicable_in_every_category"
+    )
+
+    attribute_key: Mapped[str] = mapped_column(
+        String, ForeignKey("raw_attributes.attribute_key"), primary_key=True
+    )
+    value: Mapped[str] = mapped_column(Text, primary_key=True)
+
+
+class RawAttributeAllowableValueInAnyCategoryRecord(Base):
+    """Model for attribute values that are valid in any category"""
+
+    __tablename__ = "raw_attribute_allowable_values_in_any_category"
+
+    attribute_key: Mapped[str] = mapped_column(
+        String, ForeignKey("raw_attributes.attribute_key"), primary_key=True
+    )
+    value: Mapped[str] = mapped_column(Text, primary_key=True)

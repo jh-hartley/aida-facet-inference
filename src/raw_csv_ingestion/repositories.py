@@ -3,7 +3,9 @@ from typing import Any, Generic, Type, TypeVar
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from src.raw_csv_ingest.records import (
+from src.raw_csv_ingestion.records import (
+    RawAttributeAllowableValueApplicableInEveryCategoryRecord,
+    RawAttributeAllowableValueInAnyCategoryRecord,
     RawAttributeRecord,
     RawCategoryAllowableValueRecord,
     RawCategoryAttributeRecord,
@@ -18,6 +20,10 @@ from src.raw_csv_ingest.records import (
 )
 
 T = TypeVar("T", bound=Any)
+
+GloballyAllowedValueRecord = (
+    RawAttributeAllowableValueApplicableInEveryCategoryRecord
+)
 
 
 class Repository(Generic[T]):
@@ -697,5 +703,46 @@ class RawRichTextSourceRepository(Repository[RawRichTextSourceRecord]):
             select(RawRichTextSourceRecord).where(
                 RawRichTextSourceRecord.product_key == product_key,
                 RawRichTextSourceRecord.name == name,
+            )
+        )
+
+
+class RawAttributeAllowableValueApplicableInEveryCategoryRepository(
+    Repository[GloballyAllowedValueRecord]
+):
+    """Repository for attribute values that are valid in every category"""
+
+    def __init__(self, session: Session):
+        super().__init__(session, GloballyAllowedValueRecord)
+
+    def find_by_attribute_key_and_value(
+        self, attribute_key: str, value: str
+    ) -> GloballyAllowedValueRecord | None:
+        return self.session.scalar(
+            select(GloballyAllowedValueRecord).where(
+                GloballyAllowedValueRecord.attribute_key == attribute_key,
+                GloballyAllowedValueRecord.value == value,
+            )
+        )
+
+
+class RawAttributeAllowableValueInAnyCategoryRepository(
+    Repository[RawAttributeAllowableValueInAnyCategoryRecord]
+):
+    """Repository for attribute values that are valid in any category"""
+
+    def __init__(self, session: Session):
+        super().__init__(
+            session, RawAttributeAllowableValueInAnyCategoryRecord
+        )
+
+    def find_by_attribute_key_and_value(
+        self, attribute_key: str, value: str
+    ) -> RawAttributeAllowableValueInAnyCategoryRecord | None:
+        return self.session.scalar(
+            select(RawAttributeAllowableValueInAnyCategoryRecord).where(
+                RawAttributeAllowableValueInAnyCategoryRecord.attribute_key
+                == attribute_key,
+                RawAttributeAllowableValueInAnyCategoryRecord.value == value,
             )
         )

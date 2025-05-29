@@ -1,9 +1,11 @@
 from src.db.connection import db_session
-from src.raw_csv_ingest.records import (
+from src.raw_csv_ingestion.records import (
     RawCategoryAllowableValueRecord,
     RawCategoryAttributeRecord,
 )
-from src.raw_csv_ingest.repositories import RawCategoryAllowableValueRepository
+from src.raw_csv_ingestion.repositories import (
+    RawCategoryAllowableValueRepository,
+)
 
 
 def create_category_allowable_value(

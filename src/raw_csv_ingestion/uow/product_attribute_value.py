@@ -1,6 +1,8 @@
 from src.db.connection import db_session
-from src.raw_csv_ingest.records import RawProductAttributeValueRecord
-from src.raw_csv_ingest.repositories import RawProductAttributeValueRepository
+from src.raw_csv_ingestion.records import RawProductAttributeValueRecord
+from src.raw_csv_ingestion.repositories import (
+    RawProductAttributeValueRepository,
+)
 
 
 def create_product_attribute_value(

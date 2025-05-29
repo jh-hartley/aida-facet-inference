@@ -1,4 +1,6 @@
-from src.raw_csv_ingest.records import (
+from src.raw_csv_ingestion.records import (
+    RawAttributeAllowableValueApplicableInEveryCategoryRecord,
+    RawAttributeAllowableValueInAnyCategoryRecord,
     RawAttributeRecord,
     RawCategoryAllowableValueRecord,
     RawCategoryAttributeRecord,
@@ -11,8 +13,10 @@ from src.raw_csv_ingest.records import (
     RawRecommendationRecord,
     RawRichTextSourceRecord,
 )
-from src.raw_csv_ingest.uow import (
+from src.raw_csv_ingestion.uow import (
     create_attribute,
+    create_attribute_allowable_value_applicable_in_every_category,
+    create_attribute_allowable_value_in_any_category,
     create_category,
     create_category_allowable_value,
     create_category_attribute,
@@ -23,6 +27,13 @@ from src.raw_csv_ingest.uow import (
     create_product_category,
     create_recommendation,
     create_rich_text_source,
+)
+
+GloballyAllowedValueRecord = (
+    RawAttributeAllowableValueApplicableInEveryCategoryRecord
+)
+create_globally_allowed = (
+    create_attribute_allowable_value_applicable_in_every_category
 )
 
 
@@ -134,6 +145,22 @@ class CSVConfig:
                 "RichText": "content",
                 "RichTextName": "name",
                 "RichTextPriority": "priority",
+            },
+        },
+        "AttributeAllowableValuesApplicableInEveryCategory.csv": {
+            "model": GloballyAllowedValueRecord,
+            "create_func": create_globally_allowed,
+            "column_mapping": {
+                "AttributeKey": "attribute_key",
+                "AllowableValue": "value",
+            },
+        },
+        "AttributeAllowableValueInAnyCategory.csv": {
+            "model": RawAttributeAllowableValueInAnyCategoryRecord,
+            "create_func": create_attribute_allowable_value_in_any_category,
+            "column_mapping": {
+                "AttributeKey": "attribute_key",
+                "Value": "value",
             },
         },
     }

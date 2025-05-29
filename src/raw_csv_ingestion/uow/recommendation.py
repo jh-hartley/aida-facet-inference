@@ -1,8 +1,8 @@
 from uuid import uuid4
 
 from src.db.connection import db_session
-from src.raw_csv_ingest.records import RawRecommendationRecord
-from src.raw_csv_ingest.repositories import RawRecommendationRepository
+from src.raw_csv_ingestion.records import RawRecommendationRecord
+from src.raw_csv_ingestion.repositories import RawRecommendationRepository
 
 
 def create_recommendation(

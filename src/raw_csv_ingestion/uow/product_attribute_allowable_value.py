@@ -1,8 +1,8 @@
 from src.db.connection import db_session
-from src.raw_csv_ingest.records import (
+from src.raw_csv_ingestion.records import (
     RawProductAttributeAllowableValueRecord,
 )
-from src.raw_csv_ingest.repositories import (
+from src.raw_csv_ingestion.repositories import (
     RawProductAttributeAllowableValueRepository,
 )
 

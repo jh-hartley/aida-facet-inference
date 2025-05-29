@@ -5,7 +5,7 @@ from typing import Any, Callable, Type, cast
 
 from tqdm import tqdm
 
-from src.raw_csv_ingest.config import CSVConfig
+from src.raw_csv_ingestion.config import CSVConfig
 
 logger = logging.getLogger(__name__)
 

@@ -66,13 +66,13 @@ CREATE TABLE raw_category_allowable_values (
 );
 
 CREATE TABLE raw_attribute_allowable_values_applicable_in_every_category (
-    attribute_key TEXT REFERENCES raw_attributes(attribute_key),
+    attribute_key TEXT, -- REFERENCES raw_attributes(attribute_key)
     value TEXT,
     PRIMARY KEY (attribute_key, value)
 );
 
 CREATE TABLE raw_attribute_allowable_values_in_any_category (
-    attribute_key TEXT REFERENCES raw_attributes(attribute_key),
+    attribute_key TEXT, -- REFERENCES raw_attributes(attribute_key)
     value TEXT,
     PRIMARY KEY (attribute_key, value)
 );

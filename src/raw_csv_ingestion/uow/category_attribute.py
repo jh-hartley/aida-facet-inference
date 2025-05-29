@@ -1,6 +1,6 @@
 from src.db.connection import db_session
-from src.raw_csv_ingest.records import RawCategoryAttributeRecord
-from src.raw_csv_ingest.repositories import RawCategoryAttributeRepository
+from src.raw_csv_ingestion.records import RawCategoryAttributeRecord
+from src.raw_csv_ingestion.repositories import RawCategoryAttributeRepository
 
 
 def create_category_attribute(

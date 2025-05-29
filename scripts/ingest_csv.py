@@ -3,7 +3,7 @@ import argparse
 import logging
 
 from src.log_utils import setup_logging
-from src.raw_csv_ingest import ingest_csv_files
+from src.raw_csv_ingestion import ingest_csv_files
 
 logger = logging.getLogger(__name__)
 setup_logging()

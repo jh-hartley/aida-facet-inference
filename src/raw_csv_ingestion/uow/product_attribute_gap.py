@@ -1,6 +1,6 @@
 from src.db.connection import db_session
-from src.raw_csv_ingest.records import RawProductAttributeGapRecord
-from src.raw_csv_ingest.repositories import RawProductAttributeGapRepository
+from src.raw_csv_ingestion.records import RawProductAttributeGapRecord
+from src.raw_csv_ingestion.repositories import RawProductAttributeGapRepository
 
 
 def create_product_attribute_gap(

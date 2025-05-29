@@ -1,3 +1,4 @@
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from src.core.models import ProductDetails, ProductGaps
@@ -6,11 +7,20 @@ from src.core.types import (
     ProductAttributeValue,
     ProductDescriptor,
 )
-from src.raw_csv_ingest.repositories import (
+from src.raw_csv_ingestion.records import (
+    RawAttributeAllowableValueApplicableInEveryCategoryRecord,
+    RawAttributeAllowableValueInAnyCategoryRecord,
+    RawAttributeRecord,
+    RawCategoryAllowableValueRecord,
+    RawCategoryRecord,
+    RawProductAttributeValueRecord,
+    RawProductCategoryRecord,
+    RawRichTextSourceRecord,
+)
+from src.raw_csv_ingestion.repositories import (
     RawAttributeRepository,
     RawCategoryAllowableValueRepository,
     RawCategoryRepository,
-    RawProductAttributeAllowableValueRepository,
     RawProductAttributeGapRepository,
     RawProductAttributeValueRepository,
     RawProductCategoryRepository,
@@ -18,8 +28,14 @@ from src.raw_csv_ingest.repositories import (
     RawRichTextSourceRepository,
 )
 
+# Type aliases for long record names
+GloballyAllowedValueRecord = (
+    RawAttributeAllowableValueApplicableInEveryCategoryRecord
+)
+SharedAllowedValueRecord = RawAttributeAllowableValueInAnyCategoryRecord
 
-class ProductRepository:
+
+class FacetIdentificationRepository:
     """
     Repository for retrieving complete product information in domain model
     format
@@ -41,12 +57,43 @@ class ProductRepository:
         self.category_allowable_value_repo = (
             RawCategoryAllowableValueRepository(session)
         )
-        self.product_attribute_gap_repo = RawProductAttributeGapRepository(
-            session
+
+    def _get_allowable_values_for_attribute(
+        self, category_keys: list[str], attribute_key: str
+    ) -> set[str]:
+        """Get all allowable values for an attribute across categories"""
+        category_values = set(
+            av.value
+            for av in self.session.scalars(
+                select(RawCategoryAllowableValueRecord).where(
+                    RawCategoryAllowableValueRecord.category_key.in_(
+                        category_keys
+                    ),
+                    RawCategoryAllowableValueRecord.attribute_key
+                    == attribute_key,
+                )
+            ).all()
         )
-        self.product_attribute_allowable_value_repo = (
-            RawProductAttributeAllowableValueRepository(session)
+
+        global_values = set(
+            av.value
+            for av in self.session.scalars(
+                select(GloballyAllowedValueRecord).where(
+                    GloballyAllowedValueRecord.attribute_key == attribute_key
+                )
+            ).all()
         )
+
+        any_category_values = set(
+            av.value
+            for av in self.session.scalars(
+                select(SharedAllowedValueRecord).where(
+                    SharedAllowedValueRecord.attribute_key == attribute_key
+                )
+            ).all()
+        )
+
+        return category_values | global_values | any_category_values
 
     def get_product_details(self, product_key: str) -> ProductDetails:
         """
@@ -55,35 +102,47 @@ class ProductRepository:
         """
         product = self.product_repo.get_by_id(product_key)
 
-        product_categories = self.product_category_repo.find_by_product_key(
-            product_key
-        )
         categories = [
-            c.friendly_name
-            for pc in product_categories
-            if (c := self.category_repo.find_by_id(pc.category_key))
+            cat.friendly_name
+            for cat in self.session.scalars(
+                select(RawCategoryRecord)
+                .join(
+                    RawProductCategoryRecord,
+                    RawCategoryRecord.category_key
+                    == RawProductCategoryRecord.category_key,
+                )
+                .where(RawProductCategoryRecord.product_key == product_key)
+            ).all()
         ]
 
-        attribute_values = (
-            self.product_attribute_value_repo.find_by_product_key(product_key)
-        )
-        attributes = []
-        for av in attribute_values:
-            if attribute := self.attribute_repo.find_by_id(av.attribute_key):
-                attributes.append(
-                    ProductAttributeValue(
-                        attribute=attribute.friendly_name, value=av.value
-                    )
+        attributes = [
+            ProductAttributeValue(
+                attribute=attr.friendly_name, value=val.value
+            )
+            for attr, val in self.session.execute(
+                select(RawAttributeRecord, RawProductAttributeValueRecord)
+                .join(
+                    RawProductAttributeValueRecord,
+                    RawAttributeRecord.attribute_key
+                    == RawProductAttributeValueRecord.attribute_key,
                 )
+                .where(
+                    RawProductAttributeValueRecord.product_key == product_key
+                )
+            ).all()
+        ]
 
-        rich_texts = self.rich_text_repo.find_by_product_key(product_key)
         descriptions = [
             ProductDescriptor(descriptor=rt.name, value=rt.content)
-            for rt in rich_texts
+            for rt in self.session.scalars(
+                select(RawRichTextSourceRecord)
+                .where(RawRichTextSourceRecord.product_key == product_key)
+                .order_by(RawRichTextSourceRecord.priority)
+            ).all()
         ]
 
         return ProductDetails(
-            product_code=product.system_name,
+            product_code=product.product_key,
             product_name=product.friendly_name,
             product_description=descriptions,
             categories=categories,
@@ -103,38 +162,36 @@ class ProductRepository:
     def get_product_gaps(self, product_key: str) -> ProductGaps:
         """
         Get all attributes a product is missing and their possible values
+        in an object suitable for LLM consumption
         """
         product = self.product_repo.get_by_id(product_key)
 
-        gaps = self.product_attribute_gap_repo.find_by_product_key(product_key)
+        product_categories = self.product_category_repo.get_by_product_key(
+            product_key
+        )
+        category_keys = [pc.category_key for pc in product_categories]
 
-        attribute_gaps = []
+        gaps = self.product_attribute_gap_repo.get_by_product_key(product_key)
+
+        gap_details = []
         for gap in gaps:
-            if attribute := self.attribute_repo.find_by_id(gap.attribute_key):
-                # fmt: off
-                allowable_values = (
-                    self.product_attribute_allowable_value_repo
-                    .find_by_product_key_and_attribute_key(
-                        product_key,
-                        gap.attribute_key,
+            allowable_values = self._get_allowable_values_for_attribute(
+                category_keys, gap.attribute_key
+            )
+
+            if allowable_values:
+                attribute = self.attribute_repo.get_by_id(gap.attribute_key)
+                gap_details.append(
+                    ProductAttributeGap(
+                        attribute=attribute.friendly_name,
+                        allowable_values=sorted(allowable_values),
                     )
                 )
-                # fmt: on
-
-                if allowable_values:
-                    attribute_gaps.append(
-                        ProductAttributeGap(
-                            attribute=attribute.friendly_name,
-                            allowable_values=[
-                                av.value for av in allowable_values
-                            ],
-                        )
-                    )
 
         return ProductGaps(
-            product_code=product.system_name,
+            product_code=product.product_key,
             product_name=product.friendly_name,
-            gaps=attribute_gaps,
+            gaps=gap_details,
         )
 
     def find_product_gaps(self, product_key: str) -> ProductGaps | None:
