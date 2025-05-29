@@ -1,4 +1,5 @@
 import logging
+import time
 from typing import Any
 from uuid import uuid4
 
@@ -39,8 +40,28 @@ def create_prediction_experiment(
                 "timestamp": clock.now().isoformat(),
                 **(metadata or {}),
             },
+            started_at=clock.now(),
         )
         return repo.create(experiment)
+
+
+def update_experiment_metrics(
+    experiment_key: str,
+    total_predictions: int,
+    total_products: int,
+    elapsed_time: float,
+) -> None:
+    """Update experiment metrics after completion."""
+    with db_session().begin() as session:
+        repo = PredictionExperimentRepository(session)
+        experiment = repo.get_by_experiment_key(experiment_key)
+        
+        experiment.completed_at = clock.now()
+        experiment.total_predictions = total_predictions
+        experiment.total_products = total_products
+        experiment.average_time_per_prediction = elapsed_time / total_predictions if total_predictions > 0 else None
+        
+        session.add(experiment)
 
 
 def create_prediction_result(
@@ -99,6 +120,7 @@ class FacetPredictionJob:
         2. Load products with gaps (optionally limited to first N products)
         3. Make predictions for each gap
         4. Store predictions in the database
+        5. Update experiment metrics with timing information
 
         Args:
             limit: Optional number of products to process. If None, process
@@ -107,6 +129,7 @@ class FacetPredictionJob:
         Returns:
             The experiment key for this run
         """
+        start_time = time.time()
         experiment = create_prediction_experiment(
             description=self.description,
             metadata=self.metadata,
@@ -128,6 +151,7 @@ class FacetPredictionJob:
 
         processed_count = 0
         error_count = 0
+        total_predictions = 0
 
         for sample in dataset.samples:
             try:
@@ -162,6 +186,7 @@ class FacetPredictionJob:
                         value=prediction.predicted_value,
                         confidence=prediction.confidence,
                     )
+                    total_predictions += 1
 
                 processed_count += 1
 
@@ -173,6 +198,16 @@ class FacetPredictionJob:
                 )
                 continue
 
+        elapsed_time = time.time() - start_time
+        
+        # Update experiment metrics
+        update_experiment_metrics(
+            experiment_key=experiment_key,
+            total_predictions=total_predictions,
+            total_products=processed_count,
+            elapsed_time=elapsed_time,
+        )
+
         if error_count > 0:
             logger.warning(
                 f"Completed with {error_count} errors out of "
@@ -180,6 +215,11 @@ class FacetPredictionJob:
             )
         else:
             logger.info(f"Successfully processed {processed_count} products")
+
+        logger.info(
+            f"Average time per prediction: {elapsed_time/total_predictions:.2f}s "
+            f"({total_predictions/elapsed_time:.2f} predictions/second)"
+        )
 
         return experiment_key
 
@@ -193,6 +233,7 @@ class FacetPredictionJob:
         Returns:
             The experiment key for this run
         """
+        start_time = time.time()
         try:
             experiment = create_prediction_experiment(
                 description=self.description,
@@ -208,6 +249,7 @@ class FacetPredictionJob:
                 gaps=[product_gaps],
             )
 
+            total_predictions = 0
             for prediction in predictions:
                 attribute_key = (
                     self.repository.attribute_repo.get_by_friendly_name(
@@ -222,8 +264,22 @@ class FacetPredictionJob:
                     value=prediction.predicted_value,
                     confidence=prediction.confidence,
                 )
+                total_predictions += 1
 
-            logger.info(f"Successfully processed product {product_key}")
+            elapsed_time = time.time() - start_time
+            
+            # Update experiment metrics
+            update_experiment_metrics(
+                experiment_key=experiment_key,
+                total_predictions=total_predictions,
+                total_products=1,
+                elapsed_time=elapsed_time,
+            )
+
+            logger.info(
+                f"Successfully processed product {product_key} "
+                f"({total_predictions} predictions in {elapsed_time:.2f}s)"
+            )
             return experiment_key
 
         except Exception as e:

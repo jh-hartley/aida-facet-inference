@@ -1,14 +1,14 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any
 
-from sqlalchemy import JSON, DateTime, Float, ForeignKey, String, Text
+from sqlalchemy import JSON, DateTime, Float, ForeignKey, String, Text, Integer
 from sqlalchemy.orm import Mapped, mapped_column
 
 from src.db.connection import Base
 
 
 class PredictionExperimentRecord(Base):
-    """Record for prediction experiments."""
+    """Model for prediction experiment data"""
 
     __tablename__ = "prediction_experiments"
 
@@ -17,10 +17,33 @@ class PredictionExperimentRecord(Base):
         DateTime(timezone=True), default=datetime.utcnow
     )
     metadata: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=True)
+    started_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        nullable=False,
+    )
+    completed_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+    )
+    total_predictions: Mapped[int] = mapped_column(
+        Integer,
+        default=0,
+        nullable=False,
+    )
+    total_products: Mapped[int] = mapped_column(
+        Integer,
+        default=0,
+        nullable=False,
+    )
+    average_time_per_prediction: Mapped[float | None] = mapped_column(
+        Float,
+        nullable=True,
+    )
 
 
 class PredictionResultRecord(Base):
-    """Record for prediction results."""
+    """Model for prediction result data"""
 
     __tablename__ = "prediction_results"
 
@@ -28,12 +51,18 @@ class PredictionResultRecord(Base):
     experiment_key: Mapped[str] = mapped_column(
         String, ForeignKey("prediction_experiments.experiment_key")
     )
-    product_key: Mapped[str] = mapped_column(String)
-    attribute_key: Mapped[str] = mapped_column(String)
+    product_key: Mapped[str] = mapped_column(
+        String, ForeignKey("raw_products.product_key")
+    )
+    attribute_key: Mapped[str] = mapped_column(
+        String, ForeignKey("raw_attributes.attribute_key")
+    )
     value: Mapped[str] = mapped_column(Text)
     confidence: Mapped[float] = mapped_column(Float)
     created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), default=datetime.utcnow
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        nullable=False,
     )
     recommendation_key: Mapped[str | None] = mapped_column(
         String, nullable=True
