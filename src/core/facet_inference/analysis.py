@@ -1,26 +1,26 @@
-from typing import Any, Sequence
+from typing import Sequence
 
 import numpy as np
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from src.core.facet_inference.models import ConfidenceLevel
 from src.core.facet_inference.analysis_models import (
-    PredictionMetrics,
-    ConfidenceSegmentMetrics,
-    CategoryMetrics,
     AttributeMetrics,
-    GapCountMetrics,
-    DescriptionLengthMetrics,
+    CategoryMetrics,
+    ConfidenceSegmentMetrics,
     CorrelationAnalysis,
+    DescriptionLengthMetrics,
     ExperimentAnalysis,
+    GapCountMetrics,
+    PredictionMetrics,
 )
-from src.core.repositories import FacetIdentificationRepository
+from src.core.facet_inference.models import ConfidenceLevel
 from src.core.records import PredictionResultRecord
 from src.core.repositories import (
-    RawRecommendationRecord,
+    FacetIdentificationRepository,
     PredictionExperimentRepository,
     PredictionResultRepository,
+    RawRecommendationRecord,
 )
 
 
@@ -132,14 +132,18 @@ class PredictionAnalyzer:
         self, results: Sequence[PredictionResultRecord]
     ) -> list[CategoryMetrics]:
         """Analyze prediction performance by product category."""
-        category_metrics: dict[str, tuple[str, list[PredictionResultRecord]]] = {}
+        category_metrics: dict[
+            str, tuple[str, list[PredictionResultRecord]]
+        ] = {}
 
         # Get all unique categories from the results
         for result in results:
-            product_categories = self.repository.product_category_repo.get_by_product_key(
-                result.product_key
+            product_categories = (
+                self.repository.product_category_repo.get_by_product_key(
+                    result.product_key
+                )
             )
-            
+
             for category in product_categories:
                 if category.category_key not in category_metrics:
                     category_metrics[category.category_key] = (
@@ -156,14 +160,19 @@ class PredictionAnalyzer:
                 metrics=self.calculate_basic_metrics(predictions),
                 sample_size=len(predictions),
             )
-            for category_key, (friendly_name, predictions) in category_metrics.items()
+            for category_key, (
+                friendly_name,
+                predictions,
+            ) in category_metrics.items()
         ]
 
     def analyze_by_attribute(
         self, results: Sequence[PredictionResultRecord]
     ) -> list[AttributeMetrics]:
         """Analyze prediction performance by attribute."""
-        attribute_metrics: dict[str, tuple[str, list[PredictionResultRecord]]] = {}
+        attribute_metrics: dict[
+            str, tuple[str, list[PredictionResultRecord]]
+        ] = {}
 
         # Group results by attribute
         for result in results:
@@ -185,7 +194,10 @@ class PredictionAnalyzer:
                 metrics=self.calculate_basic_metrics(predictions),
                 sample_size=len(predictions),
             )
-            for attribute_key, (friendly_name, predictions) in attribute_metrics.items()
+            for attribute_key, (
+                friendly_name,
+                predictions,
+            ) in attribute_metrics.items()
         ]
 
     def analyze_by_gap_count(
@@ -198,6 +210,7 @@ class PredictionAnalyzer:
         product_gap_counts: dict[str, int] = {}
         for result in results:
             if result.product_key not in product_gap_counts:
+                # flake8: noqa: E501
                 gaps = self.repository.product_attribute_gap_repo.get_by_product_key(
                     result.product_key
                 )
@@ -290,7 +303,7 @@ class PredictionAnalyzer:
         """Perform comprehensive analysis of an experiment."""
         results = self.get_experiment_results(experiment_key)
         experiment = self.experiment_repo.get_by_experiment_key(experiment_key)
-        
+
         return ExperimentAnalysis(
             experiment_key=experiment_key,
             overall_metrics=self.calculate_basic_metrics(results),
@@ -298,7 +311,9 @@ class PredictionAnalyzer:
             category_metrics=self.analyze_by_category(results),
             attribute_metrics=self.analyze_by_attribute(results),
             gap_count_metrics=self.analyze_by_gap_count(results),
-            description_length_metrics=self.analyze_by_description_length(results),
+            description_length_metrics=self.analyze_by_description_length(
+                results
+            ),
             confidence_correlation=self.get_correlation_analysis(results),
             metadata=experiment.metadata,
-        ) 
+        )

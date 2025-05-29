@@ -1,6 +1,6 @@
+import numpy as np
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-import numpy as np
 
 from src.core.facet_inference.analysis_models import (
     ExperimentAnalysis,
@@ -16,7 +16,7 @@ class PredictionVisualiser:
     def plot_confidence_correlation(self) -> go.Figure:
         """Plot correlation between confidence and accuracy."""
         fig = go.Figure()
-        
+
         fig.add_trace(
             go.Scatter(
                 x=[0, 1],
@@ -51,7 +51,9 @@ class PredictionVisualiser:
     def plot_category_performance(self) -> go.Figure:
         """Plot performance metrics by category."""
         categories = [m.category_name for m in self.analysis.category_metrics]
-        accuracies = [m.metrics.accuracy for m in self.analysis.category_metrics]
+        accuracies = [
+            m.metrics.accuracy for m in self.analysis.category_metrics
+        ]
         sample_sizes = [m.sample_size for m in self.analysis.category_metrics]
 
         fig = go.Figure()
@@ -76,8 +78,12 @@ class PredictionVisualiser:
 
     def plot_attribute_performance(self) -> go.Figure:
         """Plot performance metrics by attribute."""
-        attributes = [m.attribute_name for m in self.analysis.attribute_metrics]
-        accuracies = [m.metrics.accuracy for m in self.analysis.attribute_metrics]
+        attributes = [
+            m.attribute_name for m in self.analysis.attribute_metrics
+        ]
+        accuracies = [
+            m.metrics.accuracy for m in self.analysis.attribute_metrics
+        ]
         sample_sizes = [m.sample_size for m in self.analysis.attribute_metrics]
 
         fig = go.Figure()
@@ -103,7 +109,9 @@ class PredictionVisualiser:
     def plot_gap_count_impact(self) -> go.Figure:
         """Plot impact of gap count on prediction performance."""
         gap_counts = [m.gap_count for m in self.analysis.gap_count_metrics]
-        accuracies = [m.metrics.accuracy for m in self.analysis.gap_count_metrics]
+        accuracies = [
+            m.metrics.accuracy for m in self.analysis.gap_count_metrics
+        ]
         sample_sizes = [m.sample_size for m in self.analysis.gap_count_metrics]
 
         fig = go.Figure()
@@ -128,9 +136,16 @@ class PredictionVisualiser:
 
     def plot_description_length_impact(self) -> go.Figure:
         """Plot impact of description length on prediction performance."""
-        segments = [m.length_segment for m in self.analysis.description_length_metrics]
-        accuracies = [m.metrics.accuracy for m in self.analysis.description_length_metrics]
-        sample_sizes = [m.sample_size for m in self.analysis.description_length_metrics]
+        segments = [
+            m.length_segment for m in self.analysis.description_length_metrics
+        ]
+        accuracies = [
+            m.metrics.accuracy
+            for m in self.analysis.description_length_metrics
+        ]
+        sample_sizes = [
+            m.sample_size for m in self.analysis.description_length_metrics
+        ]
 
         fig = go.Figure()
         fig.add_trace(
@@ -155,7 +170,7 @@ class PredictionVisualiser:
         """Plot overall performance metrics."""
         metrics = self.analysis.overall_metrics
         fig = go.Figure()
-        
+
         fig.add_trace(
             go.Bar(
                 x=["Accuracy", "F1 Score", "Precision", "Recall"],
@@ -165,12 +180,15 @@ class PredictionVisualiser:
                     metrics.precision,
                     metrics.recall,
                 ],
-                text=[f"{v:.2%}" for v in [
-                    metrics.accuracy,
-                    metrics.f1_score,
-                    metrics.precision,
-                    metrics.recall,
-                ]],
+                text=[
+                    f"{v:.2%}"
+                    for v in [
+                        metrics.accuracy,
+                        metrics.f1_score,
+                        metrics.precision,
+                        metrics.recall,
+                    ]
+                ],
                 textposition="auto",
             )
         )
@@ -184,22 +202,25 @@ class PredictionVisualiser:
         return fig
 
     def plot_confidence_analysis(self) -> go.Figure:
-        """Plot detailed confidence analysis with correct vs incorrect predictions."""
+        """
+        Plot detailed confidence analysis with correct vs
+        incorrect predictions.
+        """
         fig = go.Figure()
-        
+
         # Sort confidence segments by level
         segments = sorted(
             self.analysis.confidence_segments,
-            key=lambda x: x.confidence_level.value
+            key=lambda x: x.confidence_level.value,
         )
-        
+
         # Calculate correct and incorrect predictions
         correct = [s.metrics.correct_predictions for s in segments]
         incorrect = [
-            s.metrics.total_predictions - s.metrics.correct_predictions 
+            s.metrics.total_predictions - s.metrics.correct_predictions
             for s in segments
         ]
-        
+
         # Add stacked bars
         fig.add_trace(
             go.Bar(
@@ -209,7 +230,7 @@ class PredictionVisualiser:
                 marker_color="green",
             )
         )
-        
+
         fig.add_trace(
             go.Bar(
                 x=[s.confidence_level.value for s in segments],
@@ -218,7 +239,7 @@ class PredictionVisualiser:
                 marker_color="red",
             )
         )
-        
+
         # Add expected accuracy line
         expected_accuracy = [s.confidence_level.value for s in segments]
         fig.add_trace(
@@ -230,7 +251,7 @@ class PredictionVisualiser:
                 line=dict(dash="dash", color="gray"),
             )
         )
-        
+
         fig.update_layout(
             title="Confidence Analysis",
             xaxis_title="Confidence Level",
@@ -246,14 +267,14 @@ class PredictionVisualiser:
         categories = sorted(
             self.analysis.category_metrics,
             key=lambda x: x.metrics.accuracy,
-            reverse=True
+            reverse=True,
         )
-        
+
         # Prepare data
         category_names = [m.category_name for m in categories]
         accuracies = [m.metrics.accuracy for m in categories]
         sample_sizes = [m.sample_size for m in categories]
-        
+
         # Create heatmap
         fig = go.Figure(
             go.Heatmap(
@@ -261,12 +282,17 @@ class PredictionVisualiser:
                 x=category_names,
                 y=["Accuracy"],
                 colorscale="RdYlGn",
-                text=[[f"{acc:.1%}\nn={n}" for acc, n in zip(accuracies, sample_sizes)]],
+                text=[
+                    [
+                        f"{acc:.1%}\nn={n}"
+                        for acc, n in zip(accuracies, sample_sizes)
+                    ]
+                ],
                 texttemplate="%{text}",
                 textfont={"size": 10},
             )
         )
-        
+
         fig.update_layout(
             title="Category Performance Heatmap",
             xaxis_title="Category",
@@ -282,14 +308,14 @@ class PredictionVisualiser:
         attributes = sorted(
             self.analysis.attribute_metrics,
             key=lambda x: x.metrics.accuracy,
-            reverse=True
+            reverse=True,
         )
-        
+
         # Prepare data
         attribute_names = [m.attribute_name for m in attributes]
         accuracies = [m.metrics.accuracy for m in attributes]
         sample_sizes = [m.sample_size for m in attributes]
-        
+
         # Create heatmap
         fig = go.Figure(
             go.Heatmap(
@@ -297,12 +323,17 @@ class PredictionVisualiser:
                 x=attribute_names,
                 y=["Accuracy"],
                 colorscale="RdYlGn",
-                text=[[f"{acc:.1%}\nn={n}" for acc, n in zip(accuracies, sample_sizes)]],
+                text=[
+                    [
+                        f"{acc:.1%}\nn={n}"
+                        for acc, n in zip(accuracies, sample_sizes)
+                    ]
+                ],
                 texttemplate="%{text}",
                 textfont={"size": 10},
             )
         )
-        
+
         fig.update_layout(
             title="Attribute Performance Heatmap",
             xaxis_title="Attribute",
@@ -315,18 +346,23 @@ class PredictionVisualiser:
     def plot_aggregated_confusion(self) -> go.Figure:
         """Plot aggregated confusion matrix for all predictions."""
         # Calculate aggregated confusion matrix
-        total_correct = sum(m.metrics.correct_predictions for m in self.analysis.attribute_metrics)
-        total_incorrect = sum(
-            m.metrics.total_predictions - m.metrics.correct_predictions 
+        total_correct = sum(
+            m.metrics.correct_predictions
             for m in self.analysis.attribute_metrics
         )
-        
+        total_incorrect = sum(
+            m.metrics.total_predictions - m.metrics.correct_predictions
+            for m in self.analysis.attribute_metrics
+        )
+
         # Create confusion matrix
-        confusion = np.array([
-            [total_correct, total_incorrect],
-            [total_incorrect, total_correct]
-        ])
-        
+        confusion = np.array(
+            [
+                [total_correct, total_incorrect],
+                [total_incorrect, total_correct],
+            ]
+        )
+
         fig = go.Figure(
             go.Heatmap(
                 z=confusion,
@@ -338,7 +374,7 @@ class PredictionVisualiser:
                 textfont={"size": 12},
             )
         )
-        
+
         fig.update_layout(
             title="Aggregated Confusion Matrix",
             xaxis_title="Predicted",
@@ -394,8 +430,11 @@ class PredictionVisualiser:
         fig.update_layout(
             height=1200,
             width=1600,
-            title_text=f"Prediction Analysis Dashboard - Experiment {self.analysis.experiment_key}",
+            title_text=(
+                f"Prediction Analysis Dashboard - "
+                f"Experiment {self.analysis.experiment_key}"
+            ),
             showlegend=True,
         )
 
-        return fig 
+        return fig

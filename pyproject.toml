@@ -81,6 +81,10 @@ ignore_missing_imports = true
 module = "pgvector.psycopg2.*"
 ignore_missing_imports = true
 
+[[tool.mypy.overrides]]
+module = "plotly.*"
+ignore_missing_imports = true
+
 [tool.black]
 line-length = 79
 target-version = ['py311', 'py312', 'py313']

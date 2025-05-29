@@ -55,12 +55,14 @@ def update_experiment_metrics(
     with db_session().begin() as session:
         repo = PredictionExperimentRepository(session)
         experiment = repo.get_by_experiment_key(experiment_key)
-        
+
         experiment.completed_at = clock.now()
         experiment.total_predictions = total_predictions
         experiment.total_products = total_products
-        experiment.average_time_per_prediction = elapsed_time / total_predictions if total_predictions > 0 else None
-        
+        experiment.average_time_per_prediction = (
+            elapsed_time / total_predictions if total_predictions > 0 else None
+        )
+
         session.add(experiment)
 
 
@@ -199,7 +201,7 @@ class FacetPredictionJob:
                 continue
 
         elapsed_time = time.time() - start_time
-        
+
         # Update experiment metrics
         update_experiment_metrics(
             experiment_key=experiment_key,
@@ -217,7 +219,8 @@ class FacetPredictionJob:
             logger.info(f"Successfully processed {processed_count} products")
 
         logger.info(
-            f"Average time per prediction: {elapsed_time/total_predictions:.2f}s "
+            f"Average time per prediction: "
+            f"{elapsed_time/total_predictions:.2f}s "
             f"({total_predictions/elapsed_time:.2f} predictions/second)"
         )
 
@@ -267,7 +270,7 @@ class FacetPredictionJob:
                 total_predictions += 1
 
             elapsed_time = time.time() - start_time
-            
+
             # Update experiment metrics
             update_experiment_metrics(
                 experiment_key=experiment_key,
