@@ -2,11 +2,8 @@ from asyncio import gather
 from typing import Sequence
 
 from src.core.facet_inference.inference import ProductFacetPredictor
-from src.core.facet_inference.models import (
-    FacetDefinition,
-    FacetPrediction,
-    ProductInfo,
-)
+from src.core.facet_inference.models import FacetPrediction
+from src.core.models import ProductDetails, ProductGaps
 
 
 class FacetInferenceService:
@@ -15,25 +12,39 @@ class FacetInferenceService:
     def __init__(self, predictor: ProductFacetPredictor | None = None):
         self._predictor = predictor or ProductFacetPredictor()
 
-    async def predict_facet(
+    async def predict_attribute(
         self,
-        product: ProductInfo,
-        facet: FacetDefinition,
+        product: ProductDetails,
+        gap: ProductGaps,
     ) -> FacetPrediction:
         """
-        Predict labels for a single product facet.
-        """
-        return await self._predictor.predict(product=product, facet=facet)
+        Predict a value for a missing attribute.
 
-    async def predict_multiple_facets(
+        Args:
+            product: Complete product information
+            gap: Information about the missing attribute and its allowed values
+
+        Returns:
+            Prediction result with value and confidence
+        """
+        return await self._predictor.predict(product=product, gap=gap)
+
+    async def predict_multiple_attributes(
         self,
-        product: ProductInfo,
-        facets: Sequence[FacetDefinition],
+        product: ProductDetails,
+        gaps: Sequence[ProductGaps],
     ) -> list[FacetPrediction]:
         """
-        Predict labels for multiple product facets concurrently.
+        Predict values for multiple missing attributes concurrently.
+
+        Args:
+            product: Complete product information
+            gaps: List of missing attributes and their allowed values
+
+        Returns:
+            List of prediction results with values and confidence
         """
         predictions = await gather(
-            *(self.predict_facet(product, facet) for facet in facets)
+            *(self.predict_attribute(product, gap) for gap in gaps)
         )
         return list(predictions)

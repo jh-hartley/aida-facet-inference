@@ -13,11 +13,11 @@ from src.raw_csv_ingestion.records import (
     RawAttributeRecord,
     RawCategoryAllowableValueRecord,
     RawCategoryRecord,
+    RawProductAttributeGapRecord,
     RawProductAttributeValueRecord,
     RawProductCategoryRecord,
-    RawRichTextSourceRecord,
-    RawProductAttributeGapRecord,
     RawRecommendationRecord,
+    RawRichTextSourceRecord,
 )
 from src.raw_csv_ingestion.repositories import (
     RawAttributeRepository,
@@ -244,7 +244,9 @@ class FacetIdentificationRepository:
             (
                 gap,
                 recommendation_lookup.get(
-                    self.attribute_repo.get_by_friendly_name(gap.attribute).attribute_key
+                    self.attribute_repo.get_by_friendly_name(
+                        gap.attribute
+                    ).attribute_key
                 ),
             )
             for gap in gaps.gaps

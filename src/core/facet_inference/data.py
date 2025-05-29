@@ -1,5 +1,3 @@
-from typing import Optional
-
 from pydantic import BaseModel
 
 from src.core.models import ProductDetails
@@ -60,7 +58,9 @@ class FacetInferenceDataset(BaseModel):
         )
 
     def get_samples_with_ground_truth(self) -> "FacetInferenceDataset":
-        """Get a new dataset containing only samples with ground truth values."""
+        """
+        Get a new dataset containing only samples with ground truth values.
+        """
         return FacetInferenceDataset(
             samples=[s for s in self.samples if s.has_ground_truth]
         )
@@ -85,17 +85,22 @@ class FacetInferenceDataLoader:
         samples = []
         for product_key in product_keys:
             try:
-                product_details = self.repository.get_product_details(product_key)
-
-                gaps_with_truth = self.repository.get_product_gaps_with_ground_truth(
+                product_details = self.repository.get_product_details(
                     product_key
+                )
+
+                gaps_with_truth = (
+                    self.repository.get_product_gaps_with_ground_truth(
+                        product_key
+                    )
                 )
 
                 prediction_targets = [
                     FacetPredictionTarget(
                         attribute=gap.attribute,
                         allowable_values=gap.allowable_values,
-                        ground_truth=ground_truth or "",  # Convert None to empty string
+                        ground_truth=ground_truth
+                        or "",  # Convert None to empty string
                     )
                     for gap, ground_truth in gaps_with_truth
                 ]
@@ -123,4 +128,4 @@ class FacetInferenceDataLoader:
 
         dataset = self.load_dataset(product_keys)
 
-        return dataset.get_samples_with_ground_truth() 
+        return dataset.get_samples_with_ground_truth()

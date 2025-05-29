@@ -6,15 +6,11 @@ for single and concurrent facet predictions.
 """
 
 from src.core.facet_inference.models import (
-    FacetDefinition,
     FacetPrediction,
-    ProductInfo,
 )
 from src.core.facet_inference.service import FacetInferenceService
 
 __all__ = [
     "FacetInferenceService",
-    "FacetDefinition",
     "FacetPrediction",
-    "ProductInfo",
 ]

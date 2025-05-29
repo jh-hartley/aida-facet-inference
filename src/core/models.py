@@ -20,6 +20,38 @@ class ProductDetails(BaseModel):
     categories: list[str]
     attributes: list[ProductAttributeValue]
 
+    def get_formatted_description(self) -> str:
+        """Get a formatted string of all product descriptions."""
+        return "\n".join(
+            f"{desc.descriptor}: {desc.value}"
+            for desc in self.product_description
+        )
+
+    def get_formatted_attributes(self) -> str:
+        """Get a formatted string of all product attributes."""
+        return "\n".join(
+            f"{attr.attribute}: {attr.value}" for attr in self.attributes
+        )
+
+    def get_llm_prompt(self) -> str:
+        """
+        Get a formatted string of product information for LLM consumption.
+        """
+        sections = [
+            f"Product Code: {self.product_code}",
+            f"Product Name: {self.product_name}",
+            "",
+            "Product Description:",
+            self.get_formatted_description(),
+            "",
+            "Categories:",
+            *[f"- {cat}" for cat in self.categories],
+            "",
+            "Attributes:",
+            self.get_formatted_attributes(),
+        ]
+        return "\n".join(sections)
+
 
 class ProductGaps(BaseModel):
     """
@@ -32,3 +64,22 @@ class ProductGaps(BaseModel):
     product_code: str
     product_name: str
     gaps: list[ProductAttributeGap]
+
+    def get_formatted_gaps(self) -> str:
+        """Get a formatted string of all product gaps."""
+        return "\n".join(
+            f"{gap.attribute}:\n"
+            f"  Allowed values: {', '.join(gap.allowable_values)}"
+            for gap in self.gaps
+        )
+
+    def get_llm_prompt(self) -> str:
+        """Get a formatted string of gap information for LLM consumption."""
+        sections = [
+            f"Product Code: {self.product_code}",
+            f"Product Name: {self.product_name}",
+            "",
+            "Missing Attributes:",
+            self.get_formatted_gaps(),
+        ]
+        return "\n".join(sections)

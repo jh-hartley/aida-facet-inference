@@ -145,7 +145,9 @@ class RawAttributeRepository(Repository[RawAttributeRecord]):
             )
         )
         if result is None:
-            raise ValueError(f"No attribute found with friendly name {friendly_name}")
+            raise ValueError(
+                f"No attribute found with friendly name {friendly_name}"
+            )
         return result
 
 
