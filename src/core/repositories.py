@@ -1,3 +1,5 @@
+from typing import Any
+
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -275,6 +277,63 @@ class PredictionExperimentRepository(Repository[PredictionExperimentRecord]):
     ) -> PredictionExperimentRecord | None:
         return self.session.get(self.model, experiment_key)
 
+    def find_all(self) -> list[PredictionExperimentRecord]:
+        """Get all experiments, ordered by creation date descending."""
+        return list(
+            self.session.scalars(
+                select(self.model).order_by(self.model.created_at.desc())
+            ).all()
+        )
+
+    def get_recent_experiments(
+        self, limit: int = 10
+    ) -> list[PredictionExperimentRecord]:
+        """Get the most recent experiments."""
+        return list(
+            self.session.scalars(
+                select(self.model)
+                .order_by(self.model.created_at.desc())
+                .limit(limit)
+            ).all()
+        )
+
+    def get_completed_experiments(
+        self, limit: int = 10
+    ) -> list[PredictionExperimentRecord]:
+        """Get the most recently completed experiments."""
+        return list(
+            self.session.scalars(
+                select(self.model)
+                .where(self.model.completed_at.is_not(None))
+                .order_by(self.model.completed_at.desc())
+                .limit(limit)
+            ).all()
+        )
+
+    def get_running_experiments(
+        self,
+    ) -> list[PredictionExperimentRecord]:
+        """Get all experiments that have started but not completed."""
+        return list(
+            self.session.scalars(
+                select(self.model)
+                .where(self.model.completed_at.is_(None))
+                .order_by(self.model.started_at.desc())
+            ).all()
+        )
+
+    def get_experiments_by_metadata(
+        self, key: str, value: Any
+    ) -> list[PredictionExperimentRecord]:
+        """Get experiments with matching metadata key-value pair."""
+        return list(
+            self.session.scalars(
+                select(self.model).where(
+                    self.model.metadata[key].astext == str(value)
+                )
+            ).all()
+        )
+
 
 class PredictionResultRepository(Repository[PredictionResultRecord]):
     """Repository for prediction result data"""
@@ -343,5 +402,53 @@ class PredictionResultRepository(Repository[PredictionResultRecord]):
                     PredictionResultRecord.recommendation_key
                     == recommendation_key
                 )
+            ).all()
+        )
+
+    def get_by_confidence_range(
+        self,
+        min_confidence: float,
+        max_confidence: float,
+        experiment_key: str | None = None,
+    ) -> list[PredictionResultRecord]:
+        """
+        Get predictions within a confidence range,
+        optionally for a specific experiment.
+        """
+        query = select(PredictionResultRecord).where(
+            PredictionResultRecord.confidence >= min_confidence,
+            PredictionResultRecord.confidence <= max_confidence,
+        )
+        if experiment_key:
+            query = query.where(
+                PredictionResultRecord.experiment_key == experiment_key
+            )
+        return list(self.session.scalars(query).all())
+
+    def get_by_attribute_key(
+        self, attribute_key: str, experiment_key: str | None = None
+    ) -> list[PredictionResultRecord]:
+        """
+        Get predictions for a specific attribute,
+        optionally for a specific experiment.
+        """
+        query = select(PredictionResultRecord).where(
+            PredictionResultRecord.attribute_key == attribute_key
+        )
+        if experiment_key:
+            query = query.where(
+                PredictionResultRecord.experiment_key == experiment_key
+            )
+        return list(self.session.scalars(query).all())
+
+    def get_latest_predictions(
+        self, limit: int = 10
+    ) -> list[PredictionResultRecord]:
+        """Get the most recent predictions."""
+        return list(
+            self.session.scalars(
+                select(PredictionResultRecord)
+                .order_by(PredictionResultRecord.created_at.desc())
+                .limit(limit)
             ).all()
         )
