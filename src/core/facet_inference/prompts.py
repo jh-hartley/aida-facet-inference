@@ -1,5 +1,3 @@
-# System prompts for product facet prediction.
-
 from dataclasses import dataclass
 
 from src.core.facet_inference.models import ConfidenceLevel, FacetPrediction
@@ -40,45 +38,36 @@ class PromptBuilder:
 
 ROLE_SECTION = PromptSection(
     "Role",
-    """You are an expert product categorisation specialist. Your task is to
-    analyse product information and predict appropriate labels for specific
-    facets.""",
+    """You are an expert product attribute specialist. Your task is to
+    analyse product information and predict appropriate values for missing
+    attributes based on the product's details and the allowed values for
+    each attribute.""",
 )
 
 INPUT_SECTION = PromptSection(
     "Input",
     """You will be given:
-    1. Product information (name, description, attributes, etc.)
-    2. A facet to predict (e.g., "gender")
-    3. A list of acceptable labels for that facet
-    4. Facet configuration rules:
-       {facet_rules}""",
+    1. Complete product information (name, description, categories, attributes)
+    2. Information about a missing attribute and its allowed values
+    3. Confidence level guidelines:
+       {confidence_levels}""",
 )
 
 INSTRUCTIONS_SECTION = PromptSection(
     "Instructions",
     """You must:
-    1. Analyse the product information
-    2. Select appropriate label(s) from the provided list
-    3. If you believe a new label is needed, suggest it in the suggested_label
-        field
-       - This is independent of whether multiple labels are allowed
-       - If you are confident a label is missing, suggest it even if multiple
-            labels are allowed
-       - Use this sparingly, and only if the existing labels fail to adequately
-            categorise the product.
-    4. Provide a confidence score (0-1) and level:
+    1. Analyse the product information carefully
+    2. Select the most appropriate value from the allowed values list
+    3. Provide a confidence score (0-1) and level:
        {confidence_levels}
-        - Note: The confidence score is independent of whether you selected
-         labels or suggested a new one. For example:
-             - You can be highly confident (0.9-1.0) that no labels apply
-             - You can be not confident (0.0-0.29) about a specific label
-             - You can be moderately confident (0.5-0.69) that you need more
-                 information
-             - You can be quite highly confident (0.7-0.89) that a new label is
-                 needed
+        - Note: The confidence score reflects how certain you are about the
+          prediction. For example:
+             - You can be highly confident (0.9-1.0) about a clear match
+             - You can be not confident (0.0-0.29) if the information is vague
+             - You can be moderately confident (0.5-0.69) if there are some
+               indicators but not definitive
              - etc.
-    5. Explain your reasoning concisely.""",
+    4. Explain your reasoning concisely.""",
 )
 
 RESPONSE_SECTION = PromptSection(
@@ -90,62 +79,60 @@ RESPONSE_SECTION = PromptSection(
 # Example sections
 EXAMPLE_INPUT = PromptSection(
     "Example Input",
-    """Product: "Classic Fit T-Shirt"
-    Description: "A comfortable, relaxed fit t-shirt suitable for everyday
-        wear"
-    Facet: "gender"
-    Labels: ["men", "women", "unisex"]
-    Facet Rules:
-    - Multiple labels can apply to the same product.
-    - At least one label must apply.""",
+    """Product Information:
+    Product Code: ABC123
+    Product Name: Classic Fit T-Shirt
+    Product Description:
+    Style: A comfortable, relaxed fit t-shirt suitable for everyday wear
+    Material: 100% cotton
+    Categories:
+    - Clothing
+    - T-Shirts
+    - Men's Clothing
+    Attributes:
+    Brand: Generic
+    Size: M
+    Color: Blue
+
+    Missing Attribute:
+    Product Code: ABC123
+    Product Name: Classic Fit T-Shirt
+    Missing Attributes:
+    Gender:
+      Allowed values: Men, Women, Unisex""",
 )
 
 EXAMPLE_OUTPUTS = PromptSection(
     "Example Outputs",
     """Example output (confident with high confidence):
-    {{
-        "facet_name": "gender",
-        "labels": ["unisex"],
+    {
+        "attribute": "Gender",
+        "predicted_value": "Men",
         "confidence": 0.85,
-        "reasoning": "The product description emphasises comfort and everyday
-            wear without gender-specific language. The 'Classic Fit' and lack
-            of gender-specific styling suggests this is designed for all
-            genders.",
-        "suggested_label": null
-    }}
+        "reasoning": "The product is in the Men's Clothing category and the
+            description emphasizes a classic fit, which strongly suggests this
+            is designed for men."
+    }
 
-    Example output (suggesting new label with high confidence):
-    {{
-        "facet_name": "gender",
-        "labels": ["unisex"],
-        "confidence": 0.85,
-        "reasoning": "The product is clearly designed for children, but
-            'children' is not in the provided labels. While multiple labels
-            are allowed, we should still suggest adding 'children' as a new
-            label to better categorise this product.",
-        "suggested_label": "children"
-    }}
+    Example output (moderate confidence):
+    {
+        "attribute": "Gender",
+        "predicted_value": "Unisex",
+        "confidence": 0.65,
+        "reasoning": "While the product is in Men's Clothing, the description
+            emphasizes comfort and everyday wear without gender-specific
+            language, suggesting it could be suitable for all genders."
+    }
 
-    Example output (insufficient info with low confidence):
-    {{
-        "facet_name": "gender",
-        "labels": [],
+    Example output (low confidence):
+    {
+        "attribute": "Gender",
+        "predicted_value": "Unisex",
         "confidence": 0.35,
         "reasoning": "The product description is too vague to determine the
             target gender. It only mentions 'comfortable fit' without any
-            gender-specific details.",
-        "suggested_label": null
-    }}
-
-    Example output (not applicable with very high confidence):
-    {{
-        "facet_name": "gender",
-        "labels": [],
-        "confidence": 0.95,
-        "reasoning": "This is a home décor item that has no gender-specific
-            attributes or target audience.",
-        "suggested_label": null
-    }}""",
+            gender-specific details."
+    }""",
 )
 
 PRODUCT_FACET_PREDICTION_PROMPT = (
@@ -158,7 +145,6 @@ PRODUCT_FACET_PREDICTION_PROMPT = (
     .add_section("Example Outputs", EXAMPLE_OUTPUTS.content)
     .build(
         confidence_levels=ConfidenceLevel.get_prompt_description(),
-        facet_rules="{facet_rules}",
         response_format=FacetPrediction.get_prompt_description(),
     )
 )

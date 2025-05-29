@@ -1,15 +1,12 @@
-from src.core.facet_inference.models import (
-    FacetDefinition,
-    FacetPrediction,
-    ProductInfo,
-)
+from src.core.facet_inference.models import FacetPrediction
 from src.core.facet_inference.prompts import PRODUCT_FACET_PREDICTION_PROMPT
 from src.core.llm.client import Llm
 from src.core.llm.models import LlmModel
+from src.core.models import ProductDetails, ProductGaps
 
 
 class ProductFacetPredictor:
-    """Predicts labels for a single product facet."""
+    """Predicts values for missing product attributes."""
 
     def __init__(self, llm_model: LlmModel = LlmModel.GPT_4O_MINI):
         self._chat = Llm(llm_model)
@@ -17,10 +14,10 @@ class ProductFacetPredictor:
 
     async def predict(
         self,
-        product: ProductInfo,
-        facet: FacetDefinition,
+        product: ProductDetails,
+        gap: ProductGaps,
     ) -> FacetPrediction:
-        human_prompt = self._format_human_prompt(product, facet)
+        human_prompt = self._format_human_prompt(product, gap)
 
         return await self._chat.ainvoke(
             system=self._system_prompt,
@@ -30,29 +27,15 @@ class ProductFacetPredictor:
 
     def _format_human_prompt(
         self,
-        product: ProductInfo,
-        facet: FacetDefinition,
+        product: ProductDetails,
+        gap: ProductGaps,
     ) -> str:
-        product_info = [
-            f"Name: {product.name}",
-            f"Description: {product.description}",
-            f"Category: {product.category}",
-        ]
-        for key, value in product.attributes.items():
-            product_info.append(f"{key.title()}: {value}")
-
-        facet_info = [
-            f"Facet to predict: {facet.name}",
-            f"Acceptable labels: {', '.join(facet.acceptable_labels)}",
-            "Facet Rules:",
-            facet.get_prompt_description(),
-        ]
-
         return "\n".join(
             [
                 "Product Information:",
-                *product_info,
+                product.get_llm_prompt(),
                 "",
-                *facet_info,
+                "Missing Attribute:",
+                gap.get_llm_prompt(),
             ]
         )

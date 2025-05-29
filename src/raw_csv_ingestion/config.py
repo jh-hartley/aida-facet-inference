@@ -1,17 +1,22 @@
-from src.raw_csv_ingest.models import (
-    RawAttribute,
-    RawCategory,
-    RawCategoryAllowableValue,
-    RawCategoryAttribute,
-    RawProduct,
-    RawProductAttributeAllowableValue,
-    RawProductAttributeGap,
-    RawProductAttributeValue,
-    RawProductCategory,
-    RawRecommendation,
+from src.raw_csv_ingestion.records import (
+    RawAttributeAllowableValueApplicableInEveryCategoryRecord,
+    RawAttributeAllowableValueInAnyCategoryRecord,
+    RawAttributeRecord,
+    RawCategoryAllowableValueRecord,
+    RawCategoryAttributeRecord,
+    RawCategoryRecord,
+    RawProductAttributeAllowableValueRecord,
+    RawProductAttributeGapRecord,
+    RawProductAttributeValueRecord,
+    RawProductCategoryRecord,
+    RawProductRecord,
+    RawRecommendationRecord,
+    RawRichTextSourceRecord,
 )
-from src.raw_csv_ingest.uow import (
+from src.raw_csv_ingestion.uow import (
     create_attribute,
+    create_attribute_allowable_value_applicable_in_every_category,
+    create_attribute_allowable_value_in_any_category,
     create_category,
     create_category_allowable_value,
     create_category_attribute,
@@ -21,6 +26,14 @@ from src.raw_csv_ingest.uow import (
     create_product_attribute_value,
     create_product_category,
     create_recommendation,
+    create_rich_text_source,
+)
+
+GloballyAllowedValueRecord = (
+    RawAttributeAllowableValueApplicableInEveryCategoryRecord
+)
+create_globally_allowed = (
+    create_attribute_allowable_value_applicable_in_every_category
 )
 
 
@@ -29,7 +42,7 @@ class CSVConfig:
 
     FILE_CONFIGS = {
         "Product.csv": {
-            "model": RawProduct,
+            "model": RawProductRecord,
             "create_func": create_product,
             "column_mapping": {
                 "ProductKey": "product_key",
@@ -38,7 +51,7 @@ class CSVConfig:
             },
         },
         "Category.csv": {
-            "model": RawCategory,
+            "model": RawCategoryRecord,
             "create_func": create_category,
             "column_mapping": {
                 "CategoryKey": "category_key",
@@ -47,7 +60,7 @@ class CSVConfig:
             },
         },
         "Attribute.csv": {
-            "model": RawAttribute,
+            "model": RawAttributeRecord,
             "create_func": create_attribute,
             "column_mapping": {
                 "AttributeKey": "attribute_key",
@@ -58,7 +71,7 @@ class CSVConfig:
             },
         },
         "ProductCategory.csv": {
-            "model": RawProductCategory,
+            "model": RawProductCategoryRecord,
             "create_func": create_product_category,
             "column_mapping": {
                 "ProductKey": "product_key",
@@ -66,7 +79,7 @@ class CSVConfig:
             },
         },
         "CategoryAttribute.csv": {
-            "model": RawCategoryAttribute,
+            "model": RawCategoryAttributeRecord,
             "create_func": create_category_attribute,
             "column_mapping": {
                 "CategoryAttributeKey": "category_attribute_key",
@@ -75,7 +88,7 @@ class CSVConfig:
             },
         },
         "ProductAttributeValue.csv": {
-            "model": RawProductAttributeValue,
+            "model": RawProductAttributeValueRecord,
             "create_func": create_product_attribute_value,
             "column_mapping": {
                 "ProductKey": "product_key",
@@ -84,7 +97,7 @@ class CSVConfig:
             },
         },
         "ProductAttributeGaps.csv": {
-            "model": RawProductAttributeGap,
+            "model": RawProductAttributeGapRecord,
             "create_func": create_product_attribute_gap,
             "column_mapping": {
                 "ProductKey": "product_key",
@@ -92,7 +105,7 @@ class CSVConfig:
             },
         },
         "ProductAttributeAllowableValue.csv": {
-            "model": RawProductAttributeAllowableValue,
+            "model": RawProductAttributeAllowableValueRecord,
             "create_func": create_product_attribute_allowable_value,
             "column_mapping": {
                 "ProductKey": "product_key",
@@ -101,20 +114,53 @@ class CSVConfig:
             },
         },
         "CategoryAllowableValue.csv": {
-            "model": RawCategoryAllowableValue,
+            "model": RawCategoryAllowableValueRecord,
             "create_func": create_category_allowable_value,
             "column_mapping": {
                 "CategoryAttributeKey": "category_attribute_key",
                 "AllowableValue": "value",
+                "AllowableUnitType": "unit_type",
+                "MinimumValue": "minimum_value",
+                "MinimumUnit": "minimum_unit",
+                "MaximumValue": "maximum_value",
+                "MaximumUnit": "maximum_unit",
+                "RangeQualifierEnum": "range_qualifier",
             },
         },
         "Recommendation.csv": {
-            "model": RawRecommendation,
+            "model": RawRecommendationRecord,
             "create_func": create_recommendation,
             "column_mapping": {
                 "ProductKey": "product_key",
                 "AttributeKey": "attribute_key",
                 "RecommendedValue": "value",
+                "ConfidenceScore": "confidence",
+            },
+        },
+        "RichTextSource.csv": {
+            "model": RawRichTextSourceRecord,
+            "create_func": create_rich_text_source,
+            "column_mapping": {
+                "ProductKey": "product_key",
+                "RichText": "content",
+                "RichTextName": "name",
+                "RichTextPriority": "priority",
+            },
+        },
+        "AttributeAllowableValuesApplicableInEveryCategory.csv": {
+            "model": GloballyAllowedValueRecord,
+            "create_func": create_globally_allowed,
+            "column_mapping": {
+                "AttributeKey": "attribute_key",
+                "AllowableValue": "value",
+            },
+        },
+        "AttributeAllowableValueInAnyCategory.csv": {
+            "model": RawAttributeAllowableValueInAnyCategoryRecord,
+            "create_func": create_attribute_allowable_value_in_any_category,
+            "column_mapping": {
+                "AttributeKey": "attribute_key",
+                "Value": "value",
             },
         },
     }

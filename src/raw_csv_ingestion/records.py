@@ -1,16 +1,12 @@
 from datetime import UTC, datetime
 
-from sqlalchemy import DateTime, Float, ForeignKey, String, Text
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+from sqlalchemy import DateTime, Float, ForeignKey, Integer, String, Text
+from sqlalchemy.orm import Mapped, mapped_column
+
+from src.db.connection import Base
 
 
-class Base(DeclarativeBase):
-    """Base class for all models"""
-
-    pass
-
-
-class RawProduct(Base):
+class RawProductRecord(Base):
     """Model for raw product data from CSV"""
 
     __tablename__ = "raw_products"
@@ -20,7 +16,7 @@ class RawProduct(Base):
     friendly_name: Mapped[str] = mapped_column(String)
 
 
-class RawCategory(Base):
+class RawCategoryRecord(Base):
     """Model for raw category data from CSV"""
 
     __tablename__ = "raw_categories"
@@ -30,7 +26,7 @@ class RawCategory(Base):
     friendly_name: Mapped[str] = mapped_column(String)
 
 
-class RawAttribute(Base):
+class RawAttributeRecord(Base):
     """Model for raw attribute data from CSV"""
 
     __tablename__ = "raw_attributes"
@@ -42,7 +38,7 @@ class RawAttribute(Base):
     unit_measure_type: Mapped[str] = mapped_column(String)
 
 
-class RawProductCategory(Base):
+class RawProductCategoryRecord(Base):
     """Model for raw product-category relationship data from CSV"""
 
     __tablename__ = "raw_product_categories"
@@ -55,7 +51,7 @@ class RawProductCategory(Base):
     )
 
 
-class RawCategoryAttribute(Base):
+class RawCategoryAttributeRecord(Base):
     """Model for raw category-attribute relationship data from CSV"""
 
     __tablename__ = "raw_category_attributes"
@@ -71,7 +67,7 @@ class RawCategoryAttribute(Base):
     )
 
 
-class RawProductAttributeValue(Base):
+class RawProductAttributeValueRecord(Base):
     """Model for raw product attribute value data from CSV"""
 
     __tablename__ = "raw_product_attribute_values"
@@ -85,7 +81,7 @@ class RawProductAttributeValue(Base):
     value: Mapped[str] = mapped_column(Text)
 
 
-class RawProductAttributeGap(Base):
+class RawProductAttributeGapRecord(Base):
     """Model for raw product attribute gap data from CSV"""
 
     __tablename__ = "raw_product_attribute_gaps"
@@ -98,7 +94,7 @@ class RawProductAttributeGap(Base):
     )
 
 
-class RawProductAttributeAllowableValue(Base):
+class RawProductAttributeAllowableValueRecord(Base):
     """Model for raw product attribute allowable value data from CSV"""
 
     __tablename__ = "raw_product_attribute_allowable_values"
@@ -112,7 +108,7 @@ class RawProductAttributeAllowableValue(Base):
     value: Mapped[str] = mapped_column(Text, primary_key=True)
 
 
-class RawCategoryAllowableValue(Base):
+class RawCategoryAllowableValueRecord(Base):
     """Model for raw category allowable value data from CSV"""
 
     __tablename__ = "raw_category_allowable_values"
@@ -124,9 +120,15 @@ class RawCategoryAllowableValue(Base):
         String, ForeignKey("raw_attributes.attribute_key"), primary_key=True
     )
     value: Mapped[str] = mapped_column(Text, primary_key=True)
+    unit_type: Mapped[str | None] = mapped_column(String, nullable=True)
+    minimum_value: Mapped[float | None] = mapped_column(Float, nullable=True)
+    minimum_unit: Mapped[str | None] = mapped_column(String, nullable=True)
+    maximum_value: Mapped[float | None] = mapped_column(Float, nullable=True)
+    maximum_unit: Mapped[str | None] = mapped_column(String, nullable=True)
+    range_qualifier: Mapped[str | None] = mapped_column(String, nullable=True)
 
 
-class RawRecommendation(Base):
+class RawRecommendationRecord(Base):
     """Model for raw recommendation data from CSV"""
 
     __tablename__ = "raw_recommendations"
@@ -145,3 +147,46 @@ class RawRecommendation(Base):
         default=lambda: datetime.now(UTC),
         nullable=False,
     )
+
+
+class RawRichTextSourceRecord(Base):
+    """Model for raw rich text source data from CSV"""
+
+    __tablename__ = "raw_rich_text_sources"
+
+    source_key: Mapped[str] = mapped_column(String, primary_key=True)
+    product_key: Mapped[str] = mapped_column(
+        String, ForeignKey("raw_products.product_key")
+    )
+    content: Mapped[str] = mapped_column(Text)
+    name: Mapped[str] = mapped_column(String)
+    priority: Mapped[int] = mapped_column(Integer)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(UTC),
+        nullable=False,
+    )
+
+
+class RawAttributeAllowableValueApplicableInEveryCategoryRecord(Base):
+    """Model for attribute values that are valid in every category"""
+
+    __tablename__ = (
+        "raw_attribute_allowable_values_applicable_in_every_category"
+    )
+
+    attribute_key: Mapped[str] = mapped_column(
+        String, ForeignKey("raw_attributes.attribute_key"), primary_key=True
+    )
+    value: Mapped[str] = mapped_column(Text, primary_key=True)
+
+
+class RawAttributeAllowableValueInAnyCategoryRecord(Base):
+    """Model for attribute values that are valid in any category"""
+
+    __tablename__ = "raw_attribute_allowable_values_in_any_category"
+
+    attribute_key: Mapped[str] = mapped_column(
+        String, ForeignKey("raw_attributes.attribute_key"), primary_key=True
+    )
+    value: Mapped[str] = mapped_column(Text, primary_key=True)

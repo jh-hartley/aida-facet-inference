@@ -3,7 +3,7 @@ import argparse
 import logging
 
 from src.log_utils import setup_logging
-from src.raw_csv_ingest import ingest_csv_files
+from src.raw_csv_ingestion import ingest_csv_files
 
 logger = logging.getLogger(__name__)
 setup_logging()
@@ -25,13 +25,32 @@ def main():
         default=1000,
         help="Number of rows to process in each batch (default: 1000)",
     )
+    parser.add_argument(
+        "--row-limit",
+        type=int,
+        default=None,
+        help="Maximum number of rows to process per file (default: no limit)",
+    )
+    parser.add_argument(
+        "--debug",
+        action="store_true",
+        help="Enable debug logging",
+    )
 
     args = parser.parse_args()
 
+    if args.debug:
+        logger.setLevel(logging.DEBUG)
+        logger.debug("Debug logging enabled")
+
     try:
-        ingest_csv_files(directory=args.directory, batch_size=args.batch_size)
+        ingest_csv_files(
+            directory=args.directory,
+            batch_size=args.batch_size,
+            row_limit=args.row_limit,
+        )
     except Exception as e:
-        logging.error(f"Error during CSV ingestion: {str(e)}")
+        logger.error(f"Error during CSV ingestion: {str(e)}")
         raise
 
 

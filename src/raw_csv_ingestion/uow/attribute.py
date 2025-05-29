@@ -1,6 +1,6 @@
 from src.db.connection import db_session
-from src.raw_csv_ingest.models import RawAttribute
-from src.raw_csv_ingest.repositories import RawAttributeRepository
+from src.raw_csv_ingestion.records import RawAttributeRecord
+from src.raw_csv_ingestion.repositories import RawAttributeRepository
 
 
 def create_attribute(
@@ -9,7 +9,7 @@ def create_attribute(
     friendly_name: str,
     attribute_type: str,
     unit_measure_type: str,
-) -> RawAttribute | None:
+) -> RawAttributeRecord | None:
     """Create a new attribute if it doesn't already exist"""
     with db_session().begin() as session:
         repo = RawAttributeRepository(session)
@@ -17,7 +17,7 @@ def create_attribute(
         if repo.find_by_system_name(system_name):
             return None
 
-        attribute = RawAttribute(
+        attribute = RawAttributeRecord(
             attribute_key=attribute_key,
             system_name=system_name,
             friendly_name=friendly_name,

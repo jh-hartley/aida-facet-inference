@@ -1,12 +1,12 @@
 from src.db.connection import db_session
-from src.raw_csv_ingest.models import RawProductCategory
-from src.raw_csv_ingest.repositories import RawProductCategoryRepository
+from src.raw_csv_ingestion.records import RawProductCategoryRecord
+from src.raw_csv_ingestion.repositories import RawProductCategoryRepository
 
 
 def create_product_category(
     product_key: str,
     category_key: str,
-) -> RawProductCategory | None:
+) -> RawProductCategoryRecord | None:
     """Create a new product category if it doesn't already exist"""
     with db_session().begin() as session:
         repo = RawProductCategoryRepository(session)
@@ -19,7 +19,7 @@ def create_product_category(
         ):
             return None
 
-        product_category = RawProductCategory(
+        product_category = RawProductCategoryRecord(
             product_key=product_key,
             category_key=category_key,
         )

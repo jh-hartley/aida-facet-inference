@@ -1,6 +1,8 @@
 from src.db.connection import db_session
-from src.raw_csv_ingest.models import RawProductAttributeAllowableValue
-from src.raw_csv_ingest.repositories import (
+from src.raw_csv_ingestion.records import (
+    RawProductAttributeAllowableValueRecord,
+)
+from src.raw_csv_ingestion.repositories import (
     RawProductAttributeAllowableValueRepository,
 )
 
@@ -9,7 +11,7 @@ def create_product_attribute_allowable_value(
     product_key: str,
     attribute_key: str,
     value: str,
-) -> RawProductAttributeAllowableValue | None:
+) -> RawProductAttributeAllowableValueRecord | None:
     """
     Create a new product attribute allowable value if it doesn't already exist
     """
@@ -24,10 +26,12 @@ def create_product_attribute_allowable_value(
         ):
             return None
 
-        product_attribute_allowable_value = RawProductAttributeAllowableValue(
-            product_key=product_key,
-            attribute_key=attribute_key,
-            value=value,
+        product_attribute_allowable_value = (
+            RawProductAttributeAllowableValueRecord(
+                product_key=product_key,
+                attribute_key=attribute_key,
+                value=value,
+            )
         )
 
         return repo.create(product_attribute_allowable_value)

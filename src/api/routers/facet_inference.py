@@ -3,15 +3,17 @@ from typing import Sequence
 from fastapi import APIRouter, Depends
 
 from src.api.dto.facet_inference import (
-    FacetDefinitionRequest,
     FacetPredictionResponse,
     FacetPredictionsResponse,
-    ProductInfoRequest,
+    ProductDetailsRequest,
+    ProductGapsRequest,
 )
-from src.core.facet_inference import (
-    FacetDefinition,
-    FacetInferenceService,
-    ProductInfo,
+from src.core.facet_inference import FacetInferenceService
+from src.core.models import ProductDetails, ProductGaps
+from src.core.types import (
+    ProductAttributeGap,
+    ProductAttributeValue,
+    ProductDescriptor,
 )
 
 
@@ -23,51 +25,102 @@ def facet_inference_router(
     router = APIRouter(prefix="/facet-inference", tags=["facet-inference"])
 
     @router.post("/predict", response_model=FacetPredictionResponse)
-    async def predict_facet(
-        product: ProductInfoRequest,
-        facet: FacetDefinitionRequest,
+    async def predict_attribute(
+        product: ProductDetailsRequest,
+        gap: ProductGapsRequest,
     ) -> FacetPredictionResponse:
         """
-        Predict labels for a single product facet.
+        Predict a value for a missing attribute.
 
         Args:
-            product: Product information
-            facet: Facet definition and rules
+            product: Complete product information
+            gap: Information about the missing attribute and its allowed values
 
         Returns:
-            Prediction result with labels and confidence
+            Prediction result with value and confidence
         """
-        product_info = ProductInfo(**product.model_dump())
-        facet_def = FacetDefinition(**facet.model_dump())
+        # Convert request DTOs to domain models
+        product_details = ProductDetails(
+            product_code=product.product_code,
+            product_name=product.product_name,
+            product_description=[
+                ProductDescriptor(descriptor=d.descriptor, value=d.value)
+                for d in product.product_description
+            ],
+            categories=product.categories,
+            attributes=[
+                ProductAttributeValue(attribute=a.attribute, value=a.value)
+                for a in product.attributes
+            ],
+        )
 
-        prediction = await service.predict_facet(
-            product=product_info,
-            facet=facet_def,
+        product_gaps = ProductGaps(
+            product_code=gap.product_code,
+            product_name=gap.product_name,
+            gaps=[
+                ProductAttributeGap(
+                    attribute=g.attribute,
+                    allowable_values=g.allowable_values,
+                )
+                for g in gap.gaps
+            ],
+        )
+
+        prediction = await service.predict_attribute(
+            product=product_details,
+            gap=product_gaps,
         )
 
         return FacetPredictionResponse(prediction=prediction)
 
     @router.post("/predict-multiple", response_model=FacetPredictionsResponse)
-    async def predict_multiple_facets(
-        product: ProductInfoRequest,
-        facets: Sequence[FacetDefinitionRequest],
+    async def predict_multiple_attributes(
+        product: ProductDetailsRequest,
+        gaps: Sequence[ProductGapsRequest],
     ) -> FacetPredictionsResponse:
         """
-        Predict labels for multiple product facets concurrently.
+        Predict values for multiple missing attributes concurrently.
 
         Args:
-            product: Product information
-            facets: List of facet definitions and rules
+            product: Complete product information
+            gaps: List of missing attributes and their allowed values
 
         Returns:
-            List of prediction results with labels and confidence
+            List of prediction results with values and confidence
         """
-        product_info = ProductInfo(**product.model_dump())
-        facet_defs = [FacetDefinition(**f.model_dump()) for f in facets]
+        # Convert request DTOs to domain models
+        product_details = ProductDetails(
+            product_code=product.product_code,
+            product_name=product.product_name,
+            product_description=[
+                ProductDescriptor(descriptor=d.descriptor, value=d.value)
+                for d in product.product_description
+            ],
+            categories=product.categories,
+            attributes=[
+                ProductAttributeValue(attribute=a.attribute, value=a.value)
+                for a in product.attributes
+            ],
+        )
 
-        predictions = await service.predict_multiple_facets(
-            product=product_info,
-            facets=facet_defs,
+        product_gaps = [
+            ProductGaps(
+                product_code=gap.product_code,
+                product_name=gap.product_name,
+                gaps=[
+                    ProductAttributeGap(
+                        attribute=g.attribute,
+                        allowable_values=g.allowable_values,
+                    )
+                    for g in gap.gaps
+                ],
+            )
+            for gap in gaps
+        ]
+
+        predictions = await service.predict_multiple_attributes(
+            product=product_details,
+            gaps=product_gaps,
         )
 
         return FacetPredictionsResponse(predictions=predictions)
