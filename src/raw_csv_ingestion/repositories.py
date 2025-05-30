@@ -4,10 +4,10 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from src.raw_csv_ingestion.records import (
+    HumanRecommendationRecord,
     RawAttributeAllowableValueApplicableInEveryCategoryRecord,
     RawAttributeAllowableValueInAnyCategoryRecord,
     RawAttributeRecord,
-    HumanRecommendationRecord,
     RawCategoryAllowableValueRecord,
     RawCategoryAttributeRecord,
     RawCategoryRecord,
@@ -762,9 +762,7 @@ class RawAttributeAllowableValueInAnyCategoryRepository(
         )
 
 
-class HumanRecommendationRepository(
-    Repository[HumanRecommendationRecord]
-):
+class HumanRecommendationRepository(Repository[HumanRecommendationRecord]):
     """Repository for B&Q QA Complete Excel data"""
 
     def __init__(self, session: Session):

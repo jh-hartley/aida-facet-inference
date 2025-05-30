@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+
 import argparse
 import logging
 
@@ -50,7 +51,7 @@ def main():
             row_limit=args.row_limit,
         )
     except Exception as e:
-        logger.error(f"Error during CSV ingestion: {str(e)}")
+        logger.error(f"Error during raw data ingestion: {str(e)}")
         raise
 
 
