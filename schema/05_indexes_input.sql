@@ -25,5 +25,5 @@ CREATE INDEX IF NOT EXISTS idx_categories_system_name ON raw_categories(system_n
 CREATE INDEX IF NOT EXISTS idx_attributes_system_name ON raw_attributes(system_name);
 
 -- QA table indexes
-CREATE INDEX IF NOT EXISTS idx_qa_complete_product_reference ON raw_bq_batch16_qa_complete(product_reference);
-CREATE INDEX IF NOT EXISTS idx_qa_complete_attribute_reference ON raw_bq_batch16_qa_complete(attribute_reference); 
+CREATE INDEX IF NOT EXISTS idx_qa_complete_product_reference ON human_recommendations(product_reference);
+CREATE INDEX IF NOT EXISTS idx_qa_complete_attribute_reference ON human_recommendations(attribute_reference); 

@@ -192,10 +192,10 @@ class RawAttributeAllowableValueInAnyCategoryRecord(Base):
     value: Mapped[str] = mapped_column(Text, primary_key=True)
 
 
-class RawBQBatch16QACompleteRecord(Base):
+class HumanRecommendationRecord(Base):
     """Model for B&Q QA Complete Excel data"""
 
-    __tablename__ = "raw_bq_batch16_qa_complete"
+    __tablename__ = "human_recommendations"
 
     id: Mapped[int] = mapped_column(
         Integer, primary_key=True, autoincrement=True

@@ -2,7 +2,7 @@ from src.raw_csv_ingestion.records import (
     RawAttributeAllowableValueApplicableInEveryCategoryRecord,
     RawAttributeAllowableValueInAnyCategoryRecord,
     RawAttributeRecord,
-    RawBQBatch16QACompleteRecord,
+    HumanRecommendationRecord,
     RawCategoryAllowableValueRecord,
     RawCategoryAttributeRecord,
     RawCategoryRecord,
@@ -166,7 +166,7 @@ class CSVConfig:
             },
         },
         "Output QA file for B&Q Batch 16 - B&Q QA Complete": {
-            "model": RawBQBatch16QACompleteRecord,
+            "model": HumanRecommendationRecord,
             "create_func": create_bq_batch16_qa_complete,
             "column_mapping": {
                 "Product Reference": "product_reference",

@@ -1,6 +1,6 @@
 from src.db.connection import db_session
-from src.raw_csv_ingestion.records import RawBQBatch16QACompleteRecord
-from src.raw_csv_ingestion.repositories import RawBQBatch16QACompleteRepository
+from src.raw_csv_ingestion.records import HumanRecommendationRecord
+from src.raw_csv_ingestion.repositories import HumanRecommendationRepository
 
 
 def create_bq_batch16_qa_complete(
@@ -14,11 +14,11 @@ def create_bq_batch16_qa_complete(
     action: str,
     link_to_site: str,
     comment: str,
-) -> RawBQBatch16QACompleteRecord:
+) -> HumanRecommendationRecord:
     """Create a new B&Q QA Complete record"""
     with db_session().begin() as session:
-        repo = RawBQBatch16QACompleteRepository(session)
-        record = RawBQBatch16QACompleteRecord(
+        repo = HumanRecommendationRepository(session)
+        record = HumanRecommendationRecord(
             product_reference=product_reference,
             attribute_reference=attribute_reference,
             attribute_name=attribute_name,

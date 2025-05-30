@@ -1,4 +1,3 @@
--- Core tables for raw data ingestion
 CREATE TABLE raw_products (
     product_key TEXT PRIMARY KEY,
     system_name TEXT,
@@ -92,7 +91,7 @@ CREATE TABLE raw_rich_text_sources (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE raw_bq_batch16_qa_complete (
+CREATE TABLE human_recommendations (
     id SERIAL PRIMARY KEY,
     product_reference TEXT,
     attribute_reference TEXT,
