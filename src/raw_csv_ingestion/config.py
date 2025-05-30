@@ -2,33 +2,33 @@ from src.raw_csv_ingestion.records import (
     RawAttributeAllowableValueApplicableInEveryCategoryRecord,
     RawAttributeAllowableValueInAnyCategoryRecord,
     RawAttributeRecord,
+    RawBQBatch16QACompleteRecord,
     RawCategoryAllowableValueRecord,
     RawCategoryAttributeRecord,
     RawCategoryRecord,
-    # RawProductAttributeAllowableValueRecord,
+    RawProductAttributeAllowableValueRecord,
     RawProductAttributeGapRecord,
     RawProductAttributeValueRecord,
     RawProductCategoryRecord,
     RawProductRecord,
     RawRecommendationRecord,
     RawRichTextSourceRecord,
-    RawBQBatch16QACompleteRecord,
 )
 from src.raw_csv_ingestion.uow import (
     create_attribute,
     create_attribute_allowable_value_applicable_in_every_category,
     create_attribute_allowable_value_in_any_category,
+    create_bq_batch16_qa_complete,
     create_category,
     create_category_allowable_value,
     create_category_attribute,
     create_product,
-    # create_product_attribute_allowable_value,
+    create_product_attribute_allowable_value,
     create_product_attribute_gap,
     create_product_attribute_value,
     create_product_category,
     create_recommendation,
     create_rich_text_source,
-    create_bq_batch16_qa_complete,
 )
 
 GloballyAllowedValueRecord = (
@@ -106,16 +106,15 @@ class CSVConfig:
                 "AttributeKey": "attribute_key",
             },
         },
-        # Huge file that is not used in the current implementation
-        # "ProductAttributeAllowableValue.csv": {
-        #     "model": RawProductAttributeAllowableValueRecord,
-        #     "create_func": create_product_attribute_allowable_value,
-        #     "column_mapping": {
-        #         "ProductKey": "product_key",
-        #         "AttributeKey": "attribute_key",
-        #         "Value": "value",
-        #     },
-        # },
+        "ProductAttributeAllowableValue.csv": {
+            "model": RawProductAttributeAllowableValueRecord,
+            "create_func": create_product_attribute_allowable_value,
+            "column_mapping": {
+                "ProductKey": "product_key",
+                "AttributeKey": "attribute_key",
+                "Value": "value",
+            },
+        },
         "CategoryAllowableValue": {
             "model": RawCategoryAllowableValueRecord,
             "create_func": create_category_allowable_value,

@@ -2,6 +2,7 @@ from src.db.connection import db_session
 from src.raw_csv_ingestion.records import RawBQBatch16QACompleteRecord
 from src.raw_csv_ingestion.repositories import RawBQBatch16QACompleteRepository
 
+
 def create_bq_batch16_qa_complete(
     product_reference: str,
     attribute_reference: str,
@@ -29,4 +30,4 @@ def create_bq_batch16_qa_complete(
             link_to_site=link_to_site,
             comment=comment,
         )
-        return repo.create(record) 
+        return repo.create(record)

@@ -194,9 +194,12 @@ class RawAttributeAllowableValueInAnyCategoryRecord(Base):
 
 class RawBQBatch16QACompleteRecord(Base):
     """Model for B&Q QA Complete Excel data"""
+
     __tablename__ = "raw_bq_batch16_qa_complete"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(
+        Integer, primary_key=True, autoincrement=True
+    )
     product_reference: Mapped[str] = mapped_column(String)
     attribute_reference: Mapped[str] = mapped_column(String)
     attribute_name: Mapped[str] = mapped_column(String)

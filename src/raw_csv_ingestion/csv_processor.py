@@ -14,13 +14,17 @@ logger = logging.getLogger(__name__)
 def validate_directory(directory: Path) -> None:
     """
     Validate that the directory contains all required files.
-    Only checks for files that are explicitly configured in CSVConfig.FILE_CONFIGS.
+    Only checks for files that are explicitly configured in
+    CSVConfig.FILE_CONFIGS.
     """
     missing_files = []
     for filename, config in CSVConfig.FILE_CONFIGS.items():
         if not config:
             continue
-        if not (directory / f"{filename}.csv").exists() and not (directory / f"{filename}.xlsx").exists():
+        if (
+            not (directory / f"{filename}.csv").exists()
+            and not (directory / f"{filename}.xlsx").exists()
+        ):
             missing_files.append(filename)
 
     if missing_files:
@@ -116,7 +120,7 @@ def process_excel_file(
     row_limit: int | None = None,
 ) -> tuple[int, int]:
     """
-    Process a single Excel file and return the number of rows processed and skipped.
+    Process a single file and return the number of rows processed and skipped.
     """
     rows_processed = 0
     rows_skipped = 0
@@ -144,12 +148,12 @@ def process_excel_file(
 
         if column_mapping:
             mapped_line = {
-                param_name: str(row[col_name])
+                str(param_name): str(row[col_name])
                 for col_name, param_name in column_mapping.items()
             }
         else:
-            mapped_line = {k: str(v) for k, v in row.items()}
-        
+            mapped_line = {str(k): str(v) for k, v in row.items()}
+
         batch.append(mapped_line)
         total_processed += 1
 
@@ -182,7 +186,8 @@ def ingest_csv_files(
 ) -> None:
     """
     Ingest all files from the specified directory into the database.
-    Only processes files that are explicitly configured in CSVConfig.FILE_CONFIGS.
+    Only processes files that are explicitly configured in
+    CSVConfig.FILE_CONFIGS.
     """
     directory = Path(directory)
     validate_directory(directory)
@@ -191,20 +196,20 @@ def ingest_csv_files(
         if not config:
             logger.info(f"Skipping {filename} as it is not configured")
             continue
-            
+
         try:
             logger.debug(f"Starting to process {filename}")
             file_path = directory / f"{filename}.xlsx"
             if not file_path.exists():
                 file_path = directory / f"{filename}.csv"
-            
+
             model = cast(Type[Any], config["model"])
             create_func = cast(Callable[..., Any], config["create_func"])
             column_mapping = cast(
                 dict[str, str] | None, config.get("column_mapping")
             )
 
-            if file_path.suffix.lower() == '.xlsx':
+            if file_path.suffix.lower() == ".xlsx":
                 rows_processed, rows_skipped = process_excel_file(
                     file_path,
                     model,
