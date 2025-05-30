@@ -7,7 +7,7 @@ from sqlalchemy.orm import Mapped, Session, mapped_column
 
 from src.core.embedding.models import ProductEmbedding
 from src.db.connection import Base
-from src.utils.clock import Clock
+from src.utils.clock import clock
 
 
 class ProductEmbeddingRecord(Base):
@@ -46,7 +46,7 @@ class ProductEmbeddingRepository:
     def create(self, embedding: ProductEmbedding) -> ProductEmbedding:
         """Create a new product embedding"""
         if not embedding.created_at:
-            embedding.created_at = Clock.now()
+            embedding.created_at = clock.now()
         db_entity = ProductEmbeddingRecord.from_dto(embedding)
         self.session.add(db_entity)
         return embedding
