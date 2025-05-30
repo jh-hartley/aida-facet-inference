@@ -3,6 +3,9 @@ from src.raw_csv_ingestion.uow.attribute_allowable_value import (
     create_attribute_allowable_value_applicable_in_every_category,
     create_attribute_allowable_value_in_any_category,
 )
+from src.raw_csv_ingestion.uow.bq_batch16_qa_complete import (
+    create_bq_batch16_qa_complete,
+)
 from src.raw_csv_ingestion.uow.category import create_category
 from src.raw_csv_ingestion.uow.category_allowable_value import (
     create_category_allowable_value,
@@ -38,4 +41,5 @@ __all__ = [
     "create_rich_text_source",
     "create_attribute_allowable_value_applicable_in_every_category",
     "create_attribute_allowable_value_in_any_category",
+    "create_bq_batch16_qa_complete",
 ]

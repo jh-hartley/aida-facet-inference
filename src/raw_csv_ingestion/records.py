@@ -190,3 +190,23 @@ class RawAttributeAllowableValueInAnyCategoryRecord(Base):
         String, ForeignKey("raw_attributes.attribute_key"), primary_key=True
     )
     value: Mapped[str] = mapped_column(Text, primary_key=True)
+
+
+class RawBQBatch16QACompleteRecord(Base):
+    """Model for B&Q QA Complete Excel data"""
+
+    __tablename__ = "raw_bq_batch16_qa_complete"
+
+    id: Mapped[int] = mapped_column(
+        Integer, primary_key=True, autoincrement=True
+    )
+    product_reference: Mapped[str] = mapped_column(String)
+    attribute_reference: Mapped[str] = mapped_column(String)
+    attribute_name: Mapped[str] = mapped_column(String)
+    recommendation: Mapped[str] = mapped_column(String)
+    unit: Mapped[str] = mapped_column(String)
+    override: Mapped[str] = mapped_column(String)
+    alternative_override: Mapped[str] = mapped_column(String)
+    action: Mapped[str] = mapped_column(String)
+    link_to_site: Mapped[str] = mapped_column(String)
+    comment: Mapped[str] = mapped_column(String)

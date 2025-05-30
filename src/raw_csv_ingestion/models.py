@@ -99,3 +99,16 @@ class RawRichTextSource(BaseModel):
     name: str
     priority: int
     created_at: datetime
+
+
+class RawBQBatch16QAComplete(BaseModel):
+    product_reference: str
+    attribute_reference: str
+    attribute_name: str
+    recommendation: str
+    unit: str
+    override: str
+    alternative_override: str
+    action: str
+    link_to_site: str
+    comment: str

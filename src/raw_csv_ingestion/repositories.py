@@ -7,6 +7,7 @@ from src.raw_csv_ingestion.records import (
     RawAttributeAllowableValueApplicableInEveryCategoryRecord,
     RawAttributeAllowableValueInAnyCategoryRecord,
     RawAttributeRecord,
+    RawBQBatch16QACompleteRecord,
     RawCategoryAllowableValueRecord,
     RawCategoryAttributeRecord,
     RawCategoryRecord,
@@ -759,3 +760,12 @@ class RawAttributeAllowableValueInAnyCategoryRepository(
                 RawAttributeAllowableValueInAnyCategoryRecord.value == value,
             )
         )
+
+
+class RawBQBatch16QACompleteRepository(
+    Repository[RawBQBatch16QACompleteRecord]
+):
+    """Repository for B&Q QA Complete Excel data"""
+
+    def __init__(self, session: Session):
+        super().__init__(session, RawBQBatch16QACompleteRecord)
