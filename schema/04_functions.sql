@@ -1,7 +1,0 @@
-CREATE OR REPLACE FUNCTION refresh_product_summary()
-RETURNS TRIGGER AS $$
-BEGIN
-    REFRESH MATERIALIZED VIEW CONCURRENTLY product_summary;
-    RETURN NULL;
-END;
-$$ LANGUAGE plpgsql; 

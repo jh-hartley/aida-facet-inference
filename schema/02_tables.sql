@@ -1,3 +1,4 @@
+-- Core tables for raw data ingestion
 CREATE TABLE raw_products (
     product_key TEXT PRIMARY KEY,
     system_name TEXT,
@@ -19,42 +20,33 @@ CREATE TABLE raw_attributes (
 );
 
 CREATE TABLE raw_product_categories (
-    product_key TEXT, -- REFERENCES raw_products(product_key)
-    category_key TEXT, -- REFERENCES raw_categories(category_key)
+    product_key TEXT,
+    category_key TEXT,
     PRIMARY KEY (product_key, category_key)
 );
 
--- Category-Attribute relationships
 CREATE TABLE raw_category_attributes (
     category_attribute_key TEXT PRIMARY KEY,
-    category_key TEXT, -- REFERENCES raw_categories(category_key)
-    attribute_key TEXT -- REFERENCES raw_attributes(attribute_key)
+    category_key TEXT,
+    attribute_key TEXT
 );
 
--- Product Attribute Values
 CREATE TABLE raw_product_attribute_values (
-    product_key TEXT, -- REFERENCES raw_products(product_key)
-    attribute_key TEXT, -- REFERENCES raw_attributes(attribute_key)
+    product_key TEXT,
+    attribute_key TEXT,
     value TEXT,
     PRIMARY KEY (product_key, attribute_key)
 );
 
 CREATE TABLE raw_product_attribute_gaps (
-    product_key TEXT, -- REFERENCES raw_products(product_key)
-    attribute_key TEXT, -- REFERENCES raw_attributes(attribute_key)
+    product_key TEXT,
+    attribute_key TEXT,
     PRIMARY KEY (product_key, attribute_key)
 );
 
-CREATE TABLE raw_product_attribute_allowable_values (
-    product_key TEXT, -- REFERENCES raw_products(product_key)
-    attribute_key TEXT, -- REFERENCES raw_attributes(attribute_key)
-    value TEXT,
-    PRIMARY KEY (product_key, attribute_key, value)
-);
-
 CREATE TABLE raw_category_allowable_values (
-    category_key TEXT, -- REFERENCES raw_categories(category_key)
-    attribute_key TEXT, -- REFERENCES raw_attributes(attribute_key)
+    category_key TEXT,
+    attribute_key TEXT,
     value TEXT,
     unit_type TEXT,
     minimum_value FLOAT,
@@ -66,21 +58,21 @@ CREATE TABLE raw_category_allowable_values (
 );
 
 CREATE TABLE raw_attribute_allowable_values_applicable_in_every_category (
-    attribute_key TEXT, -- REFERENCES raw_attributes(attribute_key)
+    attribute_key TEXT,
     value TEXT,
     PRIMARY KEY (attribute_key, value)
 );
 
 CREATE TABLE raw_attribute_allowable_values_in_any_category (
-    attribute_key TEXT, -- REFERENCES raw_attributes(attribute_key)
+    attribute_key TEXT,
     value TEXT,
     PRIMARY KEY (attribute_key, value)
 );
 
 CREATE TABLE raw_recommendations (
     recommendation_key TEXT PRIMARY KEY,
-    product_key TEXT, -- REFERENCES raw_products(product_key)
-    attribute_key TEXT, -- REFERENCES raw_attributes(attribute_key)
+    product_key TEXT,
+    attribute_key TEXT,
     value TEXT,
     confidence FLOAT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
@@ -99,3 +91,17 @@ CREATE TABLE raw_rich_text_sources (
     priority INTEGER,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE raw_bq_batch16_qa_complete (
+    id SERIAL PRIMARY KEY,
+    product_reference TEXT,
+    attribute_reference TEXT,
+    attribute_name TEXT,
+    recommendation TEXT,
+    unit TEXT,
+    override TEXT,
+    alternative_override TEXT,
+    action TEXT,
+    link_to_site TEXT,
+    comment TEXT
+); 

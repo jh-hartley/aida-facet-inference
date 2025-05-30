@@ -5,13 +5,14 @@ from src.raw_csv_ingestion.records import (
     RawCategoryAllowableValueRecord,
     RawCategoryAttributeRecord,
     RawCategoryRecord,
-    RawProductAttributeAllowableValueRecord,
+    # RawProductAttributeAllowableValueRecord,
     RawProductAttributeGapRecord,
     RawProductAttributeValueRecord,
     RawProductCategoryRecord,
     RawProductRecord,
     RawRecommendationRecord,
     RawRichTextSourceRecord,
+    RawBQBatch16QACompleteRecord,
 )
 from src.raw_csv_ingestion.uow import (
     create_attribute,
@@ -21,12 +22,13 @@ from src.raw_csv_ingestion.uow import (
     create_category_allowable_value,
     create_category_attribute,
     create_product,
-    create_product_attribute_allowable_value,
+    # create_product_attribute_allowable_value,
     create_product_attribute_gap,
     create_product_attribute_value,
     create_product_category,
     create_recommendation,
     create_rich_text_source,
+    create_bq_batch16_qa_complete,
 )
 
 GloballyAllowedValueRecord = (
@@ -38,10 +40,10 @@ create_globally_allowed = (
 
 
 class CSVConfig:
-    """Configuration for CSV file processing"""
+    """Configuration for file processing"""
 
     FILE_CONFIGS = {
-        "Product.csv": {
+        "Product": {
             "model": RawProductRecord,
             "create_func": create_product,
             "column_mapping": {
@@ -50,7 +52,7 @@ class CSVConfig:
                 "FriendlyName": "friendly_name",
             },
         },
-        "Category.csv": {
+        "Category": {
             "model": RawCategoryRecord,
             "create_func": create_category,
             "column_mapping": {
@@ -59,7 +61,7 @@ class CSVConfig:
                 "FriendlyName": "friendly_name",
             },
         },
-        "Attribute.csv": {
+        "Attribute": {
             "model": RawAttributeRecord,
             "create_func": create_attribute,
             "column_mapping": {
@@ -70,7 +72,7 @@ class CSVConfig:
                 "UnitMeasureType": "unit_measure_type",
             },
         },
-        "ProductCategory.csv": {
+        "ProductCategory": {
             "model": RawProductCategoryRecord,
             "create_func": create_product_category,
             "column_mapping": {
@@ -78,7 +80,7 @@ class CSVConfig:
                 "CategoryKey": "category_key",
             },
         },
-        "CategoryAttribute.csv": {
+        "CategoryAttribute": {
             "model": RawCategoryAttributeRecord,
             "create_func": create_category_attribute,
             "column_mapping": {
@@ -87,7 +89,7 @@ class CSVConfig:
                 "AttributeKey": "attribute_key",
             },
         },
-        "ProductAttributeValue.csv": {
+        "ProductAttributeValue": {
             "model": RawProductAttributeValueRecord,
             "create_func": create_product_attribute_value,
             "column_mapping": {
@@ -96,7 +98,7 @@ class CSVConfig:
                 "Value": "value",
             },
         },
-        "ProductAttributeGaps.csv": {
+        "ProductAttributeGaps": {
             "model": RawProductAttributeGapRecord,
             "create_func": create_product_attribute_gap,
             "column_mapping": {
@@ -104,16 +106,17 @@ class CSVConfig:
                 "AttributeKey": "attribute_key",
             },
         },
-        "ProductAttributeAllowableValue.csv": {
-            "model": RawProductAttributeAllowableValueRecord,
-            "create_func": create_product_attribute_allowable_value,
-            "column_mapping": {
-                "ProductKey": "product_key",
-                "AttributeKey": "attribute_key",
-                "Value": "value",
-            },
-        },
-        "CategoryAllowableValue.csv": {
+        # Huge file that is not used in the current implementation
+        # "ProductAttributeAllowableValue.csv": {
+        #     "model": RawProductAttributeAllowableValueRecord,
+        #     "create_func": create_product_attribute_allowable_value,
+        #     "column_mapping": {
+        #         "ProductKey": "product_key",
+        #         "AttributeKey": "attribute_key",
+        #         "Value": "value",
+        #     },
+        # },
+        "CategoryAllowableValue": {
             "model": RawCategoryAllowableValueRecord,
             "create_func": create_category_allowable_value,
             "column_mapping": {
@@ -127,7 +130,7 @@ class CSVConfig:
                 "RangeQualifierEnum": "range_qualifier",
             },
         },
-        "Recommendation.csv": {
+        "Recommendation": {
             "model": RawRecommendationRecord,
             "create_func": create_recommendation,
             "column_mapping": {
@@ -137,7 +140,7 @@ class CSVConfig:
                 "ConfidenceScore": "confidence",
             },
         },
-        "RichTextSource.csv": {
+        "RichTextSource": {
             "model": RawRichTextSourceRecord,
             "create_func": create_rich_text_source,
             "column_mapping": {
@@ -147,7 +150,7 @@ class CSVConfig:
                 "RichTextPriority": "priority",
             },
         },
-        "AttributeAllowableValuesApplicableInEveryCategory.csv": {
+        "AttributeAllowableValuesApplicableInEveryCategory": {
             "model": GloballyAllowedValueRecord,
             "create_func": create_globally_allowed,
             "column_mapping": {
@@ -155,12 +158,28 @@ class CSVConfig:
                 "AllowableValue": "value",
             },
         },
-        "AttributeAllowableValueInAnyCategory.csv": {
+        "AttributeAllowableValueInAnyCategory": {
             "model": RawAttributeAllowableValueInAnyCategoryRecord,
             "create_func": create_attribute_allowable_value_in_any_category,
             "column_mapping": {
                 "AttributeKey": "attribute_key",
                 "Value": "value",
+            },
+        },
+        "Output QA file for B&Q Batch 16 - B&Q QA Complete": {
+            "model": RawBQBatch16QACompleteRecord,
+            "create_func": create_bq_batch16_qa_complete,
+            "column_mapping": {
+                "Product Reference": "product_reference",
+                "Attribute Reference": "attribute_reference",
+                "Attribute Name": "attribute_name",
+                "Recommendation": "recommendation",
+                "Unit": "unit",
+                "Override": "override",
+                "Alternative Override": "alternative_override",
+                "Action": "action",
+                "Link to site": "link_to_site",
+                "Comment": "comment",
             },
         },
     }
