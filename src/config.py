@@ -29,13 +29,13 @@ class Config:
 
     # Embedding Configuration
     EMBEDDING_MIN_DIMENSIONS: int = int(
-        os.getenv("EMBEDDING_MIN_DIMENSIONS", "384")
+        os.getenv("EMBEDDING_MIN_DIMENSIONS", "1536")
     )
     EMBEDDING_MAX_DIMENSIONS: int = int(
-        os.getenv("EMBEDDING_MAX_DIMENSIONS", "4096")
+        os.getenv("EMBEDDING_MAX_DIMENSIONS", "1536")
     )
     EMBEDDING_DEFAULT_DIMENSIONS: int = int(
-        os.getenv("EMBEDDING_DEFAULT_DIMENSIONS", "384")
+        os.getenv("EMBEDDING_DEFAULT_DIMENSIONS", "1536")
     )
 
     # API Configuration
