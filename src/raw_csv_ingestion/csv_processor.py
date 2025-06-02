@@ -42,7 +42,6 @@ def count_lines(file_path: Path) -> int:
 
 def process_csv_file(
     file_path: Path,
-    model_type: Type[Any],
     create_func: Callable[..., Any],
     batch_size: int = 1000,
     column_mapping: dict[str, str] | None = None,
@@ -118,7 +117,6 @@ def process_csv_file(
 
 def process_excel_file(
     file_path: Path,
-    model_type: Type[Any],
     create_func: Callable[..., Any],
     batch_size: int = 1000,
     column_mapping: dict[str, str] | None = None,
@@ -248,7 +246,6 @@ def ingest_csv_files(
             if not file_path.exists():
                 file_path = directory / f"{filename}.csv"
 
-            model = cast(Type[Any], config["model"])
             create_func = cast(Callable[..., Any], config["create_func"])
             column_mapping = cast(
                 dict[str, str] | None, config.get("column_mapping")
@@ -265,7 +262,6 @@ def ingest_csv_files(
             if file_path.suffix.lower() == ".xlsx":
                 process_excel_file(
                     file_path,
-                    model,
                     create_func,
                     batch_size,
                     column_mapping,
@@ -274,7 +270,6 @@ def ingest_csv_files(
             else:
                 process_csv_file(
                     file_path,
-                    model,
                     create_func,
                     batch_size,
                     column_mapping,
