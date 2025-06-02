@@ -16,42 +16,64 @@ class ProductDetails(BaseModel):
 
     product_key: str  # Database UUID
     product_code: str  # EAN/system_name
+    code_type: str
     product_name: str
     product_description: list[ProductDescriptor]
     categories: list[str]
     attributes: list[ProductAttributeValue]
-    code_type: str  # Type of product code (EAN, UPC, ISBN, etc.)
 
     def get_formatted_description(self) -> str:
         """Get a formatted string of all product descriptions."""
-        return "\n".join(
-            f"{desc.descriptor}: {desc.value}"
-            for desc in self.product_description
-        )
+        grouped_descriptions: dict[str, list[str]] = {}
+
+        for desc in self.product_description:
+            if not desc.value.strip():
+                continue
+
+            category = desc.descriptor.split("//")[0]
+
+            if desc.value in grouped_descriptions.get(category, []):
+                continue
+
+            if category not in grouped_descriptions:
+                grouped_descriptions[category] = []
+            grouped_descriptions[category].append(desc.value)
+
+        formatted_sections = []
+        for category, values in grouped_descriptions.items():
+            formatted_sections.append(f"{category}:")
+            formatted_sections.extend(f"- {value}" for value in values)
+            formatted_sections.append(
+                ""
+            )  # Consistent spacing after each section
+
+        return "\n".join(formatted_sections)
 
     def get_formatted_attributes(self) -> str:
         """Get a formatted string of all product attributes."""
-        return "\n".join(
-            f"{attr.attribute}: {attr.value}" for attr in self.attributes
-        )
+        formatted_attrs = []
+        for attr in self.attributes:
+            value = attr.value.replace("||", " ")
+            formatted_attrs.append(f"{attr.attribute}: {value}")
+        return "\n".join(formatted_attrs)
 
     def get_llm_prompt(self) -> str:
         """
         Get a formatted string of product information for LLM consumption.
         """
         sections = [
+            f"Product Name: {self.product_name or '[Name not available]'}",
             f"Product Code ({self.code_type}): {self.product_code}",
             f"Product Key (UUID): {self.product_key}",
-            f"Product Name: {self.product_name}",
             "",
-            "Product Description:",
+            "Product Description:\n",
             self.get_formatted_description(),
-            "",
             "Categories:",
             *[f"- {cat}" for cat in self.categories],
             "",
             "Attributes:",
             self.get_formatted_attributes(),
+            "",
         ]
         return "\n".join(sections)
 

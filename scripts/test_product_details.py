@@ -53,8 +53,18 @@ def main() -> None:
         with SessionLocal() as session:
             repository = FacetIdentificationRepository(session)
             details = repository.get_product_details(args.product_key)
-            print("\nProduct Details:")
+            print(
+                "\n-------------------- "
+                "Product Details (JSON Structure): "
+                "--------------------\n"
+            )
             print(format_product_details(details))
+            print(
+                "\n-------------------- "
+                "Product Details (LLM Format): "
+                "--------------------\n"
+            )
+            print(details.get_llm_prompt())
     except ValueError as e:
         print(f"Error: {e}")
     except Exception as e:
