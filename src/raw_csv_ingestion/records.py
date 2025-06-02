@@ -14,6 +14,7 @@ class RawProductRecord(Base):
     product_key: Mapped[str] = mapped_column(String, primary_key=True)
     system_name: Mapped[str] = mapped_column(String)
     friendly_name: Mapped[str] = mapped_column(String)
+    code_type: Mapped[str] = mapped_column(String, default="EAN")
 
 
 class RawCategoryRecord(Base):

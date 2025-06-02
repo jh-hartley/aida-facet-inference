@@ -27,8 +27,10 @@ class ProductAttributeGapRequest(BaseModel):
 class ProductDetailsRequest(BaseModel):
     """Request model for product details."""
 
+    product_key: str
     product_code: str
     product_name: str
+    code_type: str
     product_description: list[ProductDescriptorRequest]
     categories: list[str]
     attributes: list[ProductAttributeValueRequest]

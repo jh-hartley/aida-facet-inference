@@ -1,7 +1,8 @@
 CREATE TABLE raw_products (
     product_key TEXT PRIMARY KEY,
     system_name TEXT,
-    friendly_name TEXT
+    friendly_name TEXT,
+    code_type TEXT
 );
 
 CREATE TABLE raw_categories (
@@ -81,12 +82,12 @@ CREATE TABLE raw_recommendations (
     attribute_key TEXT,
     value TEXT,
     confidence FLOAT,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP WITH TIME ZONE
 );
 
 CREATE TABLE raw_recommendation_rounds (
     round_key TEXT PRIMARY KEY,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP WITH TIME ZONE
 );
 
 CREATE TABLE raw_rich_text_sources (
@@ -95,7 +96,7 @@ CREATE TABLE raw_rich_text_sources (
     content TEXT,
     name TEXT,
     priority INTEGER,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP WITH TIME ZONE
 );
 
 CREATE TABLE human_recommendations (

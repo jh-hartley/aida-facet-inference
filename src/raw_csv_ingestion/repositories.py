@@ -767,3 +767,72 @@ class HumanRecommendationRepository(Repository[HumanRecommendationRecord]):
 
     def __init__(self, session: Session):
         super().__init__(session, HumanRecommendationRecord)
+
+    def get_by_product_reference(
+        self, product_reference: str
+    ) -> list[HumanRecommendationRecord]:
+        result = list(
+            self.session.scalars(
+                select(HumanRecommendationRecord).where(
+                    HumanRecommendationRecord.product_reference == product_reference
+                )
+            ).all()
+        )
+        if not result:
+            raise ValueError(
+                f"No human recommendations found for product {product_reference}"
+            )
+        return result
+
+    def find_by_product_reference(
+        self, product_reference: str
+    ) -> list[HumanRecommendationRecord]:
+        """Find all human recommendations for a product"""
+        return list(
+            self.session.scalars(
+                select(HumanRecommendationRecord).where(
+                    HumanRecommendationRecord.product_reference == product_reference
+                )
+            ).all()
+        )
+
+    def get_by_attribute_reference(
+        self, attribute_reference: str
+    ) -> list[HumanRecommendationRecord]:
+        result = list(
+            self.session.scalars(
+                select(HumanRecommendationRecord).where(
+                    HumanRecommendationRecord.attribute_reference == attribute_reference
+                )
+            ).all()
+        )
+        if not result:
+            raise ValueError(
+                f"No human recommendations found for attribute {attribute_reference}"
+            )
+        return result
+
+    def find_by_attribute_reference(
+        self, attribute_reference: str
+    ) -> list[HumanRecommendationRecord]:
+        """Find all human recommendations for an attribute"""
+        return list(
+            self.session.scalars(
+                select(HumanRecommendationRecord).where(
+                    HumanRecommendationRecord.attribute_reference == attribute_reference
+                )
+            ).all()
+        )
+
+    def find_by_product_and_attribute_reference(
+        self, product_reference: str, attribute_reference: str
+    ) -> list[HumanRecommendationRecord]:
+        """Find all human recommendations for a specific product-attribute combination"""
+        return list(
+            self.session.scalars(
+                select(HumanRecommendationRecord).where(
+                    HumanRecommendationRecord.product_reference == product_reference,
+                    HumanRecommendationRecord.attribute_reference == attribute_reference,
+                )
+            ).all()
+        )

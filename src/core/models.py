@@ -13,12 +13,14 @@ class ProductDetails(BaseModel):
 
     This is provided to the LLM to use as context when generating facets.
     """
-
-    product_code: str
+    
+    product_key: str  # Database UUID
+    product_code: str  # EAN/system_name
     product_name: str
     product_description: list[ProductDescriptor]
     categories: list[str]
     attributes: list[ProductAttributeValue]
+    code_type: str  # Type of product code (EAN, UPC, ISBN, etc.)
 
     def get_formatted_description(self) -> str:
         """Get a formatted string of all product descriptions."""
@@ -38,7 +40,8 @@ class ProductDetails(BaseModel):
         Get a formatted string of product information for LLM consumption.
         """
         sections = [
-            f"Product Code: {self.product_code}",
+            f"Product Code ({self.code_type}): {self.product_code}",
+            f"Product Key (UUID): {self.product_key}",
             f"Product Name: {self.product_name}",
             "",
             "Product Description:",

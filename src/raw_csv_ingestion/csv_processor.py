@@ -216,11 +216,18 @@ def ingest_csv_files(
     directory: Path | str = Path("data"),
     batch_size: int = 1000,
     row_limit: int | None = None,
+    code_type: str | None = None,
 ) -> None:
     """
     Ingest all files from the specified directory into the database.
     Only processes files that are explicitly configured in
     CSVConfig.FILE_CONFIGS.
+    
+    Args:
+        directory: Directory containing CSV files
+        batch_size: Number of rows to process in each batch
+        row_limit: Maximum number of rows to process per file
+        code_type: Optional code type to use for all products
     """
     directory = Path(directory)
     validate_directory(directory)
@@ -241,6 +248,13 @@ def ingest_csv_files(
             column_mapping = cast(
                 dict[str, str] | None, config.get("column_mapping")
             )
+
+            # Add code_type to create_func if it's the product creation function
+            if filename == "Product" and code_type is not None:
+                original_create_func = create_func
+                create_func = lambda **kwargs: original_create_func(
+                    **kwargs, code_type=code_type
+                )
 
             if file_path.suffix.lower() == ".xlsx":
                 process_excel_file(

@@ -20,6 +20,7 @@ def _get_product_description(product_details: ProductDetails) -> str:
     """Convert product details into a text description for embedding"""
     description_parts = [
         f"Product: {product_details.product_name}",
+        f"Product Code ({product_details.code_type}): {product_details.product_code}",
         f"Categories: {', '.join(product_details.categories)}",
     ]
 
