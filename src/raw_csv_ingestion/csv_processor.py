@@ -1,7 +1,7 @@
 import csv
 import logging
 from pathlib import Path
-from typing import Any, Callable, Type, cast
+from typing import Any, Callable, cast
 
 from openpyxl import load_workbook
 from tqdm import tqdm
