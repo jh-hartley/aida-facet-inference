@@ -25,7 +25,7 @@ class FacetInferenceService:
 
     @classmethod
     def from_session(
-        cls, session: Session | None = None, max_concurrent: int = 8
+        cls, session: Session | None = None, max_concurrent: int = 32
     ) -> "FacetInferenceService":
         """
         Create a service instance from a session.
@@ -36,14 +36,33 @@ class FacetInferenceService:
         return cls(repository=repository, max_concurrent=max_concurrent)
 
     async def predict_for_product_key(
-        self, product_key: str
+        self, product_key: str, evaluation_mode: bool = False
     ) -> list[FacetPrediction]:
         """
         Predict all missing attributes for a product, managing concurrency
         and prompt logic internally.
+
+        Args:
+            product_key: The product key to predict for
+            evaluation_mode: If True, only predict for attributes that have
+                           accepted recommendations. If False, predict for
+                           all missing attributes.
+
+        Returns:
+            List of predictions for the product
         """
         product_details = self.repository.get_product_details(product_key)
-        product_gaps = self.repository.get_product_gaps(product_key)
+
+        # Get gaps either from recommendations or all gaps
+        if evaluation_mode:
+            product_gaps = (
+                self.repository.get_product_gaps_from_recommendations(
+                    product_key
+                )
+            )
+        else:
+            product_gaps = self.repository.get_product_gaps(product_key)
+
         self._predictor = ProductFacetPredictor(product_details, product_gaps)
         semaphore = Semaphore(self.max_concurrent)
 

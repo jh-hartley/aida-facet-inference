@@ -14,6 +14,7 @@ from src.core.types import (
     ProductDescriptor,
 )
 from src.raw_csv_ingestion.records import (
+    HumanRecommendationRecord,
     RawAttributeAllowableValueApplicableInEveryCategoryRecord,
     RawAttributeAllowableValueInAnyCategoryRecord,
     RawAttributeRecord,
@@ -336,6 +337,72 @@ class FacetIdentificationRepository:
             select(RawProductRecord.product_key)
             .where(RawProductRecord.product_key.not_in(products_with_gaps))
             .limit(1)
+        )
+
+    def get_product_gaps_from_recommendations(
+        self, product_key: str
+    ) -> ProductGaps:
+        """
+        Get gaps for a product based on accepted recommendations.
+        This is used for evaluation purposes where we only want to predict
+        for attributes that have accepted recommendations.
+
+        Args:
+            product_key: The product key to get gaps for
+
+        Returns:
+            ProductGaps object containing only the gaps that
+                have accepted recommendations
+
+        Raises:
+            ValueError: If product is not found
+        """
+        # Get the product to get its system_name
+        product = self.product_repo.get_by_id(product_key)
+
+        # Get accepted recommendations for this product
+        recommendations = self.session.scalars(
+            select(HumanRecommendationRecord).where(
+                HumanRecommendationRecord.product_reference
+                == product.system_name,
+                HumanRecommendationRecord.action == "Accept Recommendation",
+            )
+        ).all()
+
+        # Get product categories for allowable values
+        product_categories = self.product_category_repo.get_by_product_key(
+            product_key
+        )
+        category_keys = [pc.category_key for pc in product_categories]
+
+        # Create gaps from recommendations
+        gap_details = []
+        for rec in recommendations:
+            # Get attribute key from system name
+            attribute = self.session.scalars(
+                select(RawAttributeRecord).where(
+                    RawAttributeRecord.system_name == rec.attribute_reference
+                )
+            ).first()
+
+            if attribute:
+                # Get allowable values for this attribute
+                allowable_values = self._get_allowable_values_for_attribute(
+                    category_keys, attribute.attribute_key
+                )
+
+                if allowable_values:
+                    gap_details.append(
+                        ProductAttributeGap(
+                            attribute=attribute.friendly_name,
+                            allowable_values=sorted(allowable_values),
+                        )
+                    )
+
+        return ProductGaps(
+            product_code=product.product_key,
+            product_name=product.friendly_name,
+            gaps=gap_details,
         )
 
 
