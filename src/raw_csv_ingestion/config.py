@@ -39,6 +39,14 @@ create_globally_allowed = (
 )
 
 
+# NOTE: Ingestion takes a very long time if the
+# ProductAttributeAllowableValue.csv is included.
+# It is much more efficient for our purposes to skip over it.
+# This is because the ProductAttributeAllowableValue.csv
+# is a very large file and it takes a very long time to ingest.
+# We can skip over it by not including it in the FILE_CONFIGS.
+
+
 class CSVConfig:
     """Configuration for file processing"""
 
@@ -106,7 +114,7 @@ class CSVConfig:
                 "AttributeKey": "attribute_key",
             },
         },
-        "ProductAttributeAllowableValue.csv": {
+        "ProductAttributeAllowableValue": {
             "model": RawProductAttributeAllowableValueRecord,
             "create_func": create_product_attribute_allowable_value,
             "column_mapping": {

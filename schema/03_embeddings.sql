@@ -22,4 +22,21 @@ CREATE TABLE value_embeddings (
     value TEXT,
     embedding vector(1536),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Added for similarity search views
+CREATE TABLE product_attribute_embeddings (
+    product_key TEXT,
+    attribute_key TEXT,
+    embedding vector(1536),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (product_key, attribute_key)
+);
+
+CREATE TABLE product_category_embeddings (
+    product_key TEXT,
+    category_key TEXT,
+    embedding vector(1536),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (product_key, category_key)
 ); 

@@ -3,7 +3,7 @@ import logging
 from pathlib import Path
 from typing import Any, Callable, Type, cast
 
-import pandas as pd
+from openpyxl import load_workbook
 from tqdm import tqdm
 
 from src.raw_csv_ingestion.config import CSVConfig
@@ -37,7 +37,7 @@ def validate_directory(directory: Path) -> None:
 def count_lines(file_path: Path) -> int:
     """Count the number of lines in a file, excluding the header."""
     with open(file_path, "rb") as f:
-        return sum(1 for _ in f) - 1  # Subtract 1 for header
+        return sum(1 for _ in f) - 1
 
 
 def process_csv_file(
@@ -49,30 +49,30 @@ def process_csv_file(
     row_limit: int | None = None,
 ) -> tuple[int, int]:
     """
-    Process a single CSV file, streaming it line by line and return
+    Process a single CSV file in batches and return
     the number of rows processed and skipped.
     """
     rows_processed = 0
     rows_skipped = 0
     total_processed = 0
 
+    logger.debug(f"Processing {file_path} (limit: {row_limit or 'none'})")
+
+    pbar = tqdm(
+        desc=file_path.name,
+        unit="rows",
+        leave=True,
+        bar_format=(
+            "{l_bar}{bar}| {n_fmt}/{total_fmt} "
+            "[{elapsed}<{remaining}, {rate_fmt}]"
+        ),
+        dynamic_ncols=True,
+        total=None,
+    )
+
     with open(file_path, newline="", encoding="utf-8-sig") as csvfile:
         reader = csv.DictReader(csvfile)
-
-        logger.debug(f"Processing {file_path} (limit: {row_limit or 'none'})")
-
-        pbar = tqdm(
-            desc=file_path.name,
-            unit="rows",
-            leave=True,
-            bar_format=(
-                "{l_bar}{bar}| {n_fmt}/{total_fmt} "
-                "[{elapsed}<{remaining}, {rate_fmt}]"
-            ),
-            dynamic_ncols=True,
-            total=float("inf"),
-        )
-
+        
         while True:
             batch = []
             for _ in range(batch_size):
@@ -92,10 +92,11 @@ def process_csv_file(
             if not batch:
                 break
 
-            for line in batch:
+            for record in batch:
                 if row_limit and total_processed >= row_limit:
                     break
-                result = create_func(**line)
+                    
+                result = create_func(**record)
                 if result is None:
                     rows_skipped += 1
                 else:
@@ -106,7 +107,11 @@ def process_csv_file(
             if row_limit and total_processed >= row_limit:
                 break
 
-        pbar.close()
+    pbar.close()
+    logger.info(
+        f"Processed {rows_processed} rows from {file_path.name} "
+        f"({rows_skipped} duplicates skipped)"
+    )
 
     return rows_processed, rows_skipped
 
@@ -120,13 +125,13 @@ def process_excel_file(
     row_limit: int | None = None,
 ) -> tuple[int, int]:
     """
-    Process a single file and return the number of rows processed and skipped.
+    Process a single Excel file in batches and return
+    the number of rows processed and skipped.
     """
     rows_processed = 0
     rows_skipped = 0
     total_processed = 0
 
-    df = pd.read_excel(file_path)
     logger.debug(f"Processing {file_path} (limit: {row_limit or 'none'})")
 
     pbar = tqdm(
@@ -138,44 +143,72 @@ def process_excel_file(
             "[{elapsed}<{remaining}, {rate_fmt}]"
         ),
         dynamic_ncols=True,
-        total=len(df),
+        total=None,  # Unknown total
     )
 
+    # Load workbook in read-only mode
+    wb = load_workbook(filename=file_path, read_only=True)
+    ws = wb.active
+    if ws is None:
+        raise ValueError(f"No active worksheet found in {file_path}")
+    
+    # Get headers from first row
+    headers = [cell.value for cell in next(ws.rows)]
+    
+    # Process rows in batches
     batch = []
-    for _, row in df.iterrows():
+    for row in ws.rows:
         if row_limit and total_processed >= row_limit:
             break
 
+        # Convert row to dict using headers
+        row_dict = dict(zip(headers, [cell.value for cell in row]))
+        
         if column_mapping:
-            mapped_line = {
-                str(param_name): str(row[col_name])
+            mapped_row = {
+                param_name: row_dict[col_name]
                 for col_name, param_name in column_mapping.items()
             }
         else:
-            mapped_line = {str(k): str(v) for k, v in row.items()}
+            mapped_row = row_dict
 
-        batch.append(mapped_line)
-        total_processed += 1
+        batch.append(mapped_row)
 
+        # Process batch when it reaches batch_size
         if len(batch) >= batch_size:
-            for line in batch:
-                result = create_func(**line)
+            for record in batch:
+                if row_limit and total_processed >= row_limit:
+                    break
+                    
+                result = create_func(**record)
                 if result is None:
                     rows_skipped += 1
                 else:
                     rows_processed += 1
+                total_processed += 1
                 pbar.update(1)
-            batch = []
 
-    for line in batch:
-        result = create_func(**line)
+            batch = []  # Clear batch after processing
+
+    # Process any remaining rows in the last batch
+    for record in batch:
+        if row_limit and total_processed >= row_limit:
+            break
+            
+        result = create_func(**record)
         if result is None:
             rows_skipped += 1
         else:
             rows_processed += 1
+        total_processed += 1
         pbar.update(1)
 
     pbar.close()
+    logger.info(
+        f"Processed {rows_processed} rows from {file_path.name} "
+        f"({rows_skipped} duplicates skipped)"
+    )
+
     return rows_processed, rows_skipped
 
 
@@ -210,7 +243,7 @@ def ingest_csv_files(
             )
 
             if file_path.suffix.lower() == ".xlsx":
-                rows_processed, rows_skipped = process_excel_file(
+                process_excel_file(
                     file_path,
                     model,
                     create_func,
@@ -219,7 +252,7 @@ def ingest_csv_files(
                     row_limit,
                 )
             else:
-                rows_processed, rows_skipped = process_csv_file(
+                process_csv_file(
                     file_path,
                     model,
                     create_func,
@@ -227,11 +260,6 @@ def ingest_csv_files(
                     column_mapping,
                     row_limit,
                 )
-
-            logger.info(
-                f"Processed {rows_processed} rows from {file_path.name} "
-                f"({rows_skipped} duplicates skipped)"
-            )
         except Exception as e:
             logger.error(f"Error processing {filename}: {str(e)}")
             raise

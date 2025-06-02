@@ -68,6 +68,13 @@ CREATE TABLE raw_attribute_allowable_values_in_any_category (
     PRIMARY KEY (attribute_key, value)
 );
 
+CREATE TABLE raw_product_attribute_allowable_values (
+    product_key TEXT,
+    attribute_key TEXT,
+    value TEXT,
+    PRIMARY KEY (product_key, attribute_key, value)
+);
+
 CREATE TABLE raw_recommendations (
     recommendation_key TEXT PRIMARY KEY,
     product_key TEXT,
