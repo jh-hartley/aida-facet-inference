@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
-Tests LLM predictions for individual product gaps asynchronously and analyzes token usage.
+Tests LLM predictions for individual product gaps asynchronously and analyzes
+token usage.
 
 To use, run:
     python -m scripts.smoke_tests.test_llm_predictions [optional product_key]
@@ -8,8 +9,8 @@ To use, run:
 
 import asyncio
 import json
-import sys
 import logging
+import sys
 from pathlib import Path
 
 from scripts.smoke_tests.utils import (
@@ -81,7 +82,8 @@ def format_token_analysis(
         f"Cost Estimation Notes:\n"
         f"- System prompt and product context are cached at 25% rate\n"
         f"- Response tokens are based on actual predictions\n"
-        f"- Multiply these numbers by OpenAI's token costs for total cost estimation",
+        f"- Multiply these numbers by OpenAI's token costs for total cost "
+        f"estimation",
     )
 
 

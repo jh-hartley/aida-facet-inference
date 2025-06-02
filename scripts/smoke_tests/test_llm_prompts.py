@@ -59,12 +59,14 @@ def main(
 
             write_output(output_dir, "03_llm_prompts.txt", "\n\n".join(output))
 
-            logger.info(
-                f"Product {product_details.product_name}: "
-                f"{len(product_gaps.gaps)} gaps, "
-                f"{sum(len(gap.allowable_values) for gap in product_gaps.gaps)} "
-                f"total allowed values"
-            )
+        total_allowed_values = sum(
+            len(gap.allowable_values) for gap in product_gaps.gaps
+        )
+        logger.info(
+            f"Product {product_details.product_name}: "
+            f"{len(product_gaps.gaps)} gaps, "
+            f"{total_allowed_values} total allowed values"
+        )
 
     except ValueError as e:
         logger.error(f"Error: {e}")

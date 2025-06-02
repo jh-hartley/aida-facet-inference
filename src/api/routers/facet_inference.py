@@ -9,7 +9,9 @@ from src.core.facet_inference.service import FacetInferenceService
 def facet_inference_router() -> APIRouter:
     router = APIRouter(prefix="/facet-inference", tags=["facet-inference"])
 
-    @router.post("/predict/{product_key}", response_model=FacetPredictionsResponse)
+    @router.post(
+        "/predict/{product_key}", response_model=FacetPredictionsResponse
+    )
     async def predict_attribute(product_key: str) -> FacetPredictionsResponse:
         """
         Predict values for all missing attributes of a product.

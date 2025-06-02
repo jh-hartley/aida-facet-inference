@@ -1,5 +1,6 @@
-from enum import Enum
 from dataclasses import dataclass
+from enum import Enum
+
 from pydantic import BaseModel, Field
 
 
@@ -13,6 +14,7 @@ class ConfidenceBand:
     description: str
     example: str
 
+
 CONFIDENCE_BANDS: list[ConfidenceBand] = [
     ConfidenceBand(
         name="VERY_HIGH",
@@ -21,7 +23,7 @@ CONFIDENCE_BANDS: list[ConfidenceBand] = [
         max_score=1.0,
         range_str="90-100%",
         description="Direct evidence in product details.",
-        example="The product description explicitly states the value."
+        example="The product description explicitly states the value.",
     ),
     ConfidenceBand(
         name="HIGH",
@@ -30,7 +32,7 @@ CONFIDENCE_BANDS: list[ConfidenceBand] = [
         max_score=0.89,
         range_str="70-89%",
         description="Strong indirect evidence.",
-        example="Category and attributes strongly suggest the value."
+        example="Category and attributes strongly suggest the value.",
     ),
     ConfidenceBand(
         name="MODERATE",
@@ -39,7 +41,7 @@ CONFIDENCE_BANDS: list[ConfidenceBand] = [
         max_score=0.69,
         range_str="50-69%",
         description="Clear inference from context.",
-        example="Similar products or multiple clues point to the value."
+        example="Similar products or multiple clues point to the value.",
     ),
     ConfidenceBand(
         name="LOW",
@@ -48,7 +50,7 @@ CONFIDENCE_BANDS: list[ConfidenceBand] = [
         max_score=0.49,
         range_str="30-49%",
         description="Weak inference or partial evidence.",
-        example="Some hints, but not conclusive."
+        example="Some hints, but not conclusive.",
     ),
     ConfidenceBand(
         name="VERY_LOW",
@@ -57,9 +59,10 @@ CONFIDENCE_BANDS: list[ConfidenceBand] = [
         max_score=0.29,
         range_str="0-29%",
         description="Minimal evidence or ambiguous.",
-        example="No relevant information; answer is a guess."
+        example="No relevant information; answer is a guess.",
     ),
 ]
+
 
 class ConfidenceLevel(str, Enum):
     VERY_HIGH = "very_high"
@@ -78,7 +81,8 @@ class ConfidenceLevel(str, Enum):
     @classmethod
     def get_prompt_description(cls) -> str:
         return "\n".join(
-            f"{band.label} ({band.range_str}): {band.description} Example: {band.example}"
+            f"{band.label} ({band.range_str}): {band.description} "
+            f"Example: {band.example}"
             for band in CONFIDENCE_BANDS
         )
 
@@ -88,6 +92,7 @@ class ConfidenceLevel(str, Enum):
             if cls[band.name] == level:
                 return band
         raise ValueError(f"No band found for level {level}")
+
 
 class FacetPrediction(BaseModel):
     """Domain model for a facet prediction result."""
@@ -103,7 +108,8 @@ class FacetPrediction(BaseModel):
         description="Explanation for why this value was chosen"
     )
     suggested_value: str = Field(
-        description="Suggested value when the correct value is not in the allowed list"
+        description="Suggested value when the correct value is not in the "
+        "allowed list"
     )
 
     @property
@@ -119,9 +125,11 @@ class FacetPrediction(BaseModel):
         return """
         {
             "attribute": str,  # Name of the attribute being predicted
-            "predicted_value": str,  # The predicted value (empty string if no prediction possible)
+            "predicted_value": str,  # The predicted value (empty string if no
+                # prediction possible)
             "confidence": float,  # Confidence score between 0 and 1
             "reasoning": str,  # Explanation for the prediction
-            "suggested_value": str # Suggested value if correct value not in allowed list
+            "suggested_value": str  # Suggested value if correct value not in
+                # allowed list
         }
         """
