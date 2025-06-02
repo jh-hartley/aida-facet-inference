@@ -17,14 +17,14 @@ class Config:
         "OPENAI_EMBEDDING_MODEL", "text-embedding-3-small"
     )
     OPENAI_LLM_TEMPERATURE: float = float(
-        os.getenv("OPENAI_LLM_TEMPERATURE", "0.7")
+        os.getenv("OPENAI_LLM_TEMPERATURE", "0.0")
     )
-    OPENAI_LLM_TOP_P: float = float(os.getenv("OPENAI_LLM_TOP_P", "1.0"))
+    OPENAI_LLM_TOP_P: float = float(os.getenv("OPENAI_LLM_TOP_P", "0.1"))
     OPENAI_LLM_FREQ_PENALTY: float = float(
-        os.getenv("OPENAI_LLM_FREQ_PENALTY", "0.0")
+        os.getenv("OPENAI_LLM_FREQ_PENALTY", "0.1")
     )
     OPENAI_LLM_REASONING_EFFORT: str = os.getenv(
-        "OPENAI_LLM_REASONING_EFFORT", "medium"
+        "OPENAI_LLM_REASONING_EFFORT", "high"
     )
 
     # Embedding Configuration
