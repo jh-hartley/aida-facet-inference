@@ -246,8 +246,9 @@ You must:
    - Set confidence to high (0.7-0.9)
    - Explain why the value is missing from the allowed list
 8. Special case for "None" values:
-   - If you determine that "None" is the correct answer (e.g., no glazing present),
-     but "None" is not in the allowed values list, treat this as case #7 above
+   - If you determine that "None" is the correct answer (e.g., no glazing
+     present), but "None" is not in the allowed values list, treat this as
+     case #7 above
    - Do not express confusion about "None" not being in the allowed values
    - Simply state that "None" is the correct value and explain why"""
 
@@ -348,8 +349,9 @@ You must:
    - Set confidence to high (0.7-0.9)
    - Explain why the value is missing from the allowed list
 8. Special case for "None" values:
-   - If you determine that "None" is the correct answer (e.g., no glazing present),
-     but "None" is not in the allowed values list, treat this as case #7 above
+   - If you determine that "None" is the correct answer (e.g., no glazing
+     present), but "None" is not in the allowed values list, treat this
+     as case #7 above
    - Do not express confusion about "None" not being in the allowed values
    - Simply state that "None" is the correct value and explain why"""
 
