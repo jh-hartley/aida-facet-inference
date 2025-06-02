@@ -1,7 +1,7 @@
 import logging
 
 from src.core.facet_inference.models import FacetPrediction
-from src.core.facet_inference.prompts import PRODUCT_FACET_PREDICTION_PROMPT
+from src.core.facet_inference.prompts import PRODUCT_FACET_PROMPT
 from src.core.llm.client import Llm
 from src.core.llm.models import LlmModel
 from src.core.models import ProductAttributeGap, ProductDetails, ProductGaps
@@ -16,12 +16,15 @@ class ProductFacetPredictor:
         self,
         product_details: ProductDetails,
         product_gaps: ProductGaps,
-        llm_model: LlmModel = LlmModel.O3_MINI_HIGH,
+        llm_model: LlmModel = LlmModel.GPT_4O_MINI,
     ) -> None:
         self.product_details = product_details
         self.product_gaps = product_gaps
         self._llm = Llm(llm_model)
-        self._system_prompt = PRODUCT_FACET_PREDICTION_PROMPT
+        self._product_context = product_details.get_llm_prompt()
+        self._system_prompt = PRODUCT_FACET_PROMPT.get_system_prompt(
+            self._product_context
+        )
 
     def predict_single_gap(
         self,
@@ -40,7 +43,10 @@ class ProductFacetPredictor:
             f"Predicting {gap.attribute} (choosing from "
             f"{len(gap.allowable_values)} values)"
         )
-        human_prompt = self._format_human_prompt(gap)
+        human_prompt = PRODUCT_FACET_PROMPT.get_human_prompt(
+            gap.attribute,
+            gap.allowable_values,
+        )
         return self._llm.invoke(
             self._system_prompt, human_prompt, FacetPrediction
         )
@@ -62,7 +68,10 @@ class ProductFacetPredictor:
             f"Predicting {gap.attribute} (choosing from "
             f"{len(gap.allowable_values)} values)"
         )
-        human_prompt = self._format_human_prompt(gap)
+        human_prompt = PRODUCT_FACET_PROMPT.get_human_prompt(
+            gap.attribute,
+            gap.allowable_values,
+        )
         prediction = await self._llm.ainvoke(
             self._system_prompt, human_prompt, FacetPrediction
         )
@@ -72,16 +81,3 @@ class ProductFacetPredictor:
             f"{prediction.confidence:.2f})"
         )
         return prediction
-
-    def _format_human_prompt(self, gap: ProductAttributeGap) -> str:
-        """Format the human prompt for a single gap."""
-        return "\n".join(
-            [
-                "Product Information:",
-                self.product_details.get_llm_prompt(),
-                "",
-                "Missing Attribute:",
-                f"Attribute: {gap.attribute}",
-                f"Allowed values: {', '.join(gap.allowable_values)}",
-            ]
-        )

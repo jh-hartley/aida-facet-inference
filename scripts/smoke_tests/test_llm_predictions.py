@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Tests LLM predictions for individual product gaps asynchronously.
+Tests LLM predictions for individual product gaps asynchronously and analyzes token usage.
 
 To use, run:
     python -m scripts.smoke_tests.test_llm_predictions [optional product_key]
@@ -18,11 +18,71 @@ from scripts.smoke_tests.utils import (
     write_output,
 )
 from src.core.facet_inference.inference import ProductFacetPredictor
-from src.core.llm.models import LlmModel
+from src.core.facet_inference.prompts import PRODUCT_FACET_PROMPT
 from src.core.repositories import FacetIdentificationRepository
 from src.db.connection import SessionLocal
 
 logger = logging.getLogger(__name__)
+
+
+def estimate_tokens(text: str) -> int:
+    """Estimate the number of tokens in a text string.
+
+    Uses a rough approximation where:
+    - Average token length is ~4 characters
+    - Average word length is ~5.3 characters
+    - Therefore, ~0.75 words per token
+    """
+    word_count = len(text.split())
+    return int(word_count / 0.75)
+
+
+def format_token_analysis(
+    system_prompt: str,
+    product_context: str,
+    predictions: list[dict],
+    model_name: str,
+) -> str:
+    """Format token analysis for output."""
+    system_prompt_tokens = estimate_tokens(system_prompt)
+    product_context_tokens = estimate_tokens(product_context)
+
+    response_tokens = sum(
+        estimate_tokens(pred["reasoning"]) + 10  # +10 for JSON structure
+        for pred in predictions
+    ) / len(predictions)
+
+    total_tokens = (
+        system_prompt_tokens + product_context_tokens + response_tokens
+    )
+    total_tokens_cached = (
+        system_prompt_tokens * 0.25  # System prompt is cached
+        + product_context_tokens * 0.25  # Product context is cached
+        + response_tokens
+    )
+
+    return format_section(
+        "Token Cost Analysis",
+        f"Model Information:\n"
+        f"- Model: {model_name}\n"
+        f"- Provider: OpenAI\n\n"
+        f"System Prompt:\n"
+        f"- Estimated tokens: {system_prompt_tokens}\n"
+        f"- Note: This is cached at 25% rate\n\n"
+        f"Product Context:\n"
+        f"- Estimated tokens: {product_context_tokens}\n"
+        f"- Note: This is cached at 25% rate\n\n"
+        f"Response:\n"
+        f"- Average tokens: {response_tokens:.1f}\n"
+        f"- Based on {len(predictions)} actual predictions\n\n"
+        f"Total Tokens:\n"
+        f"- Without caching: {total_tokens:.1f}\n"
+        f"- With caching: {total_tokens_cached:.1f}\n\n"
+        f"Cost Estimation Notes:\n"
+        f"- System prompt and product context are cached at 25% rate\n"
+        f"- Response tokens are based on actual predictions\n"
+        f"- Multiply these numbers by OpenAI's token costs for total cost estimation",
+    )
 
 
 async def main(
@@ -51,9 +111,15 @@ async def main(
                 product_details=product_details,
                 product_gaps=product_gaps,
             )
+            model_name = predictor._llm.llm_model.value
+
+            system_prompt = PRODUCT_FACET_PROMPT.get_system_prompt(
+                product_details.get_llm_prompt()
+            )
+            product_context = product_details.get_llm_prompt()
+
             tasks = [
-                predictor.apredict_single_gap(gap)
-                for gap in product_gaps.gaps
+                predictor.apredict_single_gap(gap) for gap in product_gaps.gaps
             ]
 
             predictions = await asyncio.gather(*tasks)
@@ -69,7 +135,8 @@ async def main(
                 f"{confidence_summary}"
             )
 
-            output = [
+            # Write predictions to 04_llm_predictions.txt
+            predictions_output = [
                 format_section(
                     "Product Information",
                     f"Product Key: {product_key}\n"
@@ -94,9 +161,20 @@ async def main(
                     ),
                 ),
             ]
+            write_output(
+                output_dir,
+                "04_llm_predictions.txt",
+                "\n\n".join(predictions_output),
+            )
 
-            content = "\n\n".join(output)
-            write_output(output_dir, "04_llm_predictions.txt", content)
+            # Write token analysis to 00_token_analysis.txt
+            token_analysis = format_token_analysis(
+                system_prompt,
+                product_context,
+                [pred.model_dump() for pred in predictions],
+                model_name,
+            )
+            write_output(output_dir, "00_token_analysis.txt", token_analysis)
 
     except ValueError as e:
         logger.error(f"Error: {e}")
