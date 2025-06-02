@@ -37,7 +37,10 @@ def main():
         "--code-type",
         type=str,
         choices=[t.value for t in ProductCodeType],
-        help="Force a specific code type for all products (default: auto-detect)",
+        help=(
+            "Force a specific code type for all products "
+            "(default: auto-detect)"
+        ),
     )
     parser.add_argument(
         "--debug",

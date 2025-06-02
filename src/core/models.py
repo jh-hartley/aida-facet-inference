@@ -13,7 +13,7 @@ class ProductDetails(BaseModel):
 
     This is provided to the LLM to use as context when generating facets.
     """
-    
+
     product_key: str  # Database UUID
     product_code: str  # EAN/system_name
     product_name: str

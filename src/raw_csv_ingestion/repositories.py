@@ -774,13 +774,15 @@ class HumanRecommendationRepository(Repository[HumanRecommendationRecord]):
         result = list(
             self.session.scalars(
                 select(HumanRecommendationRecord).where(
-                    HumanRecommendationRecord.product_reference == product_reference
+                    HumanRecommendationRecord.product_reference
+                    == product_reference
                 )
             ).all()
         )
         if not result:
             raise ValueError(
-                f"No human recommendations found for product {product_reference}"
+                f"No human recommendations found for product "
+                f"{product_reference}"
             )
         return result
 
@@ -791,7 +793,8 @@ class HumanRecommendationRepository(Repository[HumanRecommendationRecord]):
         return list(
             self.session.scalars(
                 select(HumanRecommendationRecord).where(
-                    HumanRecommendationRecord.product_reference == product_reference
+                    HumanRecommendationRecord.product_reference
+                    == product_reference
                 )
             ).all()
         )
@@ -802,13 +805,15 @@ class HumanRecommendationRepository(Repository[HumanRecommendationRecord]):
         result = list(
             self.session.scalars(
                 select(HumanRecommendationRecord).where(
-                    HumanRecommendationRecord.attribute_reference == attribute_reference
+                    HumanRecommendationRecord.attribute_reference
+                    == attribute_reference
                 )
             ).all()
         )
         if not result:
             raise ValueError(
-                f"No human recommendations found for attribute {attribute_reference}"
+                f"No human recommendations found for attribute "
+                f"{attribute_reference}"
             )
         return result
 
@@ -819,7 +824,8 @@ class HumanRecommendationRepository(Repository[HumanRecommendationRecord]):
         return list(
             self.session.scalars(
                 select(HumanRecommendationRecord).where(
-                    HumanRecommendationRecord.attribute_reference == attribute_reference
+                    HumanRecommendationRecord.attribute_reference
+                    == attribute_reference
                 )
             ).all()
         )
@@ -827,12 +833,17 @@ class HumanRecommendationRepository(Repository[HumanRecommendationRecord]):
     def find_by_product_and_attribute_reference(
         self, product_reference: str, attribute_reference: str
     ) -> list[HumanRecommendationRecord]:
-        """Find all human recommendations for a specific product-attribute combination"""
+        """
+        Find all human recommendations for a specific product-attribute
+        combination
+        """
         return list(
             self.session.scalars(
                 select(HumanRecommendationRecord).where(
-                    HumanRecommendationRecord.product_reference == product_reference,
-                    HumanRecommendationRecord.attribute_reference == attribute_reference,
+                    HumanRecommendationRecord.product_reference
+                    == product_reference,
+                    HumanRecommendationRecord.attribute_reference
+                    == attribute_reference,
                 )
             ).all()
         )

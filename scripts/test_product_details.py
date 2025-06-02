@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
-"""Script to test the get_product_details functionality of FacetIdentificationRepository.
-
-This script allows testing the product details retrieval functionality by providing
-a product key as input and displaying the retrieved information in a readable format.
+"""Script to test the get_product_details functionality of
+FacetIdentificationRepository.
 
 Usage:
     python scripts/test_product_details.py <product_key>
@@ -64,5 +62,4 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main() 
-    
+    main()

@@ -16,7 +16,9 @@ class PredictionExperimentRecord(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=datetime.now(timezone.utc)
     )
-    experiment_metadata: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=True)
+    experiment_metadata: Mapped[dict[str, Any]] = mapped_column(
+        JSON, nullable=True
+    )
     started_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),

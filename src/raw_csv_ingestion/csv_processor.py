@@ -72,7 +72,7 @@ def process_csv_file(
 
     with open(file_path, newline="", encoding="utf-8-sig") as csvfile:
         reader = csv.DictReader(csvfile)
-        
+
         while True:
             batch = []
             for _ in range(batch_size):
@@ -95,7 +95,7 @@ def process_csv_file(
             for record in batch:
                 if row_limit and total_processed >= row_limit:
                     break
-                    
+
                 result = create_func(**record)
                 if result is None:
                     rows_skipped += 1
@@ -143,27 +143,34 @@ def process_excel_file(
             "[{elapsed}<{remaining}, {rate_fmt}]"
         ),
         dynamic_ncols=True,
-        total=None,  # Unknown total
+        total=None,
     )
 
-    # Load workbook in read-only mode
     wb = load_workbook(filename=file_path, read_only=True)
     ws = wb.active
     if ws is None:
         raise ValueError(f"No active worksheet found in {file_path}")
-    
-    # Get headers from first row
-    headers = [cell.value for cell in next(ws.rows)]
-    
-    # Process rows in batches
+
+    headers = [
+        str(cell.value) if cell.value is not None else ""
+        for cell in next(ws.rows)
+    ]
+
     batch = []
     for row in ws.rows:
         if row_limit and total_processed >= row_limit:
             break
 
-        # Convert row to dict using headers
-        row_dict = dict(zip(headers, [cell.value for cell in row]))
-        
+        row_dict: dict[str, str] = dict(
+            zip(
+                headers,
+                [
+                    str(cell.value) if cell.value is not None else ""
+                    for cell in row
+                ],
+            )
+        )
+
         if column_mapping:
             mapped_row = {
                 param_name: row_dict[col_name]
@@ -174,12 +181,11 @@ def process_excel_file(
 
         batch.append(mapped_row)
 
-        # Process batch when it reaches batch_size
         if len(batch) >= batch_size:
             for record in batch:
                 if row_limit and total_processed >= row_limit:
                     break
-                    
+
                 result = create_func(**record)
                 if result is None:
                     rows_skipped += 1
@@ -190,11 +196,10 @@ def process_excel_file(
 
             batch = []  # Clear batch after processing
 
-    # Process any remaining rows in the last batch
     for record in batch:
         if row_limit and total_processed >= row_limit:
             break
-            
+
         result = create_func(**record)
         if result is None:
             rows_skipped += 1
@@ -222,7 +227,7 @@ def ingest_csv_files(
     Ingest all files from the specified directory into the database.
     Only processes files that are explicitly configured in
     CSVConfig.FILE_CONFIGS.
-    
+
     Args:
         directory: Directory containing CSV files
         batch_size: Number of rows to process in each batch
@@ -249,11 +254,12 @@ def ingest_csv_files(
                 dict[str, str] | None, config.get("column_mapping")
             )
 
-            # Add code_type to create_func if it's the product creation function
             if filename == "Product" and code_type is not None:
-                original_create_func = create_func
-                create_func = lambda **kwargs: original_create_func(
-                    **kwargs, code_type=code_type
+                create_func = cast(
+                    Callable[..., Any],
+                    lambda **kwargs: create_func(
+                        **kwargs, code_type=code_type
+                    ),
                 )
 
             if file_path.suffix.lower() == ".xlsx":
