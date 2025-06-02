@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field
 
-from core.prompts.confidence_levels import ConfidenceLevel
+from src.core.prompts.confidence_levels import ConfidenceLevel
 from src.core.types import (
     ProductAttributeGap,
     ProductAttributeValue,
@@ -132,6 +132,7 @@ class ProductGaps(BaseModel):
         ]
         return "\n".join(sections)
 
+
 class FacetPrediction(BaseModel):
     """Domain model for a facet prediction result."""
 
@@ -171,4 +172,3 @@ class FacetPrediction(BaseModel):
                 # allowed list
         }
         """
-

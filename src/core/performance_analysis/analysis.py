@@ -4,7 +4,6 @@ import numpy as np
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from core.prompts.confidence_levels import ConfidenceLevel
 from src.core.performance_analysis.analysis_models import (
     AttributeMetrics,
     CategoryMetrics,
@@ -15,6 +14,7 @@ from src.core.performance_analysis.analysis_models import (
     GapCountMetrics,
     PredictionMetrics,
 )
+from src.core.prompts.confidence_levels import ConfidenceLevel
 from src.core.records import PredictionResultRecord
 from src.core.repositories import (
     FacetIdentificationRepository,

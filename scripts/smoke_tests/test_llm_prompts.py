@@ -10,6 +10,7 @@ To use, run:
 import logging
 from pathlib import Path
 
+from core.prompts.prompt_manager import PRODUCT_FACET_PROMPT
 from scripts.smoke_tests.utils import (
     format_section,
     get_output_dir,
@@ -17,7 +18,6 @@ from scripts.smoke_tests.utils import (
     write_output,
 )
 from src.common.db import SessionLocal
-from src.core.prompts.prompts import PRODUCT_FACET_PROMPT
 from src.core.repositories import FacetIdentificationRepository
 
 logger = logging.getLogger(__name__)
