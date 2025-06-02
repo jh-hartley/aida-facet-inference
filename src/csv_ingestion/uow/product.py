@@ -1,5 +1,5 @@
 from src.common.db import db_session
-from src.csv_ingestion.code_types import process_code_type
+from src.csv_ingestion.product_identifiers import process_code_type
 from src.csv_ingestion.records import RawProductRecord
 from src.csv_ingestion.repositories import RawProductRepository
 

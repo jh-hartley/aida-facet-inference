@@ -96,7 +96,6 @@ CREATE TABLE raw_rich_text_sources (
     content TEXT,
     name TEXT,
     priority INTEGER,
-    created_at TIMESTAMP WITH TIME ZONE
 );
 
 CREATE TABLE human_recommendations (

@@ -16,7 +16,6 @@ from src.csv_ingestion.records import (
 )
 from src.csv_ingestion.uow import (
     create_attribute,
-    create_attribute_allowable_value_applicable_in_every_category,
     create_attribute_allowable_value_in_any_category,
     create_bq_batch16_qa_complete,
     create_category,
@@ -29,6 +28,9 @@ from src.csv_ingestion.uow import (
     create_product_category,
     create_recommendation,
     create_rich_text_source,
+)
+from src.csv_ingestion.uow.universal_attribute_values import (
+    create_attribute_allowable_value_applicable_in_every_category,
 )
 
 GloballyAllowedValueRecord = (

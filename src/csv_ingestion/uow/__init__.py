@@ -1,8 +1,4 @@
 from src.csv_ingestion.uow.attribute import create_attribute
-from src.csv_ingestion.uow.attribute_allowable_value import (
-    create_attribute_allowable_value_applicable_in_every_category,
-    create_attribute_allowable_value_in_any_category,
-)
 from src.csv_ingestion.uow.category import create_category
 from src.csv_ingestion.uow.category_allowable_value import (
     create_category_allowable_value,
@@ -26,6 +22,12 @@ from src.csv_ingestion.uow.product_attribute_value import (
 from src.csv_ingestion.uow.product_category import create_product_category
 from src.csv_ingestion.uow.recommendation import create_recommendation
 from src.csv_ingestion.uow.rich_text_source import create_rich_text_source
+from src.csv_ingestion.uow.shared_attribute_values import (
+    create_attribute_allowable_value_in_any_category,
+)
+from src.csv_ingestion.uow.universal_attribute_values import (
+    create_attribute_allowable_value_applicable_in_every_category,
+)
 
 __all__ = [
     "create_product",

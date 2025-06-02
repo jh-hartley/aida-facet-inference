@@ -2,9 +2,7 @@ import re
 from enum import Enum
 
 
-class ProductCodeType(str, Enum):
-    """Valid product code types."""
-
+class ProductIdentifierType(str, Enum):
     EAN = "EAN"
     UPC = "UPC"
     ISBN = "ISBN"
@@ -12,11 +10,7 @@ class ProductCodeType(str, Enum):
     OTHER = "OTHER"
 
     @classmethod
-    def validate_code_type(cls, code_type: str) -> "ProductCodeType":
-        """
-        Validate that a code type string matches one of the enum values.
-        Raises ValueError with helpful message if invalid.
-        """
+    def validate_code_type(cls, code_type: str) -> "ProductIdentifierType":
         try:
             return cls(code_type)
         except ValueError:
@@ -27,12 +21,7 @@ class ProductCodeType(str, Enum):
             )
 
     @classmethod
-    def detect_code_type(cls, code: str) -> "ProductCodeType":
-        """
-        Detect the type of product code based on its format.
-        Defaults to EAN if no specific pattern is matched.
-        """
-        # Remove any non-alphanumeric characters
+    def detect_code_type(cls, code: str) -> "ProductIdentifierType":
         code = re.sub(r"[^a-zA-Z0-9]", "", code)
 
         # EAN-13: 13 digits
@@ -62,14 +51,7 @@ def process_code_type(system_name: str, code_type: str | None = None) -> str:
     Process a product code to determine its type.
     If code_type is provided, validates it against allowed values.
     Otherwise, detects the type from the system_name.
-
-    Args:
-        system_name: The product code to process
-        code_type: Optional explicit code type to use
-
-    Returns:
-        The code type as a string
     """
     if code_type is not None:
-        return ProductCodeType.validate_code_type(code_type).value
-    return ProductCodeType.detect_code_type(system_name).value
+        return ProductIdentifierType.validate_code_type(code_type).value
+    return ProductIdentifierType.detect_code_type(system_name).value
