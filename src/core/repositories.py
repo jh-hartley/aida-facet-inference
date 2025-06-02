@@ -14,6 +14,7 @@ from src.core.types import (
     ProductDescriptor,
 )
 from src.raw_csv_ingestion.records import (
+    HumanRecommendationRecord,
     RawAttributeAllowableValueApplicableInEveryCategoryRecord,
     RawAttributeAllowableValueInAnyCategoryRecord,
     RawAttributeRecord,
@@ -25,7 +26,6 @@ from src.raw_csv_ingestion.records import (
     RawProductRecord,
     RawRecommendationRecord,
     RawRichTextSourceRecord,
-    HumanRecommendationRecord,
 )
 from src.raw_csv_ingestion.repositories import (
     RawAttributeRepository,
@@ -351,26 +351,30 @@ class FacetIdentificationRepository:
             product_key: The product key to get gaps for
 
         Returns:
-            ProductGaps object containing only the gaps that have accepted recommendations
+            ProductGaps object containing only the gaps that
+                have accepted recommendations
 
         Raises:
             ValueError: If product is not found
         """
         # Get the product to get its system_name
         product = self.product_repo.get_by_id(product_key)
-        
+
         # Get accepted recommendations for this product
         recommendations = self.session.scalars(
             select(HumanRecommendationRecord).where(
-                HumanRecommendationRecord.product_reference == product.system_name,
-                HumanRecommendationRecord.action == 'Accept Recommendation'
+                HumanRecommendationRecord.product_reference
+                == product.system_name,
+                HumanRecommendationRecord.action == "Accept Recommendation",
             )
         ).all()
-        
+
         # Get product categories for allowable values
-        product_categories = self.product_category_repo.get_by_product_key(product_key)
+        product_categories = self.product_category_repo.get_by_product_key(
+            product_key
+        )
         category_keys = [pc.category_key for pc in product_categories]
-        
+
         # Create gaps from recommendations
         gap_details = []
         for rec in recommendations:
@@ -380,13 +384,13 @@ class FacetIdentificationRepository:
                     RawAttributeRecord.system_name == rec.attribute_reference
                 )
             ).first()
-            
+
             if attribute:
                 # Get allowable values for this attribute
                 allowable_values = self._get_allowable_values_for_attribute(
                     category_keys, attribute.attribute_key
                 )
-                
+
                 if allowable_values:
                     gap_details.append(
                         ProductAttributeGap(
@@ -394,7 +398,7 @@ class FacetIdentificationRepository:
                             allowable_values=sorted(allowable_values),
                         )
                     )
-        
+
         return ProductGaps(
             product_code=product.product_key,
             product_name=product.friendly_name,

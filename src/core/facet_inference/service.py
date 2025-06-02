@@ -52,13 +52,17 @@ class FacetInferenceService:
             List of predictions for the product
         """
         product_details = self.repository.get_product_details(product_key)
-        
+
         # Get gaps either from recommendations or all gaps
         if evaluation_mode:
-            product_gaps = self.repository.get_product_gaps_from_recommendations(product_key)
+            product_gaps = (
+                self.repository.get_product_gaps_from_recommendations(
+                    product_key
+                )
+            )
         else:
             product_gaps = self.repository.get_product_gaps(product_key)
-            
+
         self._predictor = ProductFacetPredictor(product_details, product_gaps)
         semaphore = Semaphore(self.max_concurrent)
 

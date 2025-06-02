@@ -1,13 +1,13 @@
 import logging
 import time
+from datetime import datetime, timezone
 from typing import Any
-from datetime import datetime, timedelta, timezone
 
-from sqlalchemy.orm import Session
 from sqlalchemy import select, text
+from sqlalchemy.orm import Session
 
-from src.core.facet_inference.service import FacetInferenceService
 from src.core.facet_inference.models import FacetPrediction
+from src.core.facet_inference.service import FacetInferenceService
 from src.core.records import (
     PredictionExperimentRecord,
     PredictionResultRecord,
@@ -18,16 +18,15 @@ from src.core.repositories import (
     PredictionResultRepository,
 )
 from src.core.types import ProductAttributeGap
-from src.db.connection import db_session, SessionLocal, uuid
+from src.db.connection import SessionLocal, db_session, uuid
 from src.raw_csv_ingestion.records import (
+    HumanRecommendationRecord,
     RawAttributeRecord,
     RawProductRecord,
-    HumanRecommendationRecord,
 )
 from src.raw_csv_ingestion.repositories import (
-    RawProductRepository,
     RawAttributeRepository,
-    HumanRecommendationRepository,
+    RawProductRepository,
 )
 from src.utils.clock import clock
 
@@ -70,9 +69,7 @@ def update_experiment_metrics(
         experiment.total_predictions = total_predictions
         experiment.total_products = total_products
         experiment.average_time_per_prediction = (
-            elapsed_time / total_predictions
-            if total_predictions > 0
-            else None
+            elapsed_time / total_predictions if total_predictions > 0 else None
         )
 
         session.add(experiment)
@@ -122,7 +119,8 @@ class ExperimentOrchestrator:
             experiment = PredictionExperimentRecord(
                 experiment_key=experiment_key,
                 experiment_metadata={
-                    "description": self.description or "No description provided",
+                    "description": self.description
+                    or "No description provided",
                     "timestamp": clock.now().isoformat(),
                     **(self.metadata or {}),
                 },
@@ -132,30 +130,32 @@ class ExperimentOrchestrator:
             session.commit()  # Explicitly commit the transaction
             return experiment_key
 
-    def _get_accepted_recommendations(self, session: Session) -> dict[str, list[HumanRecommendationRecord]]:
+    def _get_accepted_recommendations(
+        self, session: Session
+    ) -> dict[str, list[HumanRecommendationRecord]]:
         """
         Get all accepted recommendations grouped by product reference.
         Returns a dict of {product_reference: [recommendations]}
         """
-        repo = HumanRecommendationRepository(session)
-        
-        # Get all recommendations with action='Accept Recommendation'
         recommendations = session.scalars(
             select(HumanRecommendationRecord).where(
-                HumanRecommendationRecord.action == 'Accept Recommendation'
+                HumanRecommendationRecord.action == "Accept Recommendation"
             )
         ).all()
-        
-        # Group by product reference
-        product_recommendations = {}
+
+        product_recommendations: dict[str, list[HumanRecommendationRecord]] = (
+            {}
+        )
         for rec in recommendations:
             if rec.product_reference not in product_recommendations:
                 product_recommendations[rec.product_reference] = []
             product_recommendations[rec.product_reference].append(rec)
-            
+
         return product_recommendations
 
-    def _get_product_key_from_system_name(self, session: Session, system_name: str) -> str | None:
+    def _get_product_key_from_system_name(
+        self, session: Session, system_name: str
+    ) -> str | None:
         """Get product key from system name."""
         product = session.scalars(
             select(RawProductRecord).where(
@@ -164,7 +164,9 @@ class ExperimentOrchestrator:
         ).first()
         return product.product_key if product else None
 
-    def _get_attribute_key_from_system_name(self, session: Session, system_name: str) -> str | None:
+    def _get_attribute_key_from_system_name(
+        self, session: Session, system_name: str
+    ) -> str | None:
         """Get attribute key from system name."""
         attribute = session.scalars(
             select(RawAttributeRecord).where(
@@ -173,31 +175,50 @@ class ExperimentOrchestrator:
         ).first()
         return attribute.attribute_key if attribute else None
 
-    def _get_allowable_values(self, session: Session, attribute_key: str) -> list[str]:
+    def _get_allowable_values(
+        self, session: Session, attribute_key: str
+    ) -> list[str]:
         """Get allowable values for an attribute."""
         # Get values from category-specific rules
-        category_values = list(session.scalars(
-            select(text("value")).select_from(text("raw_category_allowable_values"))
-            .where(text("attribute_key = :attribute_key"))
-            .params(attribute_key=attribute_key)
-        ).all())
-        
-        # Get values from global rules
-        global_values = list(session.scalars(
-            select(text("value")).select_from(text("raw_attribute_allowable_values_applicable_in_every_category"))
-            .where(text("attribute_key = :attribute_key"))
-            .params(attribute_key=attribute_key)
-        ).all())
-        
+        category_values = list(
+            session.scalars(
+                select(text("value"))
+                .select_from(text("raw_category_allowable_values"))
+                .where(text("attribute_key = :attribute_key"))
+                .params(attribute_key=attribute_key)
+            ).all()
+        )
+
+        global_values = list(
+            session.scalars(
+                select(text("value"))
+                .select_from(
+                    text(
+                        "raw_attribute_allowable_values_"
+                        "applicable_in_every_category"
+                    )
+                )
+                .where(text("attribute_key = :attribute_key"))
+                .params(attribute_key=attribute_key)
+            ).all()
+        )
+
         # Get values from any-category rules
-        any_category_values = list(session.scalars(
-            select(text("value")).select_from(text("raw_attribute_allowable_values_in_any_category"))
-            .where(text("attribute_key = :attribute_key"))
-            .params(attribute_key=attribute_key)
-        ).all())
-        
+        any_category_values = list(
+            session.scalars(
+                select(text("value"))
+                .select_from(
+                    text("raw_attribute_allowable_values_in_any_category")
+                )
+                .where(text("attribute_key = :attribute_key"))
+                .params(attribute_key=attribute_key)
+            ).all()
+        )
+
         # Combine all values and remove duplicates
-        return sorted(list(set(category_values + global_values + any_category_values)))
+        return sorted(
+            list(set(category_values + global_values + any_category_values))
+        )
 
     def _store_predictions(
         self,
@@ -211,50 +232,45 @@ class ExperimentOrchestrator:
             facet_repo = FacetIdentificationRepository(session)
             product_repo = RawProductRepository(session)
             attribute_repo = RawAttributeRepository(session)
-            
+
             # Get gaps with ground truth to link to recommendations
-            gaps_with_truth = facet_repo.get_product_gaps_with_ground_truth(product_key)
+            gaps_with_truth = facet_repo.get_product_gaps_with_ground_truth(
+                product_key
+            )
             logger.info(f"Found {len(gaps_with_truth)} gaps with ground truth")
-            
+
             # Get the product to get its system_name
             product = product_repo.get_by_id(product_key)
             if not product:
                 logger.error(f"Product not found for key: {product_key}")
                 return
             logger.info(f"Product system_name: {product.system_name}")
-            
+
             # Get recommendations for this product using system_name
             recommendations = session.execute(
-                select(text("*")).select_from(text("human_recommendations")).where(
-                    text("product_reference = :system_name")
-                ),
-                {"system_name": product.system_name}
+                select(text("*"))
+                .select_from(text("human_recommendations"))
+                .where(text("product_reference = :system_name")),
+                {"system_name": product.system_name},
             ).all()
-            logger.info(f"Found {len(recommendations)} recommendations for product {product_key}")
-            
-            # Log all recommendations for debugging
-            for rec in recommendations:
-                logger.info(
-                    f"Recommendation found - ID: {rec.id}, "
-                    f"Product: {rec.product_reference}, "
-                    f"Attribute: {rec.attribute_name} ({rec.attribute_reference})"
-                )
-            
-            # Create lookup from attribute system name to recommendation id
+            logger.info(
+                f"Found {len(recommendations)} recommendations "
+                f"for product {product_key}"
+            )
+
             attribute_to_recommendation = {}
             for rec in recommendations:
-                # Get the attribute record for this recommendation
                 attribute = attribute_repo.session.scalars(
                     select(RawAttributeRecord).where(
-                        RawAttributeRecord.system_name == rec.attribute_reference
+                        RawAttributeRecord.system_name
+                        == rec.attribute_reference
                     )
                 ).first()
-                
+
                 if attribute:
-                    # Store both the recommendation ID and the full recommendation record
                     attribute_to_recommendation[attribute.system_name] = {
-                        'id': rec.id,
-                        'recommendation': rec
+                        "id": rec.id,
+                        "recommendation": rec,
                     }
                     logger.info(
                         f"Mapped attribute {rec.attribute_name} "
@@ -267,28 +283,39 @@ class ExperimentOrchestrator:
                         f"No attribute found for recommendation "
                         f"attribute_reference: {rec.attribute_reference}"
                     )
-            
-            logger.info(f"Created lookup with {len(attribute_to_recommendation)} entries")
-            
-            # Store all predictions in a single transaction
+
+            logger.info(
+                f"Created lookup with {len(attribute_to_recommendation)} "
+                f"entries"
+            )
+
             for prediction in predictions:
-                attribute = facet_repo.attribute_repo.get_by_friendly_name(prediction.attribute)
+                attribute = facet_repo.attribute_repo.get_by_friendly_name(
+                    prediction.attribute
+                )
                 if not attribute:
-                    logger.error(f"Attribute not found for name: {prediction.attribute}")
+                    logger.error(
+                        f"Attribute not found for name: {prediction.attribute}"
+                    )
                     continue
                 logger.info(
                     f"Processing prediction for {prediction.attribute} "
-                    f"(system_name: {attribute.system_name}, key: {attribute.attribute_key})"
+                    f"(system_name: {attribute.system_name}, "
+                    f"key: {attribute.attribute_key})"
                 )
-                
-                recommendation = attribute_to_recommendation.get(attribute.system_name)
-                recommendation_key = recommendation['id'] if recommendation else None
-                
+
+                recommendation = attribute_to_recommendation.get(
+                    attribute.system_name
+                )
+                recommendation_key = (
+                    recommendation["id"] if recommendation else None
+                )
+
                 if recommendation:
                     logger.info(
                         f"Found matching recommendation - "
-                        f"Product: {recommendation['recommendation'].product_reference}, "
-                        f"Attribute: {recommendation['recommendation'].attribute_reference}, "
+                        f"Product: {rec.product_reference}, "
+                        f"Attribute: {rec.attribute_reference}, "
                         f"ID: {recommendation_key}"
                     )
                 else:
@@ -308,9 +335,11 @@ class ExperimentOrchestrator:
                     recommendation_key=recommendation_key,
                 )
                 repo.create(result)
-            
+
             session.commit()
-            logger.info(f"Committed {len(predictions)} predictions to database")
+            logger.info(
+                f"Committed {len(predictions)} predictions to database"
+            )
 
     def _update_experiment_metrics(
         self,
@@ -323,11 +352,13 @@ class ExperimentOrchestrator:
         with SessionLocal() as session:
             repo = PredictionExperimentRepository(session)
             experiment = repo.get_by_experiment_key(experiment_key)
-            experiment.completed_at = datetime.now(timezone.utc)  # Use current time as end time
+            experiment.completed_at = datetime.now(timezone.utc)
             experiment.total_predictions = total_predictions
             experiment.total_products = total_products
             experiment.average_time_per_prediction = (
-                elapsed_time / total_predictions if total_predictions > 0 else None
+                elapsed_time / total_predictions
+                if total_predictions > 0
+                else None
             )
             session.add(experiment)
             session.commit()  # Ensure changes are saved
@@ -343,7 +374,7 @@ class ExperimentOrchestrator:
             The experiment key for this run
         """
         start_time = time.time()
-        
+
         # Step 1: Create experiment
         experiment_key = self._create_experiment()
         logger.info(f"Created experiment {experiment_key}")
@@ -351,81 +382,116 @@ class ExperimentOrchestrator:
         try:
             with SessionLocal() as session:
                 # Step 2: Get all accepted recommendations and group by product
-                product_recommendations = self._get_accepted_recommendations(session)
-                logger.info(f"Found accepted recommendations for {len(product_recommendations)} products")
-                
+                product_recommendations = self._get_accepted_recommendations(
+                    session
+                )
+                logger.info(
+                    f"Found accepted recommendations for "
+                    f"{len(product_recommendations)} products"
+                )
+
                 # Step 3: Process each product's recommendations
                 service = FacetInferenceService.from_session()
                 total_predictions = 0
                 processed_products = 0
-                
+
                 for system_name, recs in product_recommendations.items():
                     if limit and processed_products >= limit:
                         break
-                        
+
                     try:
                         # Get product key from system name
-                        product_key = self._get_product_key_from_system_name(session, system_name)
+                        product_key = self._get_product_key_from_system_name(
+                            session, system_name
+                        )
                         if not product_key:
-                            logger.warning(f"No product found for system name: {system_name}")
+                            logger.warning(
+                                f"No product found for system name: "
+                                f"{system_name}"
+                            )
                             continue
-                            
+
                         logger.info(
-                            f"Processing product {product_key} ({system_name}) "
+                            f"Processing product {product_key} "
+                            f"({system_name}) "
                             f"with {len(recs)} accepted recommendations"
                         )
-                        
+
                         # Get gaps that have recommendations
                         gaps = []
                         for rec in recs:
                             # Get attribute key from system name
-                            attribute_key = self._get_attribute_key_from_system_name(
-                                session, rec.attribute_reference
+                            attribute_key = (
+                                self._get_attribute_key_from_system_name(
+                                    session, rec.attribute_reference
+                                )
                             )
                             if attribute_key:
                                 # Get attribute details
                                 attribute = session.scalars(
                                     select(RawAttributeRecord).where(
-                                        RawAttributeRecord.attribute_key == attribute_key
+                                        RawAttributeRecord.attribute_key
+                                        == attribute_key
                                     )
                                 ).first()
-                                
+
                                 if attribute:
                                     # Get allowable values
-                                    allowable_values = self._get_allowable_values(session, attribute_key)
-                                    
-                                    gaps.append(ProductAttributeGap(
-                                        attribute=attribute.friendly_name,
-                                        allowable_values=allowable_values
-                                    ))
+                                    allowable_values = (
+                                        self._get_allowable_values(
+                                            session, attribute_key
+                                        )
+                                    )
+
+                                    gaps.append(
+                                        ProductAttributeGap(
+                                            attribute=attribute.friendly_name,
+                                            allowable_values=allowable_values,
+                                        )
+                                    )
                                     logger.info(
-                                        f"Added gap for attribute {attribute.friendly_name} "
-                                        f"with {len(allowable_values)} allowable values"
+                                        f"Added gap for attribute "
+                                        f"{attribute.friendly_name} "
+                                        f"with {len(allowable_values)} "
+                                        f"allowable values"
                                     )
                                 else:
                                     logger.warning(
-                                        f"No attribute found for key: {attribute_key}"
+                                        f"No attribute found for key: "
+                                        f"{attribute_key}"
                                     )
                             else:
                                 logger.warning(
-                                    f"No attribute found for system name: {rec.attribute_reference}"
+                                    f"No attribute found for system name: "
+                                    f"{rec.attribute_reference}"
                                 )
-                        
+
                         if not gaps:
-                            logger.warning(f"No valid gaps found for product {product_key}")
+                            logger.warning(
+                                f"No valid gaps found for product "
+                                f"{product_key}"
+                            )
                             continue
-                            
+
                         # Process gaps
-                        predictions = await service.predict_for_product_key(product_key, evaluation_mode=True)
-                        logger.info(f"Generated {len(predictions)} predictions")
-                        
+                        predictions = await service.predict_for_product_key(
+                            product_key, evaluation_mode=True
+                        )
+                        logger.info(
+                            f"Generated {len(predictions)} predictions"
+                        )
+
                         # Store predictions
-                        self._store_predictions(experiment_key, product_key, predictions)
+                        self._store_predictions(
+                            experiment_key, product_key, predictions
+                        )
                         total_predictions += len(predictions)
                         processed_products += 1
-                        
+
                     except Exception as e:
-                        logger.error(f"Error processing product {system_name}: {e}")
+                        logger.error(
+                            f"Error processing product {system_name}: {e}"
+                        )
                         continue
 
                 # Step 5: Update experiment metrics
