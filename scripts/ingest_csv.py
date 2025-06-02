@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
+
 import argparse
 import logging
 
 from src.log_utils import setup_logging
 from src.raw_csv_ingestion import ingest_csv_files
+from src.raw_csv_ingestion.code_types import ProductCodeType
 
 logger = logging.getLogger(__name__)
 setup_logging()
@@ -32,6 +34,15 @@ def main():
         help="Maximum number of rows to process per file (default: no limit)",
     )
     parser.add_argument(
+        "--code-type",
+        type=str,
+        choices=[t.value for t in ProductCodeType],
+        help=(
+            "Force a specific code type for all products "
+            "(default: auto-detect)"
+        ),
+    )
+    parser.add_argument(
         "--debug",
         action="store_true",
         help="Enable debug logging",
@@ -48,9 +59,10 @@ def main():
             directory=args.directory,
             batch_size=args.batch_size,
             row_limit=args.row_limit,
+            code_type=args.code_type,
         )
     except Exception as e:
-        logger.error(f"Error during CSV ingestion: {str(e)}")
+        logger.error(f"Error during raw data ingestion: {str(e)}")
         raise
 
 

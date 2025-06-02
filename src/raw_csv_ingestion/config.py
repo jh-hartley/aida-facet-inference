@@ -1,8 +1,8 @@
 from src.raw_csv_ingestion.records import (
+    HumanRecommendationRecord,
     RawAttributeAllowableValueApplicableInEveryCategoryRecord,
     RawAttributeAllowableValueInAnyCategoryRecord,
     RawAttributeRecord,
-    RawBQBatch16QACompleteRecord,
     RawCategoryAllowableValueRecord,
     RawCategoryAttributeRecord,
     RawCategoryRecord,
@@ -37,6 +37,14 @@ GloballyAllowedValueRecord = (
 create_globally_allowed = (
     create_attribute_allowable_value_applicable_in_every_category
 )
+
+
+# NOTE: Ingestion takes a very long time if the
+# ProductAttributeAllowableValue.csv is included.
+# It is much more efficient for our purposes to skip over it.
+# This is because the ProductAttributeAllowableValue.csv
+# is a very large file and it takes a very long time to ingest.
+# We can skip over it by not including it in the FILE_CONFIGS.
 
 
 class CSVConfig:
@@ -106,7 +114,7 @@ class CSVConfig:
                 "AttributeKey": "attribute_key",
             },
         },
-        "ProductAttributeAllowableValue.csv": {
+        "ProductAttributeAllowableValue": {
             "model": RawProductAttributeAllowableValueRecord,
             "create_func": create_product_attribute_allowable_value,
             "column_mapping": {
@@ -166,7 +174,7 @@ class CSVConfig:
             },
         },
         "Output QA file for B&Q Batch 16 - B&Q QA Complete": {
-            "model": RawBQBatch16QACompleteRecord,
+            "model": HumanRecommendationRecord,
             "create_func": create_bq_batch16_qa_complete,
             "column_mapping": {
                 "Product Reference": "product_reference",

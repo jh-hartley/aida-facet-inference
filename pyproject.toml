@@ -49,6 +49,7 @@ dev = [
     "types-psycopg2>=2.9.9",
     "types-tqdm>=4.66.0",
     "pandas-stubs>=2.0.0",
+    "types-openpyxl>=3.1.0",
 ]
 
 [tool.setuptools]
@@ -85,6 +86,10 @@ ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
 module = "plotly.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "openpyxl.*"
 ignore_missing_imports = true
 
 [tool.black]

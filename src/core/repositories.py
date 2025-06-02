@@ -151,11 +151,13 @@ class FacetIdentificationRepository:
         ]
 
         return ProductDetails(
-            product_code=product.product_key,
+            product_key=product.product_key,
+            product_code=product.system_name,
             product_name=product.friendly_name,
             product_description=descriptions,
             categories=categories,
             attributes=attributes,
+            code_type=product.code_type,
         )
 
     def find_product_details(self, product_key: str) -> ProductDetails | None:
@@ -329,7 +331,7 @@ class PredictionExperimentRepository(Repository[PredictionExperimentRecord]):
         return list(
             self.session.scalars(
                 select(self.model).where(
-                    self.model.metadata[key].astext == str(value)
+                    self.model.experiment_metadata[key].astext == str(value)
                 )
             ).all()
         )

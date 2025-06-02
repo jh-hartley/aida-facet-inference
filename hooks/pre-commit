@@ -1,13 +1,14 @@
 #!/bin/bash
 
-# Patterns for various LLM API keys
 PATTERNS=(
-    "sk-[a-zA-Z0-9]{32,}"       # OpenAI
-    "sk-proj-[a-zA-Z0-9]{32,}"  # Stripe
-    "sk-[a-zA-Z0-9]{48}"        # Anthropic
-    "sk-[a-zA-Z0-9]{40}"        # Cohere
-    "sk-[a-zA-Z0-9]{24}"        # HuggingFace
-    "sk-[a-zA-Z0-9]{36}"        # Azure OpenAI
+    "sk-[a-zA-Z0-9]{24,}"                       # Generic OpenAI-style keys
+    "sk-proj-[a-zA-Z0-9]{24,}"                  # Stripe-style keys
+    "pk-[a-zA-Z0-9]{24,}"                       # Public keys
+    "rk-[a-zA-Z0-9]{24,}"                       # Restricted keys
+    "ak-[a-zA-Z0-9]{24,}"                       # Access keys
+    "api[_-]?key[_-]?[a-zA-Z0-9]{24,}"          # Generic API key format
+    "secret[_-]?key[_-]?[a-zA-Z0-9]{24,}"       # Secret key format
+    "bearer[_-]?token[_-]?[a-zA-Z0-9]{24,}"     # Bearer token format
 )
 
 STAGED_FILES=$(git diff --cached --name-only)

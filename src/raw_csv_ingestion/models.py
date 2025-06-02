@@ -101,7 +101,7 @@ class RawRichTextSource(BaseModel):
     created_at: datetime
 
 
-class RawBQBatch16QAComplete(BaseModel):
+class HumanRecommendation(BaseModel):
     product_reference: str
     attribute_reference: str
     attribute_name: str

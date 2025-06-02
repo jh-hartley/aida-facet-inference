@@ -1,9 +1,8 @@
 #!/bin/bash
 
-FIX_MODE=false
-if [ "$1" == "--fix" ]; then
-    FIX_MODE=true
-fi
+set -euo pipefail
+
+LINE_LENGTH=79
 
 EXCLUDES=(
     "venv"
@@ -18,60 +17,77 @@ EXCLUDES=(
     "data"
 )
 
-EXCLUDES_REGEX="($(IFS="|"; echo "${EXCLUDES[*]}"))"
-EXCLUDES_LIST=$(IFS=","; echo "${EXCLUDES[*]}")
-ISORT_SKIPS=""
-for skip in "${EXCLUDES[@]}"; do
-    ISORT_SKIPS="$ISORT_SKIPS --skip $skip"
-done
+log() { echo "==> $1"; }
 
-echo "Running code quality checks..."
+error() {
+    echo "ERROR: $1" >&2
+    exit 1
+}
 
-if [ "$FIX_MODE" = true ]; then
-    echo "Fixing import sorting..."
-    isort . --profile black $ISORT_SKIPS
-    echo "Fixing black formatting..."
-    black . --line-length 79
-else
-    echo "Running black..."
-    black . --check --verbose --line-length 79
-    if [ $? -ne 0 ]; then
-        echo "Black check failed"
-        echo "Run './scripts/check.sh --fix' to automatically fix formatting issues"
-        exit 1
+run_check() {
+    local name=$1
+    local cmd=$2
+    local fix_cmd=$3
+
+    log "Running $name..."
+    if ! eval "$cmd"; then
+        error "$name check failed"
+        if [ -n "$fix_cmd" ]; then
+            echo "Run '$fix_cmd' to automatically fix the issues"
+        fi
+    fi
+}
+
+build_excludes() {
+    # flake8 needs comma-separated list
+    local excludes_list=$(IFS=","; echo "${EXCLUDES[*]}")
+    
+    local isort_skips=""
+    for skip in "${EXCLUDES[@]}"; do
+        isort_skips="$isort_skips --skip $skip"
+    done
+    
+    echo "$excludes_list|$isort_skips"
+}
+
+main() {
+    local fix_mode=false
+    if [ "${1:-}" == "--fix" ]; then
+        fix_mode=true
     fi
 
-    echo "Running isort..."
-    isort . --check-only --diff --profile black $ISORT_SKIPS
-    if [ $? -ne 0 ]; then
-        echo "isort check failed"
-        echo "Run './scripts/check.sh --fix' to automatically fix import sorting"
-        exit 1
+    IFS="|" read -r excludes_list isort_skips <<< "$(build_excludes)"
+
+    log "Running code quality checks..."
+
+    if [ "$fix_mode" = true ]; then
+        log "Fixing import sorting..."
+        isort . --profile black $isort_skips
+        log "Fixing black formatting..."
+        black . --line-length $LINE_LENGTH
+    else
+        run_check "black" \
+            "black . --check --verbose --line-length $LINE_LENGTH" \
+            "./scripts/check.sh --fix"
+
+        run_check "isort" \
+            "isort . --check-only --diff --profile black $isort_skips" \
+            "./scripts/check.sh --fix"
     fi
-fi
 
-echo "Running flake8..."
-flake8 . --show-source --exclude=$EXCLUDES_LIST --max-line-length=79
-if [ $? -ne 0 ]; then
-    echo "flake8 check failed"
-    echo "Please fix the issues shown above"
-    exit 1
-fi
+    run_check "flake8" \
+        "flake8 . --show-source --exclude=$excludes_list --max-line-length=$LINE_LENGTH" \
+        ""
 
-echo "Running mypy..."
-mypy src/ --show-error-codes
-if [ $? -ne 0 ]; then
-    echo "mypy check failed"
-    echo "Please fix the type errors shown above"
-    exit 1
-fi
+    run_check "mypy" \
+        "mypy src/ --show-error-codes" \
+        ""
 
-echo "Running tests..."
-pytest tests/ -v
-if [ $? -ne 0 ]; then
-    echo "tests failed"
-    echo "Please fix the failing tests shown above"
-    exit 1
-fi
+    run_check "tests" \
+        "pytest tests/ -v" \
+        ""
 
-echo "All checks passed!" 
+    log "All checks passed! ✨"
+}
+
+main "$@" 

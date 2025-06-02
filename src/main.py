@@ -1,24 +1,53 @@
 import logging
+import os
+import uuid
 from http import HTTPStatus
+from typing import Callable
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from starlette.middleware.base import BaseHTTPMiddleware
 
 from src.api.routers.base_router import base_router
+from src.log_utils import setup_logging
 
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+setup_logging()
+
+
+class RequestIDMiddleware(BaseHTTPMiddleware):
+    """Add a unique request ID to each request for tracing."""
+
+    async def dispatch(
+        self, request: Request, call_next: Callable
+    ) -> Response:
+        request_id = str(uuid.uuid4())
+        request.state.request_id = request_id
+        response: Response = await call_next(request)
+        response.headers["X-Request-ID"] = request_id
+        return response
 
 
 def setup_middleware(app: FastAPI) -> None:
     """Configure CORS and other middleware."""
+    allowed_origins = (
+        ["*"]
+        if os.getenv("DEBUG", "True").lower() == "true"
+        else os.getenv(
+            "ALLOWED_ORIGINS",
+            "http://localhost:3000,http://127.0.0.1:3000",
+        ).split(",")
+    )
+
+    app.add_middleware(RequestIDMiddleware)
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["*"],  # For local development, allow all origins
-        allow_credentials=True,
+        allow_origins=allowed_origins,
+        allow_credentials=False,
         allow_methods=["*"],
         allow_headers=["*"],
+        expose_headers=["X-Request-ID"],
     )
 
 

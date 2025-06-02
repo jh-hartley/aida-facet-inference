@@ -4,10 +4,10 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from src.raw_csv_ingestion.records import (
+    HumanRecommendationRecord,
     RawAttributeAllowableValueApplicableInEveryCategoryRecord,
     RawAttributeAllowableValueInAnyCategoryRecord,
     RawAttributeRecord,
-    RawBQBatch16QACompleteRecord,
     RawCategoryAllowableValueRecord,
     RawCategoryAttributeRecord,
     RawCategoryRecord,
@@ -762,10 +762,88 @@ class RawAttributeAllowableValueInAnyCategoryRepository(
         )
 
 
-class RawBQBatch16QACompleteRepository(
-    Repository[RawBQBatch16QACompleteRecord]
-):
+class HumanRecommendationRepository(Repository[HumanRecommendationRecord]):
     """Repository for B&Q QA Complete Excel data"""
 
     def __init__(self, session: Session):
-        super().__init__(session, RawBQBatch16QACompleteRecord)
+        super().__init__(session, HumanRecommendationRecord)
+
+    def get_by_product_reference(
+        self, product_reference: str
+    ) -> list[HumanRecommendationRecord]:
+        result = list(
+            self.session.scalars(
+                select(HumanRecommendationRecord).where(
+                    HumanRecommendationRecord.product_reference
+                    == product_reference
+                )
+            ).all()
+        )
+        if not result:
+            raise ValueError(
+                f"No human recommendations found for product "
+                f"{product_reference}"
+            )
+        return result
+
+    def find_by_product_reference(
+        self, product_reference: str
+    ) -> list[HumanRecommendationRecord]:
+        """Find all human recommendations for a product"""
+        return list(
+            self.session.scalars(
+                select(HumanRecommendationRecord).where(
+                    HumanRecommendationRecord.product_reference
+                    == product_reference
+                )
+            ).all()
+        )
+
+    def get_by_attribute_reference(
+        self, attribute_reference: str
+    ) -> list[HumanRecommendationRecord]:
+        result = list(
+            self.session.scalars(
+                select(HumanRecommendationRecord).where(
+                    HumanRecommendationRecord.attribute_reference
+                    == attribute_reference
+                )
+            ).all()
+        )
+        if not result:
+            raise ValueError(
+                f"No human recommendations found for attribute "
+                f"{attribute_reference}"
+            )
+        return result
+
+    def find_by_attribute_reference(
+        self, attribute_reference: str
+    ) -> list[HumanRecommendationRecord]:
+        """Find all human recommendations for an attribute"""
+        return list(
+            self.session.scalars(
+                select(HumanRecommendationRecord).where(
+                    HumanRecommendationRecord.attribute_reference
+                    == attribute_reference
+                )
+            ).all()
+        )
+
+    def find_by_product_and_attribute_reference(
+        self, product_reference: str, attribute_reference: str
+    ) -> list[HumanRecommendationRecord]:
+        """
+        Find all human recommendations for a specific product-attribute
+        combination
+        """
+        return list(
+            self.session.scalars(
+                select(HumanRecommendationRecord).where(
+                    HumanRecommendationRecord.product_reference
+                    == product_reference,
+                    HumanRecommendationRecord.attribute_reference
+                    == attribute_reference,
+                )
+            ).all()
+        )

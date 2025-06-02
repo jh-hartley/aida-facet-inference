@@ -14,6 +14,7 @@ class RawProductRecord(Base):
     product_key: Mapped[str] = mapped_column(String, primary_key=True)
     system_name: Mapped[str] = mapped_column(String)
     friendly_name: Mapped[str] = mapped_column(String)
+    code_type: Mapped[str] = mapped_column(String, default="EAN")
 
 
 class RawCategoryRecord(Base):
@@ -192,10 +193,10 @@ class RawAttributeAllowableValueInAnyCategoryRecord(Base):
     value: Mapped[str] = mapped_column(Text, primary_key=True)
 
 
-class RawBQBatch16QACompleteRecord(Base):
+class HumanRecommendationRecord(Base):
     """Model for B&Q QA Complete Excel data"""
 
-    __tablename__ = "raw_bq_batch16_qa_complete"
+    __tablename__ = "human_recommendations"
 
     id: Mapped[int] = mapped_column(
         Integer, primary_key=True, autoincrement=True

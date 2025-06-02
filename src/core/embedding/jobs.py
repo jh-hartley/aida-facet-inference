@@ -8,7 +8,7 @@ from src.core.models import ProductDetails
 from src.core.repositories import FacetIdentificationRepository
 from src.db.connection import SessionLocal
 from src.log_utils import setup_logging
-from src.utils.clock import Clock
+from src.utils.clock import clock
 
 logger = logging.getLogger(__name__)
 setup_logging()
@@ -20,6 +20,8 @@ def _get_product_description(product_details: ProductDetails) -> str:
     """Convert product details into a text description for embedding"""
     description_parts = [
         f"Product: {product_details.product_name}",
+        f"Product Code ({product_details.code_type}): "
+        f"{product_details.product_code}",
         f"Categories: {', '.join(product_details.categories)}",
     ]
 
@@ -52,7 +54,7 @@ async def _create_embedding(product_key: str) -> None:
                     ProductEmbedding(
                         product_key=product_key,
                         embedding=embedding,
-                        created_at=Clock.now(),
+                        created_at=clock.now(),
                     )
                 )
                 session.commit()

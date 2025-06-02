@@ -41,8 +41,10 @@ def facet_inference_router(
         """
         # Convert request DTOs to domain models
         product_details = ProductDetails(
+            product_key=product.product_key,
             product_code=product.product_code,
             product_name=product.product_name,
+            code_type=product.code_type,
             product_description=[
                 ProductDescriptor(descriptor=d.descriptor, value=d.value)
                 for d in product.product_description
@@ -90,7 +92,9 @@ def facet_inference_router(
         """
         # Convert request DTOs to domain models
         product_details = ProductDetails(
+            product_key=product.product_key,
             product_code=product.product_code,
+            code_type=product.code_type,
             product_name=product.product_name,
             product_description=[
                 ProductDescriptor(descriptor=d.descriptor, value=d.value)

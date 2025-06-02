@@ -1,8 +1,8 @@
--- Core tables for raw data ingestion
 CREATE TABLE raw_products (
     product_key TEXT PRIMARY KEY,
     system_name TEXT,
-    friendly_name TEXT
+    friendly_name TEXT,
+    code_type TEXT
 );
 
 CREATE TABLE raw_categories (
@@ -69,18 +69,25 @@ CREATE TABLE raw_attribute_allowable_values_in_any_category (
     PRIMARY KEY (attribute_key, value)
 );
 
+CREATE TABLE raw_product_attribute_allowable_values (
+    product_key TEXT,
+    attribute_key TEXT,
+    value TEXT,
+    PRIMARY KEY (product_key, attribute_key, value)
+);
+
 CREATE TABLE raw_recommendations (
     recommendation_key TEXT PRIMARY KEY,
     product_key TEXT,
     attribute_key TEXT,
     value TEXT,
     confidence FLOAT,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP WITH TIME ZONE
 );
 
 CREATE TABLE raw_recommendation_rounds (
     round_key TEXT PRIMARY KEY,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP WITH TIME ZONE
 );
 
 CREATE TABLE raw_rich_text_sources (
@@ -89,10 +96,10 @@ CREATE TABLE raw_rich_text_sources (
     content TEXT,
     name TEXT,
     priority INTEGER,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP WITH TIME ZONE
 );
 
-CREATE TABLE raw_bq_batch16_qa_complete (
+CREATE TABLE human_recommendations (
     id SERIAL PRIMARY KEY,
     product_reference TEXT,
     attribute_reference TEXT,
