@@ -8,6 +8,7 @@ To use, run:
 
 import asyncio
 import json
+import sys
 import logging
 from pathlib import Path
 
@@ -17,8 +18,7 @@ from scripts.smoke_tests.utils import (
     get_product_key,
     write_output,
 )
-from src.core.facet_inference.inference import ProductFacetPredictor
-from src.core.facet_inference.prompts import PRODUCT_FACET_PROMPT
+from src.core.facet_inference.service import FacetInferenceService
 from src.core.repositories import FacetIdentificationRepository
 from src.db.connection import SessionLocal
 
@@ -99,32 +99,9 @@ async def main(
 
         with SessionLocal() as session:
             repository = FacetIdentificationRepository(session)
-            product_details = repository.get_product_details(product_key)
-            product_gaps = repository.get_product_gaps(product_key)
+            service = FacetInferenceService(repository)
+            predictions = await service.predict_for_product_key(product_key)
 
-            logger.info(
-                f"Found {len(product_gaps.gaps)} attributes to predict for "
-                f"{product_details.product_name}"
-            )
-
-            predictor = ProductFacetPredictor(
-                product_details=product_details,
-                product_gaps=product_gaps,
-            )
-            model_name = predictor._llm.llm_model.value
-
-            system_prompt = PRODUCT_FACET_PROMPT.get_system_prompt(
-                product_details.get_llm_prompt()
-            )
-            product_context = product_details.get_llm_prompt()
-
-            tasks = [
-                predictor.apredict_single_gap(gap) for gap in product_gaps.gaps
-            ]
-
-            predictions = await asyncio.gather(*tasks)
-
-            # Log summary of predictions
             confidence_summary = ", ".join(
                 f"{pred.attribute}: {pred.confidence:.2f}"
                 for pred in predictions
@@ -135,13 +112,11 @@ async def main(
                 f"{confidence_summary}"
             )
 
-            # Write predictions to 04_llm_predictions.txt
             predictions_output = [
                 format_section(
                     "Product Information",
                     f"Product Key: {product_key}\n"
-                    f"Product Name: {product_details.product_name}\n"
-                    f"Product Code: {product_details.product_code}",
+                    f"Predictions: {len(predictions)}",
                 ),
                 format_section(
                     "Raw Predictions",
@@ -167,15 +142,6 @@ async def main(
                 "\n\n".join(predictions_output),
             )
 
-            # Write token analysis to 00_token_analysis.txt
-            token_analysis = format_token_analysis(
-                system_prompt,
-                product_context,
-                [pred.model_dump() for pred in predictions],
-                model_name,
-            )
-            write_output(output_dir, "00_token_analysis.txt", token_analysis)
-
     except ValueError as e:
         logger.error(f"Error: {e}")
     except Exception as e:
@@ -183,4 +149,5 @@ async def main(
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    product_key = sys.argv[1] if len(sys.argv) > 1 else None
+    asyncio.run(main(product_key))

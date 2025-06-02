@@ -1,10 +1,11 @@
-from asyncio import gather
+from asyncio import gather, Semaphore
 from typing import Sequence
 
 from src.core.facet_inference.inference import ProductFacetPredictor
 from src.core.facet_inference.models import FacetPrediction
-from src.core.models import ProductDetails, ProductGaps
+from src.core.repositories import FacetIdentificationRepository
 from src.core.types import ProductAttributeGap
+from src.db.connection import SessionLocal
 
 
 class FacetInferenceService:
@@ -12,43 +13,53 @@ class FacetInferenceService:
 
     def __init__(
         self,
-        product_details: ProductDetails,
-        product_gaps: ProductGaps,
-        predictor: ProductFacetPredictor | None = None,
-    ):
-        self._predictor = predictor or ProductFacetPredictor(
-            product_details=product_details,
-            product_gaps=product_gaps,
-        )
+        repository: FacetIdentificationRepository | None = None,
+        max_concurrent: int = 32,
+    ) -> None:
+        self.repository = repository or FacetIdentificationRepository(SessionLocal())
+        self.max_concurrent = max_concurrent
+        self._predictor = None
+
+    @classmethod
+    def from_session(cls, session=None, max_concurrent: int = 8) -> "FacetInferenceService":
+        """
+        Create a service instance from a session.
+        """
+        if session is None:
+            session = SessionLocal()
+        repository = FacetIdentificationRepository(session)
+        return cls(repository=repository, max_concurrent=max_concurrent)
+
+    async def predict_for_product_key(self, product_key: str) -> list[FacetPrediction]:
+        """
+        Predict all missing attributes for a product, managing concurrency 
+        and prompt logic internally.
+        """
+        product_details = self.repository.get_product_details(product_key)
+        product_gaps = self.repository.get_product_gaps(product_key)
+        self._predictor = ProductFacetPredictor(product_details, product_gaps)
+        semaphore = Semaphore(self.max_concurrent)
+
+        async def limited_predict(gap: ProductAttributeGap):
+            async with semaphore:
+                return await self.predict_attribute(gap)
+
+        tasks = [limited_predict(gap) for gap in product_gaps.gaps]
+        return await gather(*tasks)
 
     async def predict_attribute(
         self,
         gap: ProductAttributeGap,
     ) -> FacetPrediction:
-        """
-        Predict a value for a missing attribute.
 
-        Args:
-            gap: Information about the missing attribute and its allowed values
-
-        Returns:
-            Prediction result with value and confidence
-        """
+        if self._predictor is None:
+            raise RuntimeError("Predictor not initialised. Call predict_for_product_key first.")
         return await self._predictor.apredict_single_gap(gap)
 
     async def predict_multiple_attributes(
         self,
         gaps: Sequence[ProductAttributeGap],
     ) -> list[FacetPrediction]:
-        """
-        Predict values for multiple missing attributes concurrently.
-
-        Args:
-            gaps: List of missing attributes and their allowed values
-
-        Returns:
-            List of prediction results with values and confidence
-        """
         predictions = await gather(
             *(self.predict_attribute(gap) for gap in gaps)
         )
