@@ -3,9 +3,8 @@
 import argparse
 import logging
 
-from src.log_utils import setup_logging
-from src.raw_csv_ingestion import ingest_csv_files
-from src.raw_csv_ingestion.code_types import ProductCodeType
+from src.common.logs import setup_logging
+from src.csv_ingestion import ProductIdentifierType, ingest_files
 
 logger = logging.getLogger(__name__)
 setup_logging()
@@ -36,7 +35,7 @@ def main():
     parser.add_argument(
         "--code-type",
         type=str,
-        choices=[t.value for t in ProductCodeType],
+        choices=[t.value for t in ProductIdentifierType],
         help=(
             "Force a specific code type for all products "
             "(default: auto-detect)"
@@ -55,11 +54,11 @@ def main():
         logger.debug("Debug logging enabled")
 
     try:
-        ingest_csv_files(
+        ingest_files(
             directory=args.directory,
             batch_size=args.batch_size,
             row_limit=args.row_limit,
-            code_type=args.code_type,
+            identifier_type=args.code_type,
         )
     except Exception as e:
         logger.error(f"Error during raw data ingestion: {str(e)}")

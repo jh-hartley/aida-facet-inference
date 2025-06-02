@@ -10,7 +10,7 @@ from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from src.api.routers.base_router import base_router
-from src.log_utils import setup_logging
+from src.common.logs import setup_logging
 
 logger = logging.getLogger(__name__)
 setup_logging()

@@ -1,8 +1,8 @@
 from datetime import datetime
 from pathlib import Path
 
+from src.common.db import SessionLocal
 from src.core.repositories import FacetIdentificationRepository
-from src.db.connection import SessionLocal
 
 
 def format_section(title: str, content: str) -> str:

@@ -1,5 +1,6 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
+from src.core.prompts.confidence_levels import ConfidenceLevel
 from src.core.types import (
     ProductAttributeGap,
     ProductAttributeValue,
@@ -130,3 +131,44 @@ class ProductGaps(BaseModel):
             self.get_formatted_gaps(),
         ]
         return "\n".join(sections)
+
+
+class FacetPrediction(BaseModel):
+    """Domain model for a facet prediction result."""
+
+    attribute: str = Field(description="Name of the attribute being predicted")
+    predicted_value: str = Field(
+        description="The predicted value for the attribute"
+    )
+    confidence: float = Field(
+        description="Confidence score (0-1) for the prediction", ge=0.0, le=1.0
+    )
+    reasoning: str = Field(
+        description="Explanation for why this value was chosen"
+    )
+    suggested_value: str = Field(
+        description="Suggested value when the correct value is not in the "
+        "allowed list"
+    )
+
+    @property
+    def confidence_level(self) -> ConfidenceLevel:
+        """Get the confidence level for this prediction."""
+        return ConfidenceLevel.from_score(self.confidence)
+
+    @classmethod
+    def get_prompt_description(cls) -> str:
+        """
+        Get a formatted description of the response structure for prompts.
+        """
+        return """
+        {
+            "attribute": str,  # Name of the attribute being predicted
+            "predicted_value": str,  # The predicted value (empty string if no
+                # prediction possible)
+            "confidence": float,  # Confidence score between 0 and 1
+            "reasoning": str,  # Explanation for the prediction
+            "suggested_value": str  # Suggested value if correct value not in
+                # allowed list
+        }
+        """

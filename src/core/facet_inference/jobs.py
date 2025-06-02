@@ -6,8 +6,10 @@ from typing import Any
 from sqlalchemy import select, text
 from sqlalchemy.orm import Session
 
-from src.core.facet_inference.models import FacetPrediction
+from src.common.clock import clock
+from src.common.db import SessionLocal, db_session, uuid
 from src.core.facet_inference.service import FacetInferenceService
+from src.core.models import FacetPrediction
 from src.core.records import (
     PredictionExperimentRecord,
     PredictionResultRecord,
@@ -18,17 +20,15 @@ from src.core.repositories import (
     PredictionResultRepository,
 )
 from src.core.types import ProductAttributeGap
-from src.db.connection import SessionLocal, db_session, uuid
-from src.raw_csv_ingestion.records import (
+from src.csv_ingestion.records import (
     HumanRecommendationRecord,
     RawAttributeRecord,
     RawProductRecord,
 )
-from src.raw_csv_ingestion.repositories import (
+from src.csv_ingestion.repositories import (
     RawAttributeRepository,
     RawProductRepository,
 )
-from src.utils.clock import clock
 
 logger = logging.getLogger(__name__)
 

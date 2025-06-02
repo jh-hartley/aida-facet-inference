@@ -4,8 +4,8 @@ import asyncio
 import logging
 from datetime import datetime
 
+from src.common.db import SessionLocal
 from src.core.facet_inference.jobs import ExperimentOrchestrator
-from src.db.connection import SessionLocal
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

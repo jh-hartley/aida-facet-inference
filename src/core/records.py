@@ -4,7 +4,7 @@ from typing import Any
 from sqlalchemy import JSON, DateTime, Float, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
-from src.db.connection import Base
+from src.common.db import Base
 
 
 class PredictionExperimentRecord(Base):

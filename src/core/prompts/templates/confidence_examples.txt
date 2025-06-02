@@ -1,0 +1,95 @@
+### Example 1: VERY_HIGH - Direct evidence
+Allowed values: ["Internal", "External"]
+```json
+{
+  "attribute": "Location",
+  "predicted_value": "Internal",
+  "confidence": 0.95,
+  "suggested_value": "",
+  "reasoning": "The product description explicitly states 'suitable for internal use' and it's categorized as an interior door."
+}
+```
+
+### Example 2: HIGH - Strong indirect evidence
+Allowed values: ["Pine", "Oak", "MDF"]
+```json
+{
+  "attribute": "Material",
+  "predicted_value": "Pine",
+  "confidence": 0.85,
+  "suggested_value": "",
+  "reasoning": "The product name includes 'Pine', the description mentions 'pine construction', and it's listed in the attributes. Multiple pieces of evidence strongly indicate this is a pine door."
+}
+```
+
+### Example 3: MODERATE - Clear inference
+Allowed values: ["Hollow", "Solid", "Panelled"]
+```json
+{
+  "attribute": "Construction type",
+  "predicted_value": "Hollow",
+  "confidence": 0.65,
+  "suggested_value": "",
+  "reasoning": "While not explicitly stated, louvre doors of this type are typically hollow construction to reduce weight while maintaining strength. This is a common industry standard for interior louvre doors."
+}
+```
+
+### Example 4: LOW - Weak inference (low-confidence guess, real value)
+Allowed values: ["White", "Natural", "Grey"]
+```json
+{
+  "attribute": "Colour group",
+  "predicted_value": "White",
+  "confidence": 0.20,
+  "suggested_value": "",
+  "reasoning": "There is no mention of colour in the product details. 'White' is a common finish for interior doors, but this is a guess."
+}
+```
+
+### Example 5: LOW - Weak inference (low-confidence guess, 'None' value)
+Allowed values: ["Clear", "Frosted", "None"]
+```json
+{
+  "attribute": "Glazed panel style",
+  "predicted_value": "None",
+  "confidence": 0.15,
+  "suggested_value": "",
+  "reasoning": "There is no mention of glazing in the product details, but 'None' is a plausible default for a louvre door."
+}
+```
+
+### Example 6: VERY_LOW - Minimal evidence
+Allowed values: ["Standard", "Custom"]
+```json
+{
+  "attribute": "Installation type",
+  "predicted_value": "Standard",
+  "confidence": 0.10,
+  "suggested_value": "",
+  "reasoning": "There's no specific information about installation. This is a guess based on it being a standard interior door, but could be incorrect."
+}
+```
+
+### Example 7: Cannot make prediction (confidently assert no label applies)
+Allowed values: ["FD30", "FD60"]
+```json
+{
+  "attribute": "Fire rating",
+  "predicted_value": "",
+  "confidence": 0.95,
+  "suggested_value": "",
+  "reasoning": "The product is clearly not fire-rated and none of the allowed values are appropriate for this type of door."
+}
+```
+
+### Example 8: Value not in allowed list
+Allowed values: ["Panelled", "Flush", "Moulded"]
+```json
+{
+  "attribute": "Door style",
+  "predicted_value": "",
+  "confidence": 0.95,
+  "suggested_value": "Louvre",
+  "reasoning": "The product is clearly a louvre door (name, description, and attributes all confirm this), but 'Louvre' is not in the allowed values list. This appears to be an error in the allowed values."
+}
+``` 

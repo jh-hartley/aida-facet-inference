@@ -1,14 +1,7 @@
-"""Facet inference system for product attribute prediction.
-
-This module provides a service for predicting product facet labels using LLMs.
-The main entry point is the FacetInferenceService class, which provides methods
-for single and concurrent facet predictions.
-"""
-
-from src.core.facet_inference.models import (
+from src.core.facet_inference.service import FacetInferenceService
+from src.core.models import (
     FacetPrediction,
 )
-from src.core.facet_inference.service import FacetInferenceService
 
 __all__ = [
     "FacetInferenceService",
