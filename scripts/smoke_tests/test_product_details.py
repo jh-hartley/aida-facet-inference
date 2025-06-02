@@ -1,48 +1,78 @@
 #!/usr/bin/env python3
 """
-This smoke test prints the raw JSON and formatted LLM output for comparison.
+Displays a product's complete information including attributes,
+categories, and descriptions.
 
-Usage:
-    python scripts/smoke_tests/test_product_details.py [product_key]
-
-    product key is optional
+To use, run:
+    python -m scripts.smoke_tests.test_product_details [optional product_key]
 """
 
 import argparse
-import json
+from pathlib import Path
 
-from scripts.smoke_tests.utils import format_section, get_product_key
+from scripts.smoke_tests.utils import (
+    format_section,
+    get_output_dir,
+    get_product_key,
+    write_output,
+)
 from src.core.repositories import FacetIdentificationRepository
 from src.db.connection import SessionLocal
 
 
-def main() -> None:
+def format_attribute_details(product_details) -> str:
+    """Formats each attribute with its value."""
+    return "\n".join(
+        f"• {attr.attribute}: {attr.value}"
+        for attr in product_details.attributes
+    )
+
+
+def main(
+    product_key: str | None = None, output_dir: Path | None = None
+) -> None:
+    """Run the product details test."""
     parser = argparse.ArgumentParser(
-        description="Test product details formatting"
+        description="Display product details and attributes"
     )
     parser.add_argument(
-        "product_key",
-        nargs="?",
-        help="Optional product key. If not provided, "
-        "uses first product with gaps",
+        "product_key", nargs="?", help="Optional product key to test"
     )
     args = parser.parse_args()
 
     try:
-        product_key = get_product_key(args.product_key)
+        product_key = args.product_key or product_key
+        if not product_key:
+            product_key = get_product_key(None, require_gaps=False)
         print(f"Using product key: {product_key}")
+
+        output_dir = get_output_dir(product_key, output_dir)
+        print(f"Output directory: {output_dir}")
 
         with SessionLocal() as session:
             repository = FacetIdentificationRepository(session)
+
             product_details = repository.get_product_details(product_key)
 
-            json_output = json.dumps(
-                product_details.model_dump(), indent=2, ensure_ascii=False
-            )
-            print(format_section("Raw JSON", json_output))
+            output = [
+                format_section(
+                    "Product Information",
+                    f"Name: {product_details.product_name}\n"
+                    f"Code: {product_details.product_code}\n"
+                    f"Categories: {', '.join(product_details.categories)}",
+                ),
+                format_section(
+                    "Attribute Details",
+                    format_attribute_details(product_details),
+                ),
+                format_section(
+                    "Attribute Coverage",
+                    f"Total Attributes: {len(product_details.attributes)}",
+                ),
+            ]
 
-            llm_output = product_details.get_llm_prompt()
-            print(format_section("Formatted LLM Output", llm_output))
+            content = "\n\n".join(output)
+            write_output(output_dir, "01_product_details.txt", content)
 
     except ValueError as e:
         print(f"Error: {e}")

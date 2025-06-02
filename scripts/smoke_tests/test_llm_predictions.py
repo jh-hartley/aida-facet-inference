@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 """
-Shows how a product's information is formatted for LLM consumption,
-including both raw and formatted views.
+Tests LLM predictions for individual product gaps asynchronously.
 
 To use, run:
-    python -m scripts.smoke_tests.test_llm_prompts [optional product_key]
+    python -m scripts.smoke_tests.test_llm_predictions [optional product_key]
 """
 
+import asyncio
+import json
 from pathlib import Path
 
 from scripts.smoke_tests.utils import (
@@ -16,15 +17,15 @@ from scripts.smoke_tests.utils import (
     write_output,
 )
 from src.core.facet_inference.inference import ProductFacetPredictor
-from src.core.models import ProductGaps
+from src.core.llm.models import LlmModel
 from src.core.repositories import FacetIdentificationRepository
 from src.db.connection import SessionLocal
 
 
-def main(
+async def main(
     product_key: str | None = None, output_dir: Path | None = None
 ) -> None:
-    """Run the LLM prompts test."""
+    """Run the LLM predictions test."""
     try:
         if not product_key:
             product_key = get_product_key(None, require_gaps=True)
@@ -38,7 +39,15 @@ def main(
             product_details = repository.get_product_details(product_key)
             product_gaps = repository.get_product_gaps(product_key)
 
-            predictor = ProductFacetPredictor()
+            predictor = ProductFacetPredictor(LlmModel.GPT_4O_MINI)
+
+            tasks = []
+            for gap in product_gaps.gaps:
+                tasks.append(
+                    predictor.predict_single_gap(product_details, gap)
+                )
+
+            predictions = await asyncio.gather(*tasks)
 
             # Format output
             output = [
@@ -49,31 +58,26 @@ def main(
                     f"Product Code: {product_details.product_code}",
                 ),
                 format_section(
-                    "System Prompt",
-                    predictor._system_prompt,
+                    "Raw Predictions",
+                    json.dumps(
+                        [pred.model_dump() for pred in predictions],
+                        indent=2,
+                    ),
+                ),
+                format_section(
+                    "Formatted Predictions",
+                    "\n\n".join(
+                        f"Attribute: {pred.attribute}\n"
+                        f"Predicted Value: {pred.predicted_value}\n"
+                        f"Confidence: {pred.confidence}\n"
+                        f"Reasoning: {pred.reasoning}"
+                        for pred in predictions
+                    ),
                 ),
             ]
 
-            # Add individual gap prompts
-            for i, gap in enumerate(product_gaps.gaps, 1):
-                # Create a single-gap ProductGaps object
-                single_gap = ProductGaps(
-                    product_code=product_gaps.product_code,
-                    product_name=product_gaps.product_name,
-                    gaps=[gap],
-                )
-
-                output.append(
-                    format_section(
-                        f"Human Prompt for Gap {i}: {gap.attribute}",
-                        predictor._format_human_prompt(
-                            product_details, single_gap
-                        ),
-                    )
-                )
-
             content = "\n\n".join(output)
-            write_output(output_dir, "03_llm_prompts.txt", content)
+            write_output(output_dir, "04_llm_predictions.txt", content)
 
     except ValueError as e:
         print(f"Error: {e}")
@@ -82,4 +86,4 @@ def main(
 
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())
