@@ -5,9 +5,9 @@ from pgvector.sqlalchemy import Vector
 from sqlalchemy import DateTime, String, exists, select, update
 from sqlalchemy.orm import Mapped, Session, mapped_column
 
+from src.common.clock import clock
+from src.common.db import Base
 from src.core.embedding.models import ProductEmbedding
-from src.db.connection import Base
-from src.utils.clock import clock
 
 
 class ProductEmbeddingRecord(Base):

@@ -1,14 +1,14 @@
 import asyncio
 import logging
 
+from src.common.clock import clock
+from src.common.db import SessionLocal
+from src.common.logs import setup_logging
 from src.core.embedding.generators import len_safe_get_averaged_embedding
 from src.core.embedding.models import ProductEmbedding
 from src.core.embedding.repository import ProductEmbeddingRepository
 from src.core.models import ProductDetails
 from src.core.repositories import FacetIdentificationRepository
-from src.db.connection import SessionLocal
-from src.log_utils import setup_logging
-from src.utils.clock import clock
 
 logger = logging.getLogger(__name__)
 setup_logging()

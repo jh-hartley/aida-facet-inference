@@ -1,10 +1,14 @@
 import logging
 
-from src.core.facet_inference.models import FacetPrediction
-from src.core.facet_inference.prompts import PRODUCT_FACET_PROMPT
 from src.core.llm.client import Llm
 from src.core.llm.models import LlmModel
-from src.core.models import ProductAttributeGap, ProductDetails, ProductGaps
+from src.core.models import (
+    FacetPrediction,
+    ProductAttributeGap,
+    ProductDetails,
+    ProductGaps,
+)
+from src.core.prompts.prompts import PRODUCT_FACET_PROMPT
 
 logger = logging.getLogger(__name__)
 

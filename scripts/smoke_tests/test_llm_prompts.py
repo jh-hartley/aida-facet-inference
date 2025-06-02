@@ -16,9 +16,9 @@ from scripts.smoke_tests.utils import (
     get_product_key,
     write_output,
 )
-from src.core.facet_inference.prompts import PRODUCT_FACET_PROMPT
+from src.common.db import SessionLocal
+from src.core.prompts.prompts import PRODUCT_FACET_PROMPT
 from src.core.repositories import FacetIdentificationRepository
-from src.db.connection import SessionLocal
 
 logger = logging.getLogger(__name__)
 

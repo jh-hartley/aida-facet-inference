@@ -3,9 +3,9 @@
 import argparse
 import logging
 
-from src.log_utils import setup_logging
-from src.raw_csv_ingestion import ingest_csv_files
-from src.raw_csv_ingestion.code_types import ProductCodeType
+from src.common.logs import setup_logging
+from src.csv_ingestion import ingest_csv_files
+from src.csv_ingestion.code_types import ProductCodeType
 
 logger = logging.getLogger(__name__)
 setup_logging()

@@ -1,3 +1,3 @@
-from src.log_utils.setup import setup_logging
+from src.common.logs.setup import setup_logging
 
 setup_logging()

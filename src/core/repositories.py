@@ -13,7 +13,7 @@ from src.core.types import (
     ProductAttributeValue,
     ProductDescriptor,
 )
-from src.raw_csv_ingestion.records import (
+from src.csv_ingestion.records import (
     HumanRecommendationRecord,
     RawAttributeAllowableValueApplicableInEveryCategoryRecord,
     RawAttributeAllowableValueInAnyCategoryRecord,
@@ -27,7 +27,7 @@ from src.raw_csv_ingestion.records import (
     RawRecommendationRecord,
     RawRichTextSourceRecord,
 )
-from src.raw_csv_ingestion.repositories import (
+from src.csv_ingestion.repositories import (
     RawAttributeRepository,
     RawCategoryAllowableValueRepository,
     RawCategoryRepository,

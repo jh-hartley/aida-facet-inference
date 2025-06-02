@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-from src.core.facet_inference.models import FacetPrediction
+from src.core.models import FacetPrediction
 
 
 class ProductDescriptorRequest(BaseModel):

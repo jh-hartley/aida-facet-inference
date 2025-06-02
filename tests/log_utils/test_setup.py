@@ -1,7 +1,7 @@
 import logging
 
-from src.log_utils.filters import HealthCheckFilter
-from src.log_utils.setup import setup_logging
+from src.common.logs.filters import HealthCheckFilter
+from src.common.logs.setup import setup_logging
 
 
 def test_setup_logging_configuration():

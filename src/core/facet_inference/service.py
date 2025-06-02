@@ -3,11 +3,11 @@ from typing import Sequence, cast
 
 from sqlalchemy.orm import Session
 
+from src.common.db import SessionLocal
 from src.core.facet_inference.inference import ProductFacetPredictor
-from src.core.facet_inference.models import FacetPrediction
+from src.core.models import FacetPrediction
 from src.core.repositories import FacetIdentificationRepository
 from src.core.types import ProductAttributeGap
-from src.db.connection import SessionLocal
 
 
 class FacetInferenceService:
