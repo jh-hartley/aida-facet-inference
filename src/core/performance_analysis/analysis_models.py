@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Any, Dict, List
 
-from src.core.facet_inference.confidence_levels import ConfidenceLevel
+from core.prompts.confidence_levels import ConfidenceLevel
 
 
 @dataclass

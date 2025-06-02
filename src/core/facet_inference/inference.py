@@ -8,7 +8,7 @@ from src.core.models import (
     ProductDetails,
     ProductGaps,
 )
-from src.core.prompts.prompts import PRODUCT_FACET_PROMPT
+from src.core.prompts import PRODUCT_FACET_PROMPT
 
 logger = logging.getLogger(__name__)
 

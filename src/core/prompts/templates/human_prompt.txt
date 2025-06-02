@@ -1,0 +1,5 @@
+# Prediction Task
+Predict a value for the following attribute:
+
+**Attribute:** {attribute}
+**Allowed values:** {allowed_values} 

@@ -4,7 +4,7 @@ import numpy as np
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from src.core.facet_inference.confidence_levels import ConfidenceLevel
+from core.prompts.confidence_levels import ConfidenceLevel
 from src.core.performance_analysis.analysis_models import (
     AttributeMetrics,
     CategoryMetrics,
