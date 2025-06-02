@@ -1,6 +1,7 @@
 import logging
 import time
 from typing import Any
+from datetime import datetime, timedelta, timezone
 
 from sqlalchemy.orm import Session
 from sqlalchemy import select, text
@@ -322,13 +323,14 @@ class ExperimentOrchestrator:
         with SessionLocal() as session:
             repo = PredictionExperimentRepository(session)
             experiment = repo.get_by_experiment_key(experiment_key)
-            experiment.completed_at = clock.now()
+            experiment.completed_at = datetime.now(timezone.utc)  # Use current time as end time
             experiment.total_predictions = total_predictions
             experiment.total_products = total_products
             experiment.average_time_per_prediction = (
                 elapsed_time / total_predictions if total_predictions > 0 else None
             )
             session.add(experiment)
+            session.commit()  # Ensure changes are saved
 
     async def run_experiment(self, limit: int | None = None) -> str:
         """

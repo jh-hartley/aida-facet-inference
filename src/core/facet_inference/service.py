@@ -25,7 +25,7 @@ class FacetInferenceService:
 
     @classmethod
     def from_session(
-        cls, session: Session | None = None, max_concurrent: int = 8
+        cls, session: Session | None = None, max_concurrent: int = 32
     ) -> "FacetInferenceService":
         """
         Create a service instance from a session.
