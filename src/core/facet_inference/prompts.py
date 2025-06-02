@@ -105,34 +105,34 @@ EXAMPLE_INPUT = PromptSection(
 EXAMPLE_OUTPUTS = PromptSection(
     "Example Outputs",
     """Example output (confident with high confidence):
-    {
+    {{
         "attribute": "Gender",
         "predicted_value": "Men",
         "confidence": 0.85,
         "reasoning": "The product is in the Men's Clothing category and the
             description emphasizes a classic fit, which strongly suggests this
             is designed for men."
-    }
+    }}
 
     Example output (moderate confidence):
-    {
+    {{
         "attribute": "Gender",
         "predicted_value": "Unisex",
         "confidence": 0.65,
         "reasoning": "While the product is in Men's Clothing, the description
             emphasizes comfort and everyday wear without gender-specific
             language, suggesting it could be suitable for all genders."
-    }
+    }}
 
     Example output (low confidence):
-    {
+    {{
         "attribute": "Gender",
         "predicted_value": "Unisex",
         "confidence": 0.35,
         "reasoning": "The product description is too vague to determine the
             target gender. It only mentions 'comfortable fit' without any
             gender-specific details."
-    }""",
+    }}""",
 )
 
 PRODUCT_FACET_PREDICTION_PROMPT = (

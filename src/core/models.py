@@ -22,30 +22,52 @@ class ProductDetails(BaseModel):
     categories: list[str]
     attributes: list[ProductAttributeValue]
 
-    def get_formatted_description(self) -> str:
-        """Get a formatted string of all product descriptions."""
-        grouped_descriptions: dict[str, list[str]] = {}
+    def _normalise_value(self, value: str) -> str:
+        normalised = " ".join(value.lower().split())
 
+        for char in ".,;:!?":
+            normalised = normalised.replace(char, "")
+
+        for suffix in [
+            " inc",
+            " ltd",
+            " limited",
+            " llc",
+            " corp",
+            " corporation",
+        ]:
+            if normalised.endswith(suffix):
+                normalised = normalised[: -len(suffix)]
+
+        return normalised
+
+    def get_formatted_description(self) -> str:
+        processed_descriptions = []
         for desc in self.product_description:
             if not desc.value.strip():
                 continue
 
             category = desc.descriptor.split("//")[0]
+            normalised_value = self._normalise_value(desc.value)
+            processed_descriptions.append((category, normalised_value))
 
-            if desc.value in grouped_descriptions.get(category, []):
+        seen_values = set()
+        grouped_descriptions: dict[str, list[str]] = {}
+
+        for category, value in processed_descriptions:
+            if value in seen_values:
                 continue
+            seen_values.add(value)
 
             if category not in grouped_descriptions:
                 grouped_descriptions[category] = []
-            grouped_descriptions[category].append(desc.value)
+            grouped_descriptions[category].append(value)
 
         formatted_sections = []
         for category, values in grouped_descriptions.items():
             formatted_sections.append(f"{category}:")
             formatted_sections.extend(f"- {value}" for value in values)
-            formatted_sections.append(
-                ""
-            )  # Consistent spacing after each section
+            formatted_sections.append("")
 
         return "\n".join(formatted_sections)
 

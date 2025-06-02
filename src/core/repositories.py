@@ -24,6 +24,7 @@ from src.raw_csv_ingestion.records import (
     RawProductCategoryRecord,
     RawRecommendationRecord,
     RawRichTextSourceRecord,
+    RawProductRecord,
 )
 from src.raw_csv_ingestion.repositories import (
     RawAttributeRepository,
@@ -107,7 +108,10 @@ class FacetIdentificationRepository:
     def get_product_details(self, product_key: str) -> ProductDetails:
         """
         Get complete information about a product including categories,
-        attributes, and rich text in a format suitable for LLM consumption
+        attributes, and rich text in a format suitable for LLM consumption.
+        
+        Raises:
+            ValueError: If product is not found
         """
         product = self.product_repo.get_by_id(product_key)
 
@@ -163,7 +167,10 @@ class FacetIdentificationRepository:
     def find_product_details(self, product_key: str) -> ProductDetails | None:
         """
         Find complete information about a product including categories,
-        attributes, and rich text in a format suitable for LLM consumption
+        attributes, and rich text in a format suitable for LLM consumption.
+        
+        Returns:
+            ProductDetails if found, None otherwise
         """
         try:
             return self.get_product_details(product_key)
@@ -173,7 +180,10 @@ class FacetIdentificationRepository:
     def get_product_gaps(self, product_key: str) -> ProductGaps:
         """
         Get all attributes a product is missing and their possible values
-        in an object suitable for LLM consumption
+        in an object suitable for LLM consumption.
+        
+        Raises:
+            ValueError: If product is not found
         """
         product = self.product_repo.get_by_id(product_key)
 
@@ -209,21 +219,14 @@ class FacetIdentificationRepository:
         """
         Find information about missing attribute values for a product and their
         possible values based on category rules.
+        
+        Returns:
+            ProductGaps if found, None otherwise
         """
         try:
             return self.get_product_gaps(product_key)
         except ValueError:
             return None
-
-    def get_products_with_gaps(self) -> list[str]:
-        """
-        Get a list of all product keys that have at least one attribute gap.
-        """
-        return list(
-            self.session.scalars(
-                select(RawProductAttributeGapRecord.product_key).distinct()
-            ).all()
-        )
 
     def get_product_gaps_with_ground_truth(
         self, product_key: str
@@ -235,6 +238,9 @@ class FacetIdentificationRepository:
         Returns:
             A list of tuples containing (gap, ground_truth_value). The ground
             truth value will be None if no recommendation exists.
+            
+        Raises:
+            ValueError: If product is not found
         """
         gaps = self.get_product_gaps(product_key)
         recommendations = self.session.scalars(
@@ -258,6 +264,78 @@ class FacetIdentificationRepository:
             )
             for gap in gaps.gaps
         ]
+
+    def get_products_with_gaps(self) -> list[str]:
+        """
+        Get a list of all product keys that have at least one attribute gap.
+        
+        Returns:
+            List of product keys that have gaps
+        """
+        return list(
+            self.session.scalars(
+                select(RawProductAttributeGapRecord.product_key).distinct()
+            ).all()
+        )
+
+    def get_products_without_gaps(self) -> list[str]:
+        """
+        Get a list of all product keys that have no attribute gaps.
+        
+        Returns:
+            List of product keys that have no gaps
+        """
+        # Get all product keys that have gaps
+        products_with_gaps = set(
+            self.session.scalars(
+                select(RawProductAttributeGapRecord.product_key).distinct()
+            ).all()
+        )
+        
+        # Get products that are not in that set
+        return list(
+            self.session.scalars(
+                select(RawProductRecord.product_key)
+                .where(RawProductRecord.product_key.not_in(products_with_gaps))
+            ).all()
+        )
+
+    def get_single_product(self, with_gaps: bool | None = None) -> str | None:
+        """
+        Get a single product key from the database.
+        
+        Args:
+            with_gaps: If True, returns a product with gaps.
+                      If False, returns a product without gaps.
+                      If None, returns any product.
+                      
+        Returns:
+            A product key if found, None otherwise
+        """
+        if with_gaps is None:
+            return self.session.scalar(
+                select(RawProductRecord.product_key).limit(1)
+            )
+            
+        if with_gaps:
+            return self.session.scalar(
+                select(RawProductAttributeGapRecord.product_key)
+                .distinct()
+                .limit(1)
+            )
+            
+        # Get a product without gaps
+        products_with_gaps = set(
+            self.session.scalars(
+                select(RawProductAttributeGapRecord.product_key).distinct()
+            ).all()
+        )
+        
+        return self.session.scalar(
+            select(RawProductRecord.product_key)
+            .where(RawProductRecord.product_key.not_in(products_with_gaps))
+            .limit(1)
+        )
 
 
 class PredictionExperimentRepository(Repository[PredictionExperimentRecord]):
