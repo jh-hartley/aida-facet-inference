@@ -8,6 +8,7 @@ To use, run:
 
 import asyncio
 import json
+import logging
 from pathlib import Path
 
 from scripts.smoke_tests.utils import (
@@ -21,6 +22,8 @@ from src.core.llm.models import LlmModel
 from src.core.repositories import FacetIdentificationRepository
 from src.db.connection import SessionLocal
 
+logger = logging.getLogger(__name__)
+
 
 async def main(
     product_key: str | None = None, output_dir: Path | None = None
@@ -29,27 +32,43 @@ async def main(
     try:
         if not product_key:
             product_key = get_product_key(None, require_gaps=True)
-        print(f"Using product key: {product_key}")
+        logger.info(f"Starting predictions for product: {product_key}")
 
         output_dir = get_output_dir(product_key, output_dir)
-        print(f"Output directory: {output_dir}")
+        logger.debug(f"Output directory: {output_dir}")
 
         with SessionLocal() as session:
             repository = FacetIdentificationRepository(session)
             product_details = repository.get_product_details(product_key)
             product_gaps = repository.get_product_gaps(product_key)
 
-            predictor = ProductFacetPredictor(LlmModel.GPT_4O_MINI)
+            logger.info(
+                f"Found {len(product_gaps.gaps)} attributes to predict for "
+                f"{product_details.product_name}"
+            )
 
-            tasks = []
-            for gap in product_gaps.gaps:
-                tasks.append(
-                    predictor.predict_single_gap(product_details, gap)
-                )
+            predictor = ProductFacetPredictor(
+                product_details=product_details,
+                product_gaps=product_gaps,
+            )
+            tasks = [
+                predictor.apredict_single_gap(gap)
+                for gap in product_gaps.gaps
+            ]
 
             predictions = await asyncio.gather(*tasks)
 
-            # Format output
+            # Log summary of predictions
+            confidence_summary = ", ".join(
+                f"{pred.attribute}: {pred.confidence:.2f}"
+                for pred in predictions
+            )
+            logger.info(
+                f"Completed {len(predictions)} predictions with "
+                f"confidence levels: "
+                f"{confidence_summary}"
+            )
+
             output = [
                 format_section(
                     "Product Information",
@@ -80,9 +99,9 @@ async def main(
             write_output(output_dir, "04_llm_predictions.txt", content)
 
     except ValueError as e:
-        print(f"Error: {e}")
+        logger.error(f"Error: {e}")
     except Exception as e:
-        print(f"Unexpected error: {e}")
+        logger.error(f"Unexpected error: {e}", exc_info=True)
 
 
 if __name__ == "__main__":

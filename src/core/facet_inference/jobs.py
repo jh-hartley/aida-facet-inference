@@ -100,7 +100,7 @@ class FacetPredictionJob:
     ):
         self.session = session
         self.repository = FacetIdentificationRepository(session)
-        self.service = service or FacetInferenceService()
+        self.service = service  # We'll create the service per product
         self.data_loader = FacetInferenceDataLoader(self.repository)
         self.description = description
         self.metadata = metadata or {}
@@ -157,20 +157,29 @@ class FacetPredictionJob:
 
         for sample in dataset.samples:
             try:
-                predictions = await self.service.predict_multiple_attributes(
-                    product=sample.product_details,
+                # Create a new service instance for each product
+                service = FacetInferenceService(
+                    product_details=sample.product_details,
+                    product_gaps=ProductGaps(
+                        product_code=sample.product_details.product_code,
+                        product_name=sample.product_details.product_name,
+                        gaps=[
+                            ProductAttributeGap(
+                                attribute=gap.attribute,
+                                allowable_values=gap.allowable_values,
+                            )
+                            for gap in sample.gaps
+                        ],
+                    ),
+                )
+
+                predictions = await service.predict_multiple_attributes(
                     gaps=[
-                        ProductGaps(
-                            product_code=sample.product_details.product_code,
-                            product_name=sample.product_details.product_name,
-                            gaps=[
-                                ProductAttributeGap(
-                                    attribute=gap.attribute,
-                                    allowable_values=gap.allowable_values,
-                                )
-                                for gap in sample.gaps
-                            ],
+                        ProductAttributeGap(
+                            attribute=gap.attribute,
+                            allowable_values=gap.allowable_values,
                         )
+                        for gap in sample.gaps
                     ],
                 )
 
@@ -247,9 +256,14 @@ class FacetPredictionJob:
             product_details = self.repository.get_product_details(product_key)
             product_gaps = self.repository.get_product_gaps(product_key)
 
-            predictions = await self.service.predict_multiple_attributes(
-                product=product_details,
-                gaps=[product_gaps],
+            # Create a new service instance for this product
+            service = FacetInferenceService(
+                product_details=product_details,
+                product_gaps=product_gaps,
+            )
+
+            predictions = await service.predict_multiple_attributes(
+                gaps=product_gaps.gaps,
             )
 
             total_predictions = 0

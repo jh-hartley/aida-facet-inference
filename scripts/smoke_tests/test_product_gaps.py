@@ -8,6 +8,7 @@ To use, run:
 """
 
 import argparse
+import logging
 from pathlib import Path
 
 from scripts.smoke_tests.utils import (
@@ -18,6 +19,8 @@ from scripts.smoke_tests.utils import (
 )
 from src.core.repositories import FacetIdentificationRepository
 from src.db.connection import SessionLocal
+
+logger = logging.getLogger(__name__)
 
 
 def get_complete_attributes(
@@ -68,10 +71,8 @@ def main(
         product_key = args.product_key or product_key
         if not product_key:
             product_key = get_product_key(None, require_gaps=True)
-        print(f"Using product key: {product_key}")
 
         output_dir = get_output_dir(product_key, output_dir)
-        print(f"Output directory: {output_dir}")
 
         with SessionLocal() as session:
             repository = FacetIdentificationRepository(session)
@@ -79,6 +80,23 @@ def main(
             product_gaps = repository.get_product_gaps(product_key)
             complete_attributes = get_complete_attributes(
                 repository, product_key
+            )
+
+            # Calculate average number of allowed values per gap
+            total_allowed_values = sum(
+                len(gap.allowable_values) for gap in product_gaps.gaps
+            )
+            avg_allowed_values = (
+                total_allowed_values / len(product_gaps.gaps)
+                if product_gaps.gaps
+                else 0
+            )
+
+            logger.info(
+                f"Product {product_gaps.product_name}: "
+                f"{len(product_gaps.gaps)} gaps, "
+                f"{len(complete_attributes)} complete attributes, "
+                f"{avg_allowed_values:.1f} avg allowed values per gap"
             )
 
             output = [
@@ -105,9 +123,9 @@ def main(
             write_output(output_dir, "02_product_gaps.txt", content)
 
     except ValueError as e:
-        print(f"Error: {e}")
+        logger.error(f"Error: {e}")
     except Exception as e:
-        print(f"Unexpected error: {e}")
+        logger.error(f"Unexpected error: {e}", exc_info=True)
 
 
 if __name__ == "__main__":

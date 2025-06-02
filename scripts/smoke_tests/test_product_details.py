@@ -8,6 +8,7 @@ To use, run:
 """
 
 import argparse
+import logging
 from pathlib import Path
 
 from scripts.smoke_tests.utils import (
@@ -18,6 +19,8 @@ from scripts.smoke_tests.utils import (
 )
 from src.core.repositories import FacetIdentificationRepository
 from src.db.connection import SessionLocal
+
+logger = logging.getLogger(__name__)
 
 
 def format_attribute_details(product_details) -> str:
@@ -44,15 +47,19 @@ def main(
         product_key = args.product_key or product_key
         if not product_key:
             product_key = get_product_key(None, require_gaps=False)
-        print(f"Using product key: {product_key}")
 
         output_dir = get_output_dir(product_key, output_dir)
-        print(f"Output directory: {output_dir}")
 
         with SessionLocal() as session:
             repository = FacetIdentificationRepository(session)
-
             product_details = repository.get_product_details(product_key)
+
+            logger.info(
+                f"Product {product_details.product_name}: "
+                f"{len(product_details.attributes)} attributes, "
+                f"{len(product_details.categories)} categories, "
+                f"{len(product_details.product_description)} descriptions"
+            )
 
             output = [
                 format_section(
@@ -75,9 +82,9 @@ def main(
             write_output(output_dir, "01_product_details.txt", content)
 
     except ValueError as e:
-        print(f"Error: {e}")
+        logger.error(f"Error: {e}")
     except Exception as e:
-        print(f"Unexpected error: {e}")
+        logger.error(f"Unexpected error: {e}", exc_info=True)
 
 
 if __name__ == "__main__":

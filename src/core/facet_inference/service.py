@@ -4,47 +4,52 @@ from typing import Sequence
 from src.core.facet_inference.inference import ProductFacetPredictor
 from src.core.facet_inference.models import FacetPrediction
 from src.core.models import ProductDetails, ProductGaps
+from src.core.types import ProductAttributeGap
 
 
 class FacetInferenceService:
     """Service layer for facet inference operations."""
 
-    def __init__(self, predictor: ProductFacetPredictor | None = None):
-        self._predictor = predictor or ProductFacetPredictor()
+    def __init__(
+        self,
+        product_details: ProductDetails,
+        product_gaps: ProductGaps,
+        predictor: ProductFacetPredictor | None = None,
+    ):
+        self._predictor = predictor or ProductFacetPredictor(
+            product_details=product_details,
+            product_gaps=product_gaps,
+        )
 
     async def predict_attribute(
         self,
-        product: ProductDetails,
-        gap: ProductGaps,
+        gap: ProductAttributeGap,
     ) -> FacetPrediction:
         """
         Predict a value for a missing attribute.
 
         Args:
-            product: Complete product information
             gap: Information about the missing attribute and its allowed values
 
         Returns:
             Prediction result with value and confidence
         """
-        return await self._predictor.predict(product=product, gap=gap)
+        return await self._predictor.apredict_single_gap(gap)
 
     async def predict_multiple_attributes(
         self,
-        product: ProductDetails,
-        gaps: Sequence[ProductGaps],
+        gaps: Sequence[ProductAttributeGap],
     ) -> list[FacetPrediction]:
         """
         Predict values for multiple missing attributes concurrently.
 
         Args:
-            product: Complete product information
             gaps: List of missing attributes and their allowed values
 
         Returns:
             List of prediction results with values and confidence
         """
         predictions = await gather(
-            *(self.predict_attribute(product, gap) for gap in gaps)
+            *(self.predict_attribute(gap) for gap in gaps)
         )
         return list(predictions)
