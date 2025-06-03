@@ -39,12 +39,9 @@ class FacetInferenceService:
         evaluation_mode: bool = False,
     ) -> Sequence[FacetPrediction]:
         """
-        Predict all missing attributes for a product.
-
-        Args:
-            product_key: The product key to predict for
-            evaluation_mode: If True, only predict for attributes that have
-                accepted recommendations. Otherwise, predict for all attribute gaps.
+        Predict all missing attributes for a product. If evaluation_mode is
+        True, only predict for attributes that have accepted recommendations.
+        Otherwise, predict for all attribute gaps.
         """
         product_details = self.repository.get_product_details(product_key)
 

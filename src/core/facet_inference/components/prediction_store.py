@@ -1,5 +1,5 @@
 import logging
-from typing import Sequence
+from typing import Sequence, cast
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -9,7 +9,6 @@ from src.core.domain.repositories import FacetIdentificationRepository
 from src.core.infrastructure.database.input_data.records import (
     HumanRecommendationRecord,
     RawAttributeRecord,
-    RawProductRecord,
 )
 from src.core.infrastructure.database.input_data.repositories import (
     RawAttributeRepository,
@@ -27,7 +26,7 @@ class PredictionStore:
 
     def __init__(self, session: Session):
         """Initialize the store.
-        
+
         Args:
             session: SQLAlchemy session
         """
@@ -44,7 +43,7 @@ class PredictionStore:
         predictions: Sequence[FacetPrediction],
     ) -> None:
         """Store all predictions for a product in a single transaction.
-        
+
         Args:
             experiment_key: Experiment key
             product_key: Product key
@@ -63,7 +62,8 @@ class PredictionStore:
 
         recommendations = self.session.scalars(
             select(HumanRecommendationRecord).where(
-                HumanRecommendationRecord.product_reference == product.system_name,
+                HumanRecommendationRecord.product_reference
+                == product.system_name,
                 HumanRecommendationRecord.action == "Accept Recommendation",
             )
         ).all()
@@ -89,7 +89,7 @@ class PredictionStore:
                     f"Mapped attribute {rec.attribute_name} "
                     f"(system_name: {rec.attribute_reference}, "
                     f"key: {attribute.attribute_key}) "
-                    f"to recommendation id: {rec.id} with value: {rec.recommendation}"
+                    f"to recommendation id: {rec.id} with value: {rec.recommendation}"  # noqa: E501
                 )
             else:
                 logger.warning(
@@ -120,7 +120,7 @@ class PredictionStore:
                 attribute.system_name
             )
             recommendation_key = (
-                recommendation["id"] if recommendation else None
+                cast(int, recommendation["id"]) if recommendation else None
             )
 
             if recommendation:
@@ -151,4 +151,4 @@ class PredictionStore:
             )
 
         self.session.commit()
-        logger.info(f"Committed {len(predictions)} predictions to database") 
+        logger.info(f"Committed {len(predictions)} predictions to database")

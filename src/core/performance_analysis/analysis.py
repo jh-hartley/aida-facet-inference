@@ -1,6 +1,5 @@
 from typing import Sequence
 
-from src.core.infrastructure.database.predictions.repositories import ExperimentRepository, PredictionResultRepository
 import numpy as np
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -14,6 +13,10 @@ from src.core.infrastructure.database.input_data.records import (
 )
 from src.core.infrastructure.database.predictions.records import (
     PredictionResultRecord,
+)
+from src.core.infrastructure.database.predictions.repositories import (
+    ExperimentRepository,
+    PredictionResultRepository,
 )
 from src.core.performance_analysis.analysis_models import (
     AttributeMetrics,

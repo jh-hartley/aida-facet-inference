@@ -1,4 +1,3 @@
-
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -256,7 +255,6 @@ class FacetIdentificationRepository:
                 .limit(1)
             )
 
-        # Get a product without gaps
         products_with_gaps = set(
             self.session.scalars(
                 select(RawProductAttributeGapRecord.product_key).distinct()
@@ -313,3 +311,10 @@ class FacetIdentificationRepository:
             product_name=product.friendly_name,
             gaps=gap_details,
         )
+
+    def get_all_product_details(self) -> list[ProductDetails]:
+        products = self.product_repo.get_all()
+        return [
+            self.get_product_details(product.product_key)
+            for product in products
+        ]

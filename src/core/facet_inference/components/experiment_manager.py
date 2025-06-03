@@ -1,10 +1,9 @@
 import logging
 from typing import Any
-from src.common.clock import clock
-
 
 from sqlalchemy.orm import Session
 
+from src.common.clock import clock
 from src.core.infrastructure.database.predictions.repositories import (
     ExperimentRepository,
 )
@@ -22,7 +21,7 @@ class ExperimentManager:
         metadata: dict[str, Any] | None = None,
     ):
         """Initialize the manager.
-        
+
         Args:
             session: SQLAlchemy session
             description: Optional experiment description
@@ -35,7 +34,7 @@ class ExperimentManager:
 
     def create_experiment(self) -> str:
         """Create a new experiment record and return its key.
-        
+
         Returns:
             Experiment key
         """
@@ -53,22 +52,15 @@ class ExperimentManager:
         validated_predictions: int,
         correct_predictions: int,
         accuracy: float,
+        average_time_per_prediction: float,
     ) -> None:
-        """Update experiment metrics after completion.
-        
-        Args:
-            experiment_key: Experiment key
-            total_predictions: Total number of predictions
-            validated_predictions: Number of validated predictions
-            correct_predictions: Number of correct predictions
-            accuracy: Overall accuracy
-        """
         self.repository.update_experiment_metrics(
             experiment_key=experiment_key,
             total_predictions=total_predictions,
             validated_predictions=validated_predictions,
             correct_predictions=correct_predictions,
             accuracy=accuracy,
+            average_time_per_prediction=average_time_per_prediction,
         )
         logger.info(
             f"Updated metrics for experiment {experiment_key}: "
@@ -80,9 +72,9 @@ class ExperimentManager:
 
     def complete_experiment(self, experiment_key: str) -> None:
         """Mark an experiment as completed.
-        
+
         Args:
             experiment_key: Experiment key
         """
         self.repository.complete_experiment(experiment_key)
-        logger.info(f"Marked experiment {experiment_key} as completed") 
+        logger.info(f"Marked experiment {experiment_key} as completed")

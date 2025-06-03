@@ -1,7 +1,7 @@
 """Processes products for facet inference."""
 
 import logging
-from typing import Sequence, Tuple, Mapping
+from typing import Mapping, Sequence, Tuple
 
 from sqlalchemy import select, text
 from sqlalchemy.orm import Session
@@ -10,8 +10,8 @@ from src.core.domain.models import FacetPrediction
 from src.core.domain.repositories import FacetIdentificationRepository
 from src.core.domain.types import ProductAttributeGap
 from src.core.facet_inference.data_loading.ground_truth_loader import (
-    GroundTruthLoader,
     GroundTruthEntry,
+    GroundTruthLoader,
 )
 from src.core.facet_inference.service import FacetInferenceService
 from src.core.infrastructure.database.input_data.records import (
@@ -27,7 +27,7 @@ class ProductProcessor:
 
     def __init__(self, session: Session):
         """Initialize the processor.
-        
+
         Args:
             session: SQLAlchemy session
         """
@@ -40,19 +40,19 @@ class ProductProcessor:
         self,
     ) -> Mapping[str, Sequence[GroundTruthEntry]]:
         """Get all accepted recommendations grouped by product reference.
-        
+
         Returns:
             Dict mapping product references to their recommendations
         """
         entries = self.ground_truth_loader.load_ground_truth()
-        
+
         # Group by product system name
         product_recommendations: dict[str, list[GroundTruthEntry]] = {}
         for entry in entries:
             if entry.product_system_name not in product_recommendations:
                 product_recommendations[entry.product_system_name] = []
             product_recommendations[entry.product_system_name].append(entry)
-            
+
         return product_recommendations
 
     def get_product_key_from_system_name(self, system_name: str) -> str | None:
@@ -64,7 +64,9 @@ class ProductProcessor:
         ).first()
         return product.product_key if product else None
 
-    def get_attribute_key_from_system_name(self, system_name: str) -> str | None:
+    def get_attribute_key_from_system_name(
+        self, system_name: str
+    ) -> str | None:
         """Get attribute key from system name."""
         attribute = self.session.scalars(
             select(RawAttributeRecord).where(
@@ -120,11 +122,11 @@ class ProductProcessor:
         self, product_ref: str, recommendations: Sequence[GroundTruthEntry]
     ) -> Tuple[str | None, Sequence[FacetPrediction]]:
         """Process a product and generate predictions.
-        
+
         Args:
             product_ref: Product reference (system name)
             recommendations: Sequence of ground truth entries for the product
-            
+
         Returns:
             Tuple of (product_key, predictions)
         """
@@ -132,28 +134,32 @@ class ProductProcessor:
         if not recommendations:
             logger.error(f"No recommendations found for product {product_ref}")
             return None, []
-            
+
         product_key = recommendations[0].product_key
-        
+
         # Get product categories
-        product_categories = self.service.repository.product_category_repo.get_by_product_key(
-            product_key
+        product_categories = (
+            self.service.repository.product_category_repo.get_by_product_key(
+                product_key
+            )
         )
         category_keys = [pc.category_key for pc in product_categories]
-        
+
         # Build gaps from recommendations
         gaps = []
         seen_attributes = set()
-        
+
         for rec in recommendations:
             if rec.attribute_name in seen_attributes:
                 continue
-                
+
             # Get allowable values for this attribute
-            allowable_values = list(self.service.repository._get_allowable_values_for_attribute(
-                category_keys, rec.attribute_key
-            ))
-            
+            allowable_values = list(
+                self.service.repository._get_allowable_values_for_attribute(
+                    category_keys, rec.attribute_key
+                )
+            )
+
             gaps.append(
                 ProductAttributeGap(
                     attribute=rec.attribute_name,
@@ -165,15 +171,15 @@ class ProductProcessor:
                 f"Added gap for attribute {rec.attribute_name} "
                 f"with {len(allowable_values)} allowable values"
             )
-            
+
         if not gaps:
             logger.warning(f"No valid gaps found for product {product_key}")
             return product_key, []
-            
+
         # Generate predictions
         predictions = await self.service.predict_specific_gaps(
             product_key, gaps
         )
         logger.info(f"Generated {len(predictions)} predictions")
-        
-        return product_key, predictions 
+
+        return product_key, predictions

@@ -17,6 +17,7 @@ from src.core.infrastructure.database.input_data.records import (
 @dataclass
 class GroundTruthEntry:
     """A single ground truth entry for a product attribute."""
+
     product_key: str
     product_system_name: str
     attribute_key: str
@@ -32,14 +33,6 @@ class GroundTruthLoader:
         self.repository = FacetIdentificationRepository(session)
 
     def load_ground_truth(self) -> Sequence[GroundTruthEntry]:
-        """
-        Load all ground truth data from accepted recommendations.
-        
-        Returns:
-            A sequence of GroundTruthEntry objects containing product and attribute
-            information along with the ground truth values.
-        """
-        # Get all accepted recommendations
         recommendations = self.session.scalars(
             select(HumanRecommendationRecord).where(
                 HumanRecommendationRecord.action == "Accept Recommendation"
@@ -48,7 +41,6 @@ class GroundTruthLoader:
 
         entries = []
         for rec in recommendations:
-            # Get product details
             product = self.session.scalars(
                 select(RawProductRecord).where(
                     RawProductRecord.system_name == rec.product_reference
@@ -57,7 +49,6 @@ class GroundTruthLoader:
             if not product:
                 continue
 
-            # Get attribute details
             attribute = self.session.scalars(
                 select(RawAttributeRecord).where(
                     RawAttributeRecord.system_name == rec.attribute_reference
@@ -104,4 +95,4 @@ class GroundTruthLoader:
 
     def get_unique_attributes(self) -> set[str]:
         """Get set of unique attribute keys in ground truth data."""
-        return {entry.attribute_key for entry in self.load_ground_truth()} 
+        return {entry.attribute_key for entry in self.load_ground_truth()}

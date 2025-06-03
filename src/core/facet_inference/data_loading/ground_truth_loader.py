@@ -36,7 +36,7 @@ class GroundTruthLoader:
 
     def __init__(self, session: Session):
         """Initialize the loader.
-        
+
         Args:
             session: SQLAlchemy session
         """
@@ -47,7 +47,7 @@ class GroundTruthLoader:
 
     def load_ground_truth(self) -> Sequence[GroundTruthEntry]:
         """Load all ground truth data from accepted recommendations.
-        
+
         Returns:
             Sequence of ground truth entries
         """
@@ -92,12 +92,14 @@ class GroundTruthLoader:
 
         return entries
 
-    def get_entries_by_product(self, product_key: str) -> Sequence[GroundTruthEntry]:
+    def get_entries_by_product(
+        self, product_key: str
+    ) -> Sequence[GroundTruthEntry]:
         """Get ground truth entries for a specific product.
-        
+
         Args:
             product_key: Product key to filter by
-            
+
         Returns:
             Sequence of ground truth entries for the product
         """
@@ -115,10 +117,10 @@ class GroundTruthLoader:
         self, attribute_key: str
     ) -> Sequence[GroundTruthEntry]:
         """Get ground truth entries for a specific attribute.
-        
+
         Args:
             attribute_key: Attribute key to filter by
-            
+
         Returns:
             Sequence of ground truth entries for the attribute
         """
@@ -134,7 +136,7 @@ class GroundTruthLoader:
 
     def get_unique_product_keys(self) -> set[str]:
         """Get all unique product keys in the ground truth data.
-        
+
         Returns:
             Set of product keys
         """
@@ -142,8 +144,8 @@ class GroundTruthLoader:
 
     def get_unique_attribute_keys(self) -> set[str]:
         """Get all unique attribute keys in the ground truth data.
-        
+
         Returns:
             Set of attribute keys
         """
-        return {entry.attribute_key for entry in self.load_ground_truth()} 
+        return {entry.attribute_key for entry in self.load_ground_truth()}

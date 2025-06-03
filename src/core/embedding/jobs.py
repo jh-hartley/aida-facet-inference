@@ -55,6 +55,7 @@ async def _create_embedding(product_key: str) -> None:
                 embedding_repo.create(
                     ProductEmbedding(
                         product_key=product_key,
+                        product_description=description,
                         embedding=embedding,
                         created_at=clock.now(),
                     )
@@ -72,7 +73,7 @@ async def create_embeddings_for_products() -> None:
     with SessionLocal() as session:
         product_keys = FacetIdentificationRepository(
             session
-        ).get_products_with_gaps()
+        ).get_products_without_gaps()
 
         embedding_repo = ProductEmbeddingRepository(session)
         product_keys = [

@@ -5,12 +5,15 @@ from typing import Sequence
 
 from sqlalchemy.orm import Session
 
-from src.core.infrastructure.database.predictions.repositories import PredictionResultRepository
+from src.core.infrastructure.database.predictions.repositories import (
+    PredictionResultRepository,
+)
 
 
 @dataclass
 class PredictionEntry:
     """A single prediction entry for a product attribute."""
+
     product_key: str
     attribute_key: str
     predicted_value: str
@@ -29,17 +32,10 @@ class PredictionLoader:
     def load_predictions(
         self, experiment_key: str
     ) -> Sequence[PredictionEntry]:
-        """
-        Load all predictions from a specific experiment.
-        
-        Args:
-            experiment_key: The key of the experiment to load predictions from
-            
-        Returns:
-            A sequence of PredictionEntry objects containing prediction information
-        """
-        predictions = self.repository.get_predictions_by_experiment(experiment_key)
-        
+        predictions = self.repository.get_predictions_by_experiment(
+            experiment_key
+        )
+
         return [
             PredictionEntry(
                 product_key=pred.product_key,
@@ -83,4 +79,4 @@ class PredictionLoader:
         return {
             entry.attribute_key
             for entry in self.load_predictions(experiment_key)
-        } 
+        }

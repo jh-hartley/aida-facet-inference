@@ -16,6 +16,7 @@ class ProductEmbeddingRecord(Base):
     __tablename__ = "product_embeddings"
 
     product_key: Mapped[str] = mapped_column(String, primary_key=True)
+    product_description: Mapped[str] = mapped_column(String)
     embedding: Mapped[Vector] = mapped_column(Vector(1536))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
 
@@ -23,6 +24,7 @@ class ProductEmbeddingRecord(Base):
         """Convert to DTO"""
         return ProductEmbedding(
             product_key=self.product_key,
+            product_description=self.product_description,
             embedding=cast(list[float], self.embedding),
             created_at=self.created_at.replace(tzinfo=timezone.utc),
         )
@@ -32,6 +34,7 @@ class ProductEmbeddingRecord(Base):
         """Create from DTO"""
         return cls(
             product_key=dto.product_key,
+            product_description=dto.product_description,
             embedding=dto.embedding,
             created_at=dto.created_at,
         )

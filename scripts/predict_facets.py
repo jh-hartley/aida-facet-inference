@@ -5,7 +5,9 @@ import logging
 from datetime import datetime
 
 from src.common.db import SessionLocal
-from src.core.facet_inference.orchestration.orchestrator import FacetInferenceOrchestrator
+from src.core.facet_inference.orchestration.orchestrator import (
+    FacetInferenceOrchestrator,
+)
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
