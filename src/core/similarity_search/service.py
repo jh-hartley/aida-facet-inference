@@ -1,7 +1,9 @@
 from src.common.db import SessionLocal
 from src.config import config
 from src.core.domain.repositories import FacetIdentificationRepository
-from src.core.embedding_generation.generators import len_safe_get_averaged_embedding
+from src.core.embedding_generation.generators import (
+    len_safe_get_averaged_embedding,
+)
 from src.core.infrastructure.database.embeddings.repository import (
     ProductEmbeddingRepository,
 )
@@ -27,18 +29,8 @@ class SimilaritySearchService:
     ) -> SimilaritySearchResponse:
         """
         Find products similar to the given product key.
-        
-        Args:
-            product_key (str): The key of the product to find similar products for.
-            limit (int, optional): Maximum number of results to return.
-                Defaults to config.SIMILARITY_DEFAULT_LIMIT.
-            max_distance (float, optional): Maximum cosine distance (0-2).
-                Products with distances above this will be excluded.
-                Defaults to config.SIMILARITY_DEFAULT_DISTANCE.
 
-        Returns:
-            SimilaritySearchResponse: A response object containing the list
-                of similar products and the total count.
+        The specified product must have an embedding in the database.
         """
         if not 1 <= limit <= config.SIMILARITY_MAX_LIMIT:
             raise ValueError(
@@ -63,12 +55,14 @@ class SimilaritySearchService:
         )
 
         results = []
-        for similar_key, distance in similar_products:
-            product_details = self.facet_repo.get_product_details(similar_key)
+        for similar_product in similar_products:
+            product_details = self.facet_repo.get_product_details(
+                similar_product.product_key
+            )
             results.append(
                 SimilaritySearchResult(
                     product=product_details,
-                    similarity_score=distance,
+                    similarity_score=similar_product.distance,
                 )
             )
 
@@ -84,19 +78,7 @@ class SimilaritySearchService:
         max_distance: float = config.SIMILARITY_DEFAULT_DISTANCE,
     ) -> SimilaritySearchResponse:
         """
-        Find products similar to the given description.
-        
-        Args:
-            description (str): The product description to find similar products for.
-            limit (int, optional): Maximum number of results to return.
-                Defaults to config.SIMILARITY_DEFAULT_LIMIT.
-            max_distance (float, optional): Maximum cosine distance (0-2).
-                Products with distances above this will be excluded.
-                Defaults to config.SIMILARITY_DEFAULT_DISTANCE.
-
-        Returns:
-            SimilaritySearchResponse: A response object containing the list
-                of similar products and the total count.
+        Find semantic product matches using a raw text description.
         """
         if not 1 <= limit <= config.SIMILARITY_MAX_LIMIT:
             raise ValueError(
@@ -116,19 +98,23 @@ class SimilaritySearchService:
 
         embedding = await len_safe_get_averaged_embedding(description)
 
-        similar_products = self.embedding_repo.find_similar_products_by_embedding(
-            embedding=embedding,
-            limit=limit,
-            distance_threshold=max_distance,
+        similar_products = (
+            self.embedding_repo.find_similar_products_by_embedding(
+                embedding=embedding,
+                limit=limit,
+                distance_threshold=max_distance,
+            )
         )
 
         results = []
-        for similar_key, distance in similar_products:
-            product_details = self.facet_repo.get_product_details(similar_key)
+        for similar_product in similar_products:
+            product_details = self.facet_repo.get_product_details(
+                similar_product.product_key
+            )
             results.append(
                 SimilaritySearchResult(
                     product=product_details,
-                    similarity_score=distance,
+                    similarity_score=similar_product.distance,
                 )
             )
 

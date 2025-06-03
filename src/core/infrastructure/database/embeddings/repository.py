@@ -7,7 +7,10 @@ from sqlalchemy.orm import Mapped, Session, mapped_column
 
 from src.common.clock import clock
 from src.common.db import Base
-from src.core.infrastructure.database.embeddings.models import ProductEmbedding
+from src.core.infrastructure.database.embeddings.models import (
+    ProductEmbedding,
+    SimilarProductResult,
+)
 
 
 class ProductEmbeddingRecord(Base):
@@ -93,66 +96,57 @@ class ProductEmbeddingRepository:
         )
         return bool(self.session.execute(stmt).scalar())
 
-    def find_similar_products(
-        self,
-        embedding: list[float],
-        limit: int = 10,
-        distance_threshold: float = 0.3,
-        exclude_product_key: str | None = None,
-    ) -> list[tuple[str, float]]:
-        """Find similar products using cosine distance"""
-        stmt = (
-            select(
-                ProductEmbeddingRecord.product_key,
-                ProductEmbeddingRecord.embedding.cosine_distance(
-                    embedding
-                ).label("distance"),
-            )
-            .where(
-                ProductEmbeddingRecord.embedding.cosine_distance(embedding)
-                <= distance_threshold
-            )
-        )
-        
-        if exclude_product_key:
-            stmt = stmt.where(ProductEmbeddingRecord.product_key != exclude_product_key)
-            
-        stmt = stmt.order_by("distance").limit(limit)
-
-        result = self.session.execute(stmt)
-        return [(row.product_key, float(row.distance)) for row in result]
-
     def find_similar_products_by_key(
         self,
         product_key: str,
         limit: int = 10,
         distance_threshold: float = 0.3,
-    ) -> list[tuple[str, float]]:
+    ) -> list[SimilarProductResult]:
         """
-        Find similar products using cosine distance, starting from a product key.
-        The source product is automatically excluded from results.
+        Find similar products using cosine distance, starting from a product
+        key. The source product is automatically excluded from results.
         """
         source_embedding = self.find(product_key)
         if not source_embedding:
             raise ValueError(f"No embedding found for product {product_key}")
 
-        return self.find_similar_products_by_embedding(
-            embedding=source_embedding.embedding,
-            limit=limit,
-            distance_threshold=distance_threshold,
-            exclude_product_key=product_key,
+        stmt = (
+            select(
+                ProductEmbeddingRecord.product_key,
+                ProductEmbeddingRecord.embedding.cosine_distance(
+                    source_embedding.embedding
+                ).label("distance"),
+            )
+            .where(
+                ProductEmbeddingRecord.embedding.cosine_distance(
+                    source_embedding.embedding
+                )
+                <= distance_threshold
+            )
+            .where(ProductEmbeddingRecord.product_key != product_key)
+            .order_by("distance")
+            .limit(limit)
         )
+
+        result = self.session.execute(stmt)
+        return [
+            SimilarProductResult(
+                product_key=row.product_key,
+                distance=float(row.distance),
+            )
+            for row in result
+        ]
 
     def find_similar_products_by_embedding(
         self,
         embedding: list[float],
         limit: int = 10,
         distance_threshold: float = 0.3,
-        exclude_product_key: str | None = None,
-    ) -> list[tuple[str, float]]:
+    ) -> list[SimilarProductResult]:
         """
-        Find similar products using cosine distance, starting from an embedding vector.
-        Optionally exclude a specific product key from results.
+        Find similar products using cosine distance, starting from an
+        embedding vector. Products with identical embeddings are excluded
+        from results.
         """
         stmt = (
             select(
@@ -165,12 +159,16 @@ class ProductEmbeddingRepository:
                 ProductEmbeddingRecord.embedding.cosine_distance(embedding)
                 <= distance_threshold
             )
+            .where(ProductEmbeddingRecord.embedding != embedding)
+            .order_by("distance")
+            .limit(limit)
         )
-        
-        if exclude_product_key:
-            stmt = stmt.where(ProductEmbeddingRecord.product_key != exclude_product_key)
-            
-        stmt = stmt.order_by("distance").limit(limit)
 
         result = self.session.execute(stmt)
-        return [(row.product_key, float(row.distance)) for row in result]
+        return [
+            SimilarProductResult(
+                product_key=row.product_key,
+                distance=float(row.distance),
+            )
+            for row in result
+        ]

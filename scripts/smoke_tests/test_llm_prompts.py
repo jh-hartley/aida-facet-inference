@@ -39,9 +39,8 @@ def main(
             product_details = repository.get_product_details(product_key)
             product_gaps = repository.get_product_gaps(product_key)
 
-            product_context = product_details.get_llm_prompt()
             system_prompt = PRODUCT_FACET_PROMPT.get_system_prompt(
-                product_context
+                product_details
             )
 
             output = [format_section("System Prompt", system_prompt)]

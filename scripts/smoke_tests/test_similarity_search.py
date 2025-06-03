@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Tests the similarity search functionality by finding similar products for a given
-product key and displaying their details and similarity scores.
+Tests the similarity search functionality by finding similar products for a
+given product key and displaying their details and similarity scores.
 
 To use, run:
     python -m scripts.smoke_tests.test_similarity_search [optional product_key]
@@ -30,10 +30,13 @@ def format_similar_product(result) -> str:
         f"Categories: {', '.join(product.categories)}\n"
         f"Distance: {result.similarity_score:.3f} "
         f"(0.0 = identical, 2.0 = completely different)\n"
-        f"Attributes:\n"
-        + "\n".join(f"  • {attr.attribute}: {attr.value}" for attr in product.attributes)
+        "Attributes:\n"
+        + "\n".join(
+            f"  • {attr.attribute}: {attr.value}"
+            for attr in product.attributes
+        )
         + "\n"
-        f"Descriptions:\n"
+        "Descriptions:\n"
         + "\n".join(
             f"  • {desc.descriptor}: {desc.value}"
             for desc in product.product_description
@@ -56,16 +59,21 @@ def main(
         results = service.find_similar_products(
             product_key=product_key,
             limit=5,
-            max_distance=1.8,  # Very lax threshold - only exclude completely different products
+            max_distance=1.8,
         )
 
         if not results.results:
-            logger.warning("No similar products found within the maximum distance threshold")
+            logger.warning(
+                "No similar products found within the maximum "
+                "distance threshold"
+            )
             return
 
         min_score = min(r.similarity_score for r in results.results)
         max_score = max(r.similarity_score for r in results.results)
-        avg_score = sum(r.similarity_score for r in results.results) / len(results.results)
+        avg_score = sum(r.similarity_score for r in results.results) / len(
+            results.results
+        )
 
         logger.info(
             f"Found {results.total_results} similar products "
@@ -90,7 +98,8 @@ def main(
                 f"Total Results: {results.total_results}\n"
                 f"Distance Range: {min_score:.3f} to {max_score:.3f}\n"
                 f"Average Distance: {avg_score:.3f}\n\n"
-                f"Note: Distances range from 0.0 (identical) to 2.0 (completely different). "
+                f"Note: Distances range from 0.0 (identical) to 2.0 "
+                f"(completely different). "
                 f"Lower distances indicate more similar products.",
             ),
         ]
@@ -108,4 +117,4 @@ def main(
 
 
 if __name__ == "__main__":
-    main() 
+    main()
