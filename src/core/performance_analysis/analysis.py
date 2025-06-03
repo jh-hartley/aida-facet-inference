@@ -1,5 +1,6 @@
 from typing import Sequence
 
+from core.infrastructure.database.predictions.repositories import PredictionExperimentRepository, PredictionResultRepository
 import numpy as np
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -7,8 +8,6 @@ from sqlalchemy.orm import Session
 from src.core.domain.confidence_levels import ConfidenceLevel
 from src.core.domain.repositories import (
     FacetIdentificationRepository,
-    PredictionExperimentRepository,
-    PredictionResultRepository,
 )
 from src.core.infrastructure.database.input_data.records import (
     RawRecommendationRecord,

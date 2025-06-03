@@ -5,7 +5,7 @@ import logging
 from datetime import datetime
 
 from src.common.db import SessionLocal
-from src.core.facet_inference.jobs import ExperimentOrchestrator
+from src.core.facet_inference.jobs import FacetInferenceOrchestrator
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -37,7 +37,7 @@ async def main():
 
     with SessionLocal() as session:
         # Create orchestrator
-        orchestrator = ExperimentOrchestrator(
+        orchestrator = FacetInferenceOrchestrator(
             session=session,
             description=args.description,
             metadata={

@@ -41,8 +41,10 @@ class FacetInferenceService:
         """
         Predict all missing attributes for a product.
 
-        If evaluation_mode is True, only predict for attributes that have
-        accepted recommendations. Otherwise, predict for all attribute gaps.
+        Args:
+            product_key: The product key to predict for
+            evaluation_mode: If True, only predict for attributes that have
+                accepted recommendations. Otherwise, predict for all attribute gaps.
         """
         product_details = self.repository.get_product_details(product_key)
 
@@ -59,6 +61,37 @@ class FacetInferenceService:
 
         return await self.concurrency_manager.execute(
             predictor.predict_gap, product_gaps.gaps
+        )
+
+    async def predict_specific_gaps(
+        self,
+        product_key: str,
+        gaps: Sequence[ProductAttributeGap],
+    ) -> Sequence[FacetPrediction]:
+        """
+        Predict values for specific attribute gaps for a product.
+
+        This method is used when you already have a list of specific gaps
+        you want to predict for, rather than predicting all gaps or gaps
+        with recommendations.
+
+        Args:
+            product_key: The product key to predict for
+            gaps: The specific attribute gaps to predict values for
+
+        Returns:
+            A sequence of predictions for the specified gaps
+        """
+        product_details = self.repository.get_product_details(product_key)
+        product_gaps = ProductGaps(
+            product_code=product_key,
+            product_name=product_details.product_name,
+            gaps=list(gaps),
+        )
+
+        predictor = ProductFacetPredictor(product_details, product_gaps)
+        return await self.concurrency_manager.execute(
+            predictor.predict_gap, gaps
         )
 
     async def _predict_attribute(
