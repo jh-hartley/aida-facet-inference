@@ -19,5 +19,7 @@ CREATE TABLE prediction_results (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     recommendation_key INTEGER REFERENCES human_recommendations(id),
     actual_value TEXT,
-    correctness_status BOOLEAN
+    correctness_status BOOLEAN,
+    reasoning TEXT,
+    suggested_value TEXT
 );

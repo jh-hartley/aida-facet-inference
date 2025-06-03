@@ -145,6 +145,9 @@ class PredictionStore:
                 value=prediction.predicted_value,
                 confidence=prediction.confidence,
                 recommendation_key=recommendation_key,
+                actual_value=prediction.predicted_value,
+                reasoning=prediction.reasoning,
+                suggested_value=prediction.suggested_value,
             )
 
         self.session.commit()

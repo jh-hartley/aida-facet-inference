@@ -112,6 +112,8 @@ class PredictionResultRepository:
         recommendation_key: int | None = None,
         actual_value: str | None = None,
         correctness_status: bool | None = None,
+        reasoning: str | None = None,
+        suggested_value: str | None = None,
     ) -> PredictionResultRecord:
         """Create a new prediction result.
         
@@ -122,6 +124,10 @@ class PredictionResultRepository:
             value: Predicted value
             confidence: Prediction confidence
             recommendation_key: Optional recommendation key (ID from human_recommendations table)
+            actual_value: The actual ground truth value
+            correctness_status: Whether the prediction is correct
+            reasoning: Explanation for why this value was chosen
+            suggested_value: Suggested value when the correct value is not in the allowed list
             
         Returns:
             Created prediction result record
@@ -136,13 +142,20 @@ class PredictionResultRepository:
             recommendation_key=recommendation_key,
             actual_value=actual_value,
             correctness_status=correctness_status,
+            reasoning=reasoning,
+            suggested_value=suggested_value,
         )
         self.session.add(prediction)
         self.session.commit()
         return prediction
 
     def update_prediction_validation(
-        self, prediction_key: str, is_correct: bool, actual_value: str
+        self, 
+        prediction_key: str, 
+        is_correct: bool, 
+        actual_value: str,
+        reasoning: str | None = None,
+        suggested_value: str | None = None,
     ) -> None:
         """Update prediction validation status and actual value.
         
@@ -150,11 +163,17 @@ class PredictionResultRepository:
             prediction_key: Prediction key
             is_correct: Whether the prediction is correct
             actual_value: The actual ground truth value
+            reasoning: Explanation for why this value was chosen
+            suggested_value: Suggested value when the correct value is not in the allowed list
         """
         prediction = self.session.get(PredictionResultRecord, prediction_key)
         if prediction:
             prediction.correctness_status = is_correct
             prediction.actual_value = actual_value
+            if reasoning is not None:
+                prediction.reasoning = reasoning
+            if suggested_value is not None:
+                prediction.suggested_value = suggested_value
             self.session.commit()
 
     def get_predictions_by_experiment(

@@ -30,6 +30,8 @@ class PredictionEntry:
     confidence: float
     recommendation_key: int | None
     correctness_status: bool | None = None
+    reasoning: str | None = None
+    suggested_value: str | None = None
 
 
 class PredictionLoader:
@@ -66,6 +68,8 @@ class PredictionLoader:
                 confidence=pred.confidence,
                 recommendation_key=pred.recommendation_key,
                 correctness_status=pred.correctness_status,
+                reasoning=pred.reasoning,
+                suggested_value=pred.suggested_value,
             )
             for pred in results
         ]
@@ -126,14 +130,18 @@ class PredictionLoader:
                         self.repo.update_prediction_validation(
                             entry.prediction_key,
                             is_correct,
-                            ground_truth.recommendation
+                            ground_truth.recommendation,
+                            entry.reasoning if hasattr(entry, 'reasoning') else None,
+                            entry.suggested_value if hasattr(entry, 'suggested_value') else None
                         )
                         
                         logger.info(
                             f"Validated prediction for {entry.attribute_key}: "
                             f"predicted='{entry.predicted_value}', "
                             f"ground_truth='{ground_truth.recommendation}', "
-                            f"correct={is_correct}"
+                            f"correct={is_correct}, "
+                            f"reasoning='{entry.reasoning if hasattr(entry, 'reasoning') else None}', "
+                            f"suggested_value='{entry.suggested_value if hasattr(entry, 'suggested_value') else None}'"
                         )
                     else:
                         # Log that we didn't find any record with this ID
@@ -260,6 +268,8 @@ class PredictionLoader:
                 confidence=pred.confidence,
                 recommendation_key=pred.recommendation_key,
                 correctness_status=pred.correctness_status,
+                reasoning=pred.reasoning,
+                suggested_value=pred.suggested_value,
             )
             for pred in predictions
         ]
