@@ -3,7 +3,7 @@
 import argparse
 import asyncio
 
-from core.embedding.jobs.embed_product_descriptions import (
+from src.core.embedding_generation.jobs.embed_product_descriptions import (
     create_embeddings_for_products,
     embed_single_product,
 )

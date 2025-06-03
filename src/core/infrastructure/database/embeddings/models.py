@@ -11,3 +11,10 @@ class ProductEmbedding(BaseModel):
     embedding: list[float]
     created_at: datetime
     updated_at: datetime
+
+
+class SimilarProductResult(BaseModel):
+    """Represents a similar product result with its distance score"""
+
+    product_key: str
+    distance: float

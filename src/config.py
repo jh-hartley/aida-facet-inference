@@ -38,6 +38,21 @@ class Config:
         os.getenv("EMBEDDING_DEFAULT_DIMENSIONS", "1536")
     )
 
+    # Similarity Search Configuration
+    SIMILARITY_DEFAULT_LIMIT: int = int(
+        os.getenv("SIMILARITY_DEFAULT_LIMIT", "10")
+    )
+    SIMILARITY_MAX_LIMIT: int = int(os.getenv("SIMILARITY_MAX_LIMIT", "50"))
+    SIMILARITY_MIN_DISTANCE: float = float(
+        os.getenv("SIMILARITY_MIN_DISTANCE", "0.0")
+    )
+    SIMILARITY_MAX_DISTANCE: float = float(
+        os.getenv("SIMILARITY_MAX_DISTANCE", "2.0")
+    )
+    SIMILARITY_DEFAULT_DISTANCE: float = float(
+        os.getenv("SIMILARITY_DEFAULT_DISTANCE", "0.6")
+    )
+
     # API Configuration
     API_HOST: str = os.getenv("API_HOST", "0.0.0.0")
     API_PORT: int = int(os.getenv("API_PORT", "8000"))
@@ -132,6 +147,48 @@ class Config:
             raise ValueError(
                 f"Default dimensions must be between min ({min_dims}) "
                 f"and max ({max_dims}) dimensions"
+            )
+        return value
+
+    @field_validator("SIMILARITY_DEFAULT_LIMIT", "SIMILARITY_MAX_LIMIT")
+    @classmethod
+    def validate_similarity_limit(cls, value: int) -> int:
+        if value < 1:
+            raise ValueError("Similarity limit must be at least 1")
+        return value
+
+    @field_validator("SIMILARITY_DEFAULT_LIMIT")
+    @classmethod
+    def validate_default_limit(cls, value: int, info: ValidationInfo) -> int:
+        max_limit = info.data.get("SIMILARITY_MAX_LIMIT", 50)
+        if value > max_limit:
+            raise ValueError(
+                f"Default limit must not exceed max limit ({max_limit})"
+            )
+        return value
+
+    @field_validator(
+        "SIMILARITY_MIN_DISTANCE",
+        "SIMILARITY_MAX_DISTANCE",
+        "SIMILARITY_DEFAULT_DISTANCE",
+    )
+    @classmethod
+    def validate_similarity_distance(cls, value: float) -> float:
+        if not 0 <= value <= 2:
+            raise ValueError("Cosine distance must be between 0 and 2")
+        return value
+
+    @field_validator("SIMILARITY_DEFAULT_DISTANCE")
+    @classmethod
+    def validate_default_distance(
+        cls, value: float, info: ValidationInfo
+    ) -> float:
+        min_distance = info.data.get("SIMILARITY_MIN_DISTANCE", 0.0)
+        max_distance = info.data.get("SIMILARITY_MAX_DISTANCE", 2.0)
+        if not min_distance <= value <= max_distance:
+            raise ValueError(
+                f"Default distance must be between min ({min_distance}) "
+                f"and max ({max_distance}) distance"
             )
         return value
 

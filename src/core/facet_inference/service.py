@@ -2,7 +2,7 @@ from typing import Sequence
 
 from sqlalchemy.orm import Session
 
-from src.core.domain.models import FacetPrediction, ProductDetails, ProductGaps
+from src.core.domain.models import FacetPrediction, ProductDetails
 from src.core.domain.repositories import FacetIdentificationRepository
 from src.core.domain.types import ProductAttributeGap
 from src.core.facet_inference.concurrency import AsyncConcurrencyManager
@@ -42,6 +42,8 @@ class FacetInferenceService:
         Predict all missing attributes for a product. If evaluation_mode is
         True, only predict for attributes that have accepted recommendations.
         Otherwise, predict for all attribute gaps.
+
+        This is largely a method for the demo rather than for production use.
         """
         product_details = self.repository.get_product_details(product_key)
 
@@ -54,7 +56,7 @@ class FacetInferenceService:
         else:
             product_gaps = self.repository.get_product_gaps(product_key)
 
-        predictor = ProductFacetPredictor(product_details, product_gaps)
+        predictor = ProductFacetPredictor(product_details)
 
         return await self.concurrency_manager.execute(
             predictor.predict_gap, product_gaps.gaps
@@ -66,27 +68,14 @@ class FacetInferenceService:
         gaps: Sequence[ProductAttributeGap],
     ) -> Sequence[FacetPrediction]:
         """
-        Predict values for specific attribute gaps for a product.
+        Predict values for specific attribute values.
 
-        This method is used when you already have a list of specific gaps
-        you want to predict for, rather than predicting all gaps or gaps
-        with recommendations.
-
-        Args:
-            product_key: The product key to predict for
-            gaps: The specific attribute gaps to predict values for
-
-        Returns:
-            A sequence of predictions for the specified gaps
+        This method is useful for handling specific attribute gaps or
+        targeted predictions.
         """
         product_details = self.repository.get_product_details(product_key)
-        product_gaps = ProductGaps(
-            product_code=product_key,
-            product_name=product_details.product_name,
-            gaps=list(gaps),
-        )
 
-        predictor = ProductFacetPredictor(product_details, product_gaps)
+        predictor = ProductFacetPredictor(product_details)
         return await self.concurrency_manager.execute(
             predictor.predict_gap, gaps
         )
@@ -95,20 +84,18 @@ class FacetInferenceService:
         self,
         gap: ProductAttributeGap,
         product_details: ProductDetails,
-        product_gaps: ProductGaps,
     ) -> FacetPrediction:
         """Predict a value for a single attribute."""
-        predictor = ProductFacetPredictor(product_details, product_gaps)
+        predictor = ProductFacetPredictor(product_details)
         return await predictor.predict_gap(gap)
 
     async def _predict_multiple_attributes(
         self,
         gaps: Sequence[ProductAttributeGap],
         product_details: ProductDetails,
-        product_gaps: ProductGaps,
     ) -> Sequence[FacetPrediction]:
         """Predict values for multiple attributes concurrently."""
-        predictor = ProductFacetPredictor(product_details, product_gaps)
+        predictor = ProductFacetPredictor(product_details)
         return await self.concurrency_manager.execute(
             predictor.predict_gap, gaps
         )

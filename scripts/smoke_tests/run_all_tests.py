@@ -62,6 +62,10 @@ def main(product_key: str | None = None) -> None:
                 "test_llm_predictions",
                 "scripts/smoke_tests/test_llm_predictions.py",
             ),
+            (
+                "test_similarity_search",
+                "scripts/smoke_tests/test_similarity_search.py",
+            ),
         ]
 
         for module_name, file_path in test_scripts:

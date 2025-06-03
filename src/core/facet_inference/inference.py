@@ -5,7 +5,6 @@ from src.core.domain.models import (
     FacetPrediction,
     ProductAttributeGap,
     ProductDetails,
-    ProductGaps,
 )
 from src.core.infrastructure.llm.client import Llm
 from src.core.infrastructure.llm.models import LlmModel
@@ -20,16 +19,13 @@ class ProductFacetPredictor:
     def __init__(
         self,
         product_details: ProductDetails,
-        product_gaps: ProductGaps,
         llm: Llm | None = None,
         llm_model: LlmModel = LlmModel.GPT_4O_MINI,
     ) -> None:
         self.product_details = product_details
-        self.product_gaps = product_gaps
         self._llm = llm or Llm(llm_model)
-        self._product_context = product_details.get_llm_prompt()
         self._system_prompt = PRODUCT_FACET_PROMPT.get_system_prompt(
-            self._product_context
+            self.product_details
         )
 
     async def predict_gap(
