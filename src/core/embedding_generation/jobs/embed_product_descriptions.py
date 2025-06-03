@@ -5,8 +5,8 @@ from tqdm import tqdm
 from src.common.db import SessionLocal
 from src.core.domain.models import ProductDetails
 from src.core.domain.repositories import FacetIdentificationRepository
-from src.core.embedding.uow.create_embedding import create_embedding
-from src.core.embedding.uow.update_embedding import update_embedding
+from src.core.embedding_generation.uow.create_embedding import create_embedding
+from src.core.embedding_generation.uow.update_embedding import update_embedding
 from src.core.infrastructure.database.embeddings.repository import (
     ProductEmbeddingRepository,
 )

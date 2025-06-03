@@ -2,7 +2,7 @@ import logging
 
 from src.common.clock import clock
 from src.common.db import SessionLocal
-from src.core.embedding.generators import len_safe_get_averaged_embedding
+from src.core.embedding_generation.generators import len_safe_get_averaged_embedding
 from src.core.infrastructure.database.embeddings.models import ProductEmbedding
 from src.core.infrastructure.database.embeddings.repository import (
     ProductEmbeddingRepository,
