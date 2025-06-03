@@ -19,6 +19,7 @@ class ProductEmbeddingRecord(Base):
     product_description: Mapped[str] = mapped_column(String)
     embedding: Mapped[Vector] = mapped_column(Vector(1536))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
 
     def to_dto(self) -> ProductEmbedding:
         """Convert to DTO"""
@@ -27,6 +28,7 @@ class ProductEmbeddingRecord(Base):
             product_description=self.product_description,
             embedding=cast(list[float], self.embedding),
             created_at=self.created_at.replace(tzinfo=timezone.utc),
+            updated_at=self.updated_at.replace(tzinfo=timezone.utc),
         )
 
     @classmethod

@@ -58,6 +58,14 @@ class Config:
     # Logging
     LOG_LEVEL: str = os.getenv("LOG_LEVEL", "INFO").upper()
 
+    # Embedding Backoff/Retry Configuration
+    OPENAI_EMBEDDING_MAX_TRIES: int = int(
+        os.getenv("OPENAI_EMBEDDING_MAX_TRIES", "5")
+    )
+    OPENAI_EMBEDDING_MAX_TIME: int = int(
+        os.getenv("OPENAI_EMBEDDING_MAX_TIME", "60")
+    )
+
     @field_validator("OPENAI_API_KEY")
     @classmethod
     def validate_openai_key(cls, value: str) -> str:

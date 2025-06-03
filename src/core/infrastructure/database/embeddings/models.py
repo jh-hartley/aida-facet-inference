@@ -10,3 +10,4 @@ class ProductEmbedding(BaseModel):
     product_description: str
     embedding: list[float]
     created_at: datetime
+    updated_at: datetime
