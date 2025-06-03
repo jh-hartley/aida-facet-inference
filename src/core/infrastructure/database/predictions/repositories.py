@@ -1,201 +1,198 @@
-from typing import Any
-from src.core.infrastructure.database.input_data.repositories import Repository
-from src.core.infrastructure.database.predictions.records import PredictionExperimentRecord, PredictionResultRecord
+"""Repositories for prediction results."""
+
+from datetime import datetime, timezone
+import uuid
+
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from .records import ExperimentRecord, PredictionResultRecord
 
-class PredictionResultRepository(Repository[PredictionResultRecord]):
-    """Repository for prediction result data"""
+
+class ExperimentRepository:
+    """Repository for experiment records."""
 
     def __init__(self, session: Session):
-        super().__init__(session, PredictionResultRecord)
+        """Initialize the repository.
+        
+        Args:
+            session: SQLAlchemy session
+        """
+        self.session = session
 
-    def get_by_experiment_key(
+    def create_experiment(
+        self, name: str, description: str | None = None
+    ) -> ExperimentRecord:
+        """Create a new experiment.
+        
+        Args:
+            name: Experiment name
+            description: Optional experiment description
+            
+        Returns:
+            Created experiment record
+        """
+        experiment = ExperimentRecord(
+            experiment_key=str(uuid.uuid4()),
+            experiment_metadata={
+                "name": name,
+                "description": description,
+            },
+            started_at=datetime.now(timezone.utc),
+        )
+        self.session.add(experiment)
+        self.session.commit()
+        return experiment
+
+    def get_experiment(self, experiment_key: str) -> ExperimentRecord | None:
+        """Get an experiment by key.
+        
+        Args:
+            experiment_key: Experiment key
+            
+        Returns:
+            Experiment record if found, None otherwise
+        """
+        return self.session.get(ExperimentRecord, experiment_key)
+
+    def update_experiment_metrics(
+        self,
+        experiment_key: str,
+        total_predictions: int,
+        validated_predictions: int,
+        correct_predictions: int,
+        accuracy: float,
+    ) -> None:
+        """Update experiment metrics.
+        
+        Args:
+            experiment_key: Experiment key
+            total_predictions: Total number of predictions
+            validated_predictions: Number of validated predictions
+            correct_predictions: Number of correct predictions
+            accuracy: Overall accuracy
+        """
+        experiment = self.get_experiment(experiment_key)
+        if experiment:
+            experiment.total_predictions = total_predictions
+            experiment.total_products = validated_predictions  # Using validated_predictions as total_products
+            experiment.average_time_per_prediction = accuracy  # Using accuracy as average_time_per_prediction
+            self.session.commit()
+
+    def complete_experiment(self, experiment_key: str) -> None:
+        """Mark an experiment as completed.
+        
+        Args:
+            experiment_key: Experiment key
+        """
+        experiment = self.get_experiment(experiment_key)
+        if experiment:
+            experiment.completed_at = datetime.now(timezone.utc)
+            self.session.commit()
+
+
+class PredictionResultRepository:
+    """Repository for prediction result records."""
+
+    def __init__(self, session: Session):
+        """Initialize the repository.
+        
+        Args:
+            session: SQLAlchemy session
+        """
+        self.session = session
+
+    def create_prediction(
+        self,
+        experiment_key: str,
+        product_key: str,
+        attribute_key: str,
+        value: str,
+        confidence: float,
+        recommendation_key: int | None = None,
+        actual_value: str | None = None,
+        correctness_status: bool | None = None,
+    ) -> PredictionResultRecord:
+        """Create a new prediction result.
+        
+        Args:
+            experiment_key: Experiment key
+            product_key: Product key
+            attribute_key: Attribute key
+            value: Predicted value
+            confidence: Prediction confidence
+            recommendation_key: Optional recommendation key (ID from human_recommendations table)
+            
+        Returns:
+            Created prediction result record
+        """
+        prediction = PredictionResultRecord(
+            prediction_key=str(uuid.uuid4()),
+            experiment_key=experiment_key,
+            product_key=product_key,
+            attribute_key=attribute_key,
+            value=value,
+            confidence=confidence,
+            recommendation_key=recommendation_key,
+            actual_value=actual_value,
+            correctness_status=correctness_status,
+        )
+        self.session.add(prediction)
+        self.session.commit()
+        return prediction
+
+    def update_prediction_validation(
+        self, prediction_key: str, is_correct: bool, actual_value: str
+    ) -> None:
+        """Update prediction validation status and actual value.
+        
+        Args:
+            prediction_key: Prediction key
+            is_correct: Whether the prediction is correct
+            actual_value: The actual ground truth value
+        """
+        prediction = self.session.get(PredictionResultRecord, prediction_key)
+        if prediction:
+            prediction.correctness_status = is_correct
+            prediction.actual_value = actual_value
+            self.session.commit()
+
+    def get_predictions_by_experiment(
         self, experiment_key: str
     ) -> list[PredictionResultRecord]:
-        result = list(
+        """Get all predictions for an experiment.
+        
+        Args:
+            experiment_key: Experiment key
+            
+        Returns:
+            List of prediction result records
+        """
+        return list(
             self.session.scalars(
                 select(PredictionResultRecord).where(
                     PredictionResultRecord.experiment_key == experiment_key
                 )
-            ).all()
-        )
-        if not result:
-            raise ValueError(
-                f"No predictions found for experiment {experiment_key}"
             )
-        return result
-
-    def find_by_experiment_key(
-        self, experiment_key: str
-    ) -> list[PredictionResultRecord]:
-        return list(
-            self.session.scalars(
-                select(PredictionResultRecord).where(
-                    PredictionResultRecord.experiment_key == experiment_key
-                )
-            ).all()
         )
 
-    def get_by_product_key(
-        self, product_key: str
+    def get_predictions_by_product(
+        self, experiment_key: str, product_key: str
     ) -> list[PredictionResultRecord]:
-        result = list(
-            self.session.scalars(
-                select(PredictionResultRecord).where(
-                    PredictionResultRecord.product_key == product_key
-                )
-            ).all()
-        )
-        if not result:
-            raise ValueError(f"No predictions found for product {product_key}")
-        return result
-
-    def find_by_product_key(
-        self, product_key: str
-    ) -> list[PredictionResultRecord]:
-        return list(
-            self.session.scalars(
-                select(PredictionResultRecord).where(
-                    PredictionResultRecord.product_key == product_key
-                )
-            ).all()
-        )
-
-    def find_by_recommendation_key(
-        self, recommendation_key: str
-    ) -> list[PredictionResultRecord]:
-        return list(
-            self.session.scalars(
-                select(PredictionResultRecord).where(
-                    PredictionResultRecord.recommendation_key
-                    == recommendation_key
-                )
-            ).all()
-        )
-
-    def get_by_confidence_range(
-        self,
-        min_confidence: float,
-        max_confidence: float,
-        experiment_key: str | None = None,
-    ) -> list[PredictionResultRecord]:
+        """Get all predictions for a product in an experiment.
+        
+        Args:
+            experiment_key: Experiment key
+            product_key: Product key
+            
+        Returns:
+            List of prediction result records
         """
-        Get predictions within a confidence range,
-        optionally for a specific experiment.
-        """
-        query = select(PredictionResultRecord).where(
-            PredictionResultRecord.confidence >= min_confidence,
-            PredictionResultRecord.confidence <= max_confidence,
-        )
-        if experiment_key:
-            query = query.where(
-                PredictionResultRecord.experiment_key == experiment_key
+        return list(
+            self.session.scalars(
+                select(PredictionResultRecord).where(
+                    PredictionResultRecord.experiment_key == experiment_key,
+                    PredictionResultRecord.product_key == product_key,
+                )
             )
-        return list(self.session.scalars(query).all())
-
-    def get_by_attribute_key(
-        self, attribute_key: str, experiment_key: str | None = None
-    ) -> list[PredictionResultRecord]:
-        """
-        Get predictions for a specific attribute,
-        optionally for a specific experiment.
-        """
-        query = select(PredictionResultRecord).where(
-            PredictionResultRecord.attribute_key == attribute_key
-        )
-        if experiment_key:
-            query = query.where(
-                PredictionResultRecord.experiment_key == experiment_key
-            )
-        return list(self.session.scalars(query).all())
-
-    def get_latest_predictions(
-        self, limit: int = 10
-    ) -> list[PredictionResultRecord]:
-        """Get the most recent predictions."""
-        return list(
-            self.session.scalars(
-                select(PredictionResultRecord)
-                .order_by(PredictionResultRecord.created_at.desc())
-                .limit(limit)
-            ).all()
-        )
-
-
-class PredictionExperimentRepository(Repository[PredictionExperimentRecord]):
-    """Repository for prediction experiment data"""
-
-    def __init__(self, session: Session):
-        super().__init__(session, PredictionExperimentRecord)
-
-    def get_by_experiment_key(
-        self, experiment_key: str
-    ) -> PredictionExperimentRecord:
-        result = self.session.get(self.model, experiment_key)
-        if result is None:
-            raise ValueError(f"No experiment found with key {experiment_key}")
-        return result
-
-    def find_by_experiment_key(
-        self, experiment_key: str
-    ) -> PredictionExperimentRecord | None:
-        return self.session.get(self.model, experiment_key)
-
-    def find_all(self) -> list[PredictionExperimentRecord]:
-        """Get all experiments, ordered by creation date descending."""
-        return list(
-            self.session.scalars(
-                select(self.model).order_by(self.model.created_at.desc())
-            ).all()
-        )
-
-    def get_recent_experiments(
-        self, limit: int = 10
-    ) -> list[PredictionExperimentRecord]:
-        """Get the most recent experiments."""
-        return list(
-            self.session.scalars(
-                select(self.model)
-                .order_by(self.model.created_at.desc())
-                .limit(limit)
-            ).all()
-        )
-
-    def get_completed_experiments(
-        self, limit: int = 10
-    ) -> list[PredictionExperimentRecord]:
-        """Get the most recently completed experiments."""
-        return list(
-            self.session.scalars(
-                select(self.model)
-                .where(self.model.completed_at.is_not(None))
-                .order_by(self.model.completed_at.desc())
-                .limit(limit)
-            ).all()
-        )
-
-    def get_running_experiments(
-        self,
-    ) -> list[PredictionExperimentRecord]:
-        """Get all experiments that have started but not completed."""
-        return list(
-            self.session.scalars(
-                select(self.model)
-                .where(self.model.completed_at.is_(None))
-                .order_by(self.model.started_at.desc())
-            ).all()
-        )
-
-    def get_experiments_by_metadata(
-        self, key: str, value: Any
-    ) -> list[PredictionExperimentRecord]:
-        """Get experiments with matching metadata key-value pair."""
-        return list(
-            self.session.scalars(
-                select(self.model).where(
-                    self.model.experiment_metadata[key].astext == str(value)
-                )
-            ).all()
         )

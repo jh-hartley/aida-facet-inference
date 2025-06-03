@@ -1,7 +1,7 @@
-"""Product processing for facet inference jobs."""
+"""Processes products for facet inference."""
 
 import logging
-from collections import defaultdict
+from typing import Sequence, Tuple, Mapping
 
 from sqlalchemy import select, text
 from sqlalchemy.orm import Session
@@ -9,9 +9,12 @@ from sqlalchemy.orm import Session
 from src.core.domain.models import FacetPrediction
 from src.core.domain.repositories import FacetIdentificationRepository
 from src.core.domain.types import ProductAttributeGap
+from src.core.facet_inference.data_loading.ground_truth_loader import (
+    GroundTruthLoader,
+    GroundTruthEntry,
+)
 from src.core.facet_inference.service import FacetInferenceService
 from src.core.infrastructure.database.input_data.records import (
-    HumanRecommendationRecord,
     RawAttributeRecord,
     RawProductRecord,
 )
@@ -23,29 +26,33 @@ class ProductProcessor:
     """Processes products for facet inference."""
 
     def __init__(self, session: Session):
+        """Initialize the processor.
+        
+        Args:
+            session: SQLAlchemy session
+        """
         self.session = session
         self.repository = FacetIdentificationRepository(session)
+        self.ground_truth_loader = GroundTruthLoader(session)
         self.service = FacetInferenceService.from_session(session)
 
     def get_accepted_recommendations(
         self,
-    ) -> dict[str, list[HumanRecommendationRecord]]:
+    ) -> Mapping[str, Sequence[GroundTruthEntry]]:
+        """Get all accepted recommendations grouped by product reference.
+        
+        Returns:
+            Dict mapping product references to their recommendations
         """
-        Get all accepted recommendations grouped by product reference.
-        Returns a dict of {product_reference: [recommendations]}
-        """
-        recommendations = self.session.scalars(
-            select(HumanRecommendationRecord).where(
-                HumanRecommendationRecord.action == "Accept Recommendation"
-            )
-        ).all()
-
-        product_recommendations: dict[str, list[HumanRecommendationRecord]] = {}
-        for rec in recommendations:
-            if rec.product_reference not in product_recommendations:
-                product_recommendations[rec.product_reference] = []
-            product_recommendations[rec.product_reference].append(rec)
-
+        entries = self.ground_truth_loader.load_ground_truth()
+        
+        # Group by product system name
+        product_recommendations: dict[str, list[GroundTruthEntry]] = {}
+        for entry in entries:
+            if entry.product_system_name not in product_recommendations:
+                product_recommendations[entry.product_system_name] = []
+            product_recommendations[entry.product_system_name].append(entry)
+            
         return product_recommendations
 
     def get_product_key_from_system_name(self, system_name: str) -> str | None:
@@ -110,74 +117,63 @@ class ProductProcessor:
         )
 
     async def process_product(
-        self, system_name: str, recommendations: list[HumanRecommendationRecord]
-    ) -> tuple[str | None, list[FacetPrediction]]:
-        """
-        Process a single product and its recommendations.
+        self, product_ref: str, recommendations: Sequence[GroundTruthEntry]
+    ) -> Tuple[str | None, Sequence[FacetPrediction]]:
+        """Process a product and generate predictions.
         
+        Args:
+            product_ref: Product reference (system name)
+            recommendations: Sequence of ground truth entries for the product
+            
         Returns:
-            Tuple of (product_key, predictions) where product_key may be None
-            if the product was not found.
+            Tuple of (product_key, predictions)
         """
-        # Get product key from system name
-        product_key = self.get_product_key_from_system_name(system_name)
-        if not product_key:
-            logger.warning(f"No product found for system name: {system_name}")
+        # Get product key from first recommendation
+        if not recommendations:
+            logger.error(f"No recommendations found for product {product_ref}")
             return None, []
-
-        logger.info(
-            f"Processing product {product_key} ({system_name}) "
-            f"with {len(recommendations)} accepted recommendations"
+            
+        product_key = recommendations[0].product_key
+        
+        # Get product categories
+        product_categories = self.service.repository.product_category_repo.get_by_product_key(
+            product_key
         )
-
-        # Get gaps that have recommendations, deduplicating by attribute name
-        attribute_to_gap: dict[str, ProductAttributeGap] = {}
+        category_keys = [pc.category_key for pc in product_categories]
+        
+        # Build gaps from recommendations
+        gaps = []
+        seen_attributes = set()
+        
         for rec in recommendations:
-            # Get attribute key from system name
-            attribute_key = self.get_attribute_key_from_system_name(
-                rec.attribute_reference
-            )
-            if attribute_key:
-                # Get attribute details
-                attribute = self.session.scalars(
-                    select(RawAttributeRecord).where(
-                        RawAttributeRecord.attribute_key == attribute_key
-                    )
-                ).first()
-
-                if attribute:
-                    # Only add gap if we haven't seen this attribute before
-                    if attribute.friendly_name not in attribute_to_gap:
-                        # Get allowable values
-                        allowable_values = self.get_allowable_values(attribute_key)
-
-                        attribute_to_gap[attribute.friendly_name] = ProductAttributeGap(
-                            attribute=attribute.friendly_name,
-                            allowable_values=allowable_values,
-                        )
-                        logger.info(
-                            f"Added gap for attribute {attribute.friendly_name} "
-                            f"with {len(allowable_values)} allowable values"
-                        )
-                else:
-                    logger.warning(
-                        f"No attribute found for key: {attribute_key}"
-                    )
-            else:
-                logger.warning(
-                    f"No attribute found for system name: "
-                    f"{rec.attribute_reference}"
+            if rec.attribute_name in seen_attributes:
+                continue
+                
+            # Get allowable values for this attribute
+            allowable_values = list(self.service.repository._get_allowable_values_for_attribute(
+                category_keys, rec.attribute_key
+            ))
+            
+            gaps.append(
+                ProductAttributeGap(
+                    attribute=rec.attribute_name,
+                    allowable_values=allowable_values,
                 )
-
-        gaps = list(attribute_to_gap.values())
+            )
+            seen_attributes.add(rec.attribute_name)
+            logger.info(
+                f"Added gap for attribute {rec.attribute_name} "
+                f"with {len(allowable_values)} allowable values"
+            )
+            
         if not gaps:
             logger.warning(f"No valid gaps found for product {product_key}")
             return product_key, []
-
-        # Process gaps
+            
+        # Generate predictions
         predictions = await self.service.predict_specific_gaps(
             product_key, gaps
         )
         logger.info(f"Generated {len(predictions)} predictions")
-
-        return product_key, list(predictions) 
+        
+        return product_key, predictions 

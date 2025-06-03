@@ -5,7 +5,7 @@ import logging
 from datetime import datetime
 
 from src.common.db import SessionLocal
-from src.core.facet_inference.jobs import FacetInferenceOrchestrator
+from src.core.facet_inference.orchestration.orchestrator import FacetInferenceOrchestrator
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -46,7 +46,6 @@ async def main():
             },
         )
 
-        # Run experiment
         logger.info("Starting experiment...")
         start_time = datetime.now()
 

@@ -1,6 +1,6 @@
 from typing import Sequence
 
-from core.infrastructure.database.predictions.repositories import PredictionExperimentRepository, PredictionResultRepository
+from src.core.infrastructure.database.predictions.repositories import ExperimentRepository, PredictionResultRepository
 import numpy as np
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -33,14 +33,14 @@ class PredictionAnalyzer:
     def __init__(self, session: Session):
         self.session = session
         self.repository = FacetIdentificationRepository(session)
-        self.experiment_repo = PredictionExperimentRepository(session)
+        self.experiment_repo = ExperimentRepository(session)
         self.result_repo = PredictionResultRepository(session)
 
     def get_experiment_results(
         self, experiment_key: str
     ) -> list[PredictionResultRecord]:
         """Get all results for an experiment."""
-        return self.result_repo.find_by_experiment_key(experiment_key)
+        return self.result_repo.get_predictions_by_experiment(experiment_key)
 
     def get_ground_truth(
         self, product_key: str, attribute_key: str
@@ -305,7 +305,7 @@ class PredictionAnalyzer:
     def analyze_experiment(self, experiment_key: str) -> ExperimentAnalysis:
         """Perform comprehensive analysis of an experiment."""
         results = self.get_experiment_results(experiment_key)
-        experiment = self.experiment_repo.get_by_experiment_key(experiment_key)
+        experiment = self.experiment_repo.get_experiment(experiment_key)
 
         return ExperimentAnalysis(
             experiment_key=experiment_key,
@@ -318,5 +318,5 @@ class PredictionAnalyzer:
                 results
             ),
             confidence_correlation=self.get_correlation_analysis(results),
-            metadata=experiment.metadata,
+            metadata=experiment.metadata if experiment else {},
         )

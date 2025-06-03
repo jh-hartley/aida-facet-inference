@@ -5,7 +5,6 @@ from typing import Sequence
 
 from sqlalchemy.orm import Session
 
-from src.core.infrastructure.database.predictions.records import PredictionResultRecord
 from src.core.infrastructure.database.predictions.repositories import PredictionResultRepository
 
 
@@ -16,7 +15,8 @@ class PredictionEntry:
     attribute_key: str
     predicted_value: str
     confidence: float
-    recommendation_key: str | None
+    recommendation_key: int | None
+    correctness_status: bool | None = None
 
 
 class PredictionLoader:
@@ -38,7 +38,7 @@ class PredictionLoader:
         Returns:
             A sequence of PredictionEntry objects containing prediction information
         """
-        predictions = self.repository.get_by_experiment_key(experiment_key)
+        predictions = self.repository.get_predictions_by_experiment(experiment_key)
         
         return [
             PredictionEntry(
