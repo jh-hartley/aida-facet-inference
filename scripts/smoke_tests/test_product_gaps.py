@@ -18,7 +18,7 @@ from scripts.smoke_tests.utils import (
     write_output,
 )
 from src.common.db import SessionLocal
-from src.core.repositories import FacetIdentificationRepository
+from src.core.domain.repositories import FacetIdentificationRepository
 
 logger = logging.getLogger(__name__)
 

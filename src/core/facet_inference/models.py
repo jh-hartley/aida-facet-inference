@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 
-from src.core.infrastructure.database.models import ProductDetails
-from src.core.infrastructure.database.repositories import FacetIdentificationRepository
+from src.core.domain.models import ProductDetails
+from src.core.domain.repositories import FacetIdentificationRepository
 
 
 class FacetPredictionTarget(BaseModel):

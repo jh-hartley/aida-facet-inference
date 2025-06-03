@@ -1,6 +1,10 @@
 from src.common.db import db_session
-from src.core.infrastructure.database.input_data.records import HumanRecommendationRecord
-from src.core.infrastructure.database.input_data.repositories import HumanRecommendationRepository
+from src.core.infrastructure.database.input_data.records import (
+    HumanRecommendationRecord,
+)
+from src.core.infrastructure.database.input_data.repositories import (
+    HumanRecommendationRepository,
+)
 
 
 def create_bq_batch16_qa_complete(

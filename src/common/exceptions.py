@@ -6,9 +6,11 @@ class MalformedPrompt(Exception):
 
 class FacetInferenceError(Exception):
     """Base exception for facet inference errors."""
+
     pass
 
 
 class PredictionError(FacetInferenceError):
     """Raised when prediction fails."""
+
     pass

@@ -1,6 +1,10 @@
 from src.common.db import db_session
-from src.core.infrastructure.database.input_data.records import RawAttributeRecord
-from src.core.infrastructure.database.input_data.repositories import RawAttributeRepository
+from src.core.infrastructure.database.input_data.records import (
+    RawAttributeRecord,
+)
+from src.core.infrastructure.database.input_data.repositories import (
+    RawAttributeRepository,
+)
 
 
 def create_attribute(

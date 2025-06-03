@@ -1,18 +1,18 @@
 import logging
 
-from common.exceptions import PredictionError
-
-from src.core.infrastructure.llm.client import Llm
-from src.core.infrastructure.llm.models import LlmModel
-from src.core.infrastructure.database.models import (
+from src.common.exceptions import PredictionError
+from src.core.domain.models import (
     FacetPrediction,
     ProductAttributeGap,
     ProductDetails,
     ProductGaps,
 )
+from src.core.infrastructure.llm.client import Llm
+from src.core.infrastructure.llm.models import LlmModel
 from src.core.prompts import PRODUCT_FACET_PROMPT
 
 logger = logging.getLogger(__name__)
+
 
 class ProductFacetPredictor:
     """Predicts values for missing product attributes."""
@@ -56,4 +56,6 @@ class ProductFacetPredictor:
             )
             return prediction
         except Exception as e:
-            raise PredictionError(f"Failed to predict for {gap.attribute}: {str(e)}") from e
+            raise PredictionError(
+                f"Failed to predict for {gap.attribute}: {str(e)}"
+            ) from e

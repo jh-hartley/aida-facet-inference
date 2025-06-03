@@ -1,8 +1,12 @@
 from uuid import uuid4
 
 from src.common.db import db_session
-from src.core.infrastructure.database.input_data.records import RawRichTextSourceRecord
-from src.core.infrastructure.database.input_data.repositories import RawRichTextSourceRepository
+from src.core.infrastructure.database.input_data.records import (
+    RawRichTextSourceRecord,
+)
+from src.core.infrastructure.database.input_data.repositories import (
+    RawRichTextSourceRepository,
+)
 
 
 def create_rich_text_source(

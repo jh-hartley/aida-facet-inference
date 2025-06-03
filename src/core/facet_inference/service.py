@@ -2,11 +2,11 @@ from typing import Sequence
 
 from sqlalchemy.orm import Session
 
+from src.core.domain.models import FacetPrediction, ProductDetails, ProductGaps
+from src.core.domain.repositories import FacetIdentificationRepository
+from src.core.domain.types import ProductAttributeGap
 from src.core.facet_inference.concurrency import AsyncConcurrencyManager
 from src.core.facet_inference.inference import ProductFacetPredictor
-from src.core.infrastructure.database.models import FacetPrediction, ProductDetails, ProductGaps
-from src.core.infrastructure.database.repositories import FacetIdentificationRepository
-from src.core.infrastructure.database.types import ProductAttributeGap
 
 
 class FacetInferenceService:
@@ -41,23 +41,24 @@ class FacetInferenceService:
         """
         Predict all missing attributes for a product.
 
-        If evaluation_mode is True, only predict for attributes that have 
+        If evaluation_mode is True, only predict for attributes that have
         accepted recommendations. Otherwise, predict for all attribute gaps.
         """
         product_details = self.repository.get_product_details(product_key)
 
         if evaluation_mode:
-            product_gaps = self.repository.get_product_gaps_from_recommendations(
-                product_key
+            product_gaps = (
+                self.repository.get_product_gaps_from_recommendations(
+                    product_key
+                )
             )
         else:
             product_gaps = self.repository.get_product_gaps(product_key)
 
         predictor = ProductFacetPredictor(product_details, product_gaps)
-        
+
         return await self.concurrency_manager.execute(
-            predictor.predict_gap,
-            product_gaps.gaps
+            predictor.predict_gap, product_gaps.gaps
         )
 
     async def _predict_attribute(
@@ -79,6 +80,5 @@ class FacetInferenceService:
         """Predict values for multiple attributes concurrently."""
         predictor = ProductFacetPredictor(product_details, product_gaps)
         return await self.concurrency_manager.execute(
-            predictor.predict_gap,
-            gaps
+            predictor.predict_gap, gaps
         )

@@ -5,7 +5,10 @@ from typing import Any, Callable, cast
 from pydantic import BaseModel
 
 from src.core.csv_ingestion.config import CSVConfig
-from src.core.csv_ingestion.processors import process_csv_file, process_excel_file
+from src.core.csv_ingestion.processors import (
+    process_csv_file,
+    process_excel_file,
+)
 
 logger = logging.getLogger(__name__)
 

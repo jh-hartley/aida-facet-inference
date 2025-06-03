@@ -1,7 +1,7 @@
 from pydantic import BaseModel, Field
 
-from src.core.prompts.confidence_levels import ConfidenceLevel
-from src.core.infrastructure.database.types import (
+from src.core.domain.confidence_levels import ConfidenceLevel
+from src.core.domain.types import (
     ProductAttributeGap,
     ProductAttributeValue,
     ProductDescriptor,
@@ -171,4 +171,4 @@ class FacetPrediction(BaseModel):
             "suggested_value": str  # Suggested value if correct value not in
                 # allowed list
         }
-        """ 
+        """

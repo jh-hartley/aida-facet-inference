@@ -3,12 +3,8 @@ from typing import Any
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from src.core.infrastructure.database.models import ProductDetails, ProductGaps
-from core.infrastructure.database.predictions.records import (
-    PredictionExperimentRecord,
-    PredictionResultRecord,
-)
-from src.core.infrastructure.database.types import (
+from src.core.domain.models import ProductDetails, ProductGaps
+from src.core.domain.types import (
     ProductAttributeGap,
     ProductAttributeValue,
     ProductDescriptor,
@@ -37,6 +33,10 @@ from src.core.infrastructure.database.input_data.repositories import (
     RawProductRepository,
     RawRichTextSourceRepository,
     Repository,
+)
+from src.core.infrastructure.database.predictions.records import (
+    PredictionExperimentRecord,
+    PredictionResultRecord,
 )
 
 # Type aliases for long record names

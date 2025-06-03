@@ -13,8 +13,7 @@ def facet_inference_router() -> APIRouter:
         "/predict/{product_key}", response_model=FacetPredictionsResponse
     )
     async def predict_attributes_for_product(
-        product_key: str,
-        db: Session = Depends(get_db)
+        product_key: str, db: Session = Depends(get_db)
     ) -> FacetPredictionsResponse:
         """Predict values for all missing attributes of a product."""
         service = FacetInferenceService.from_session(db)

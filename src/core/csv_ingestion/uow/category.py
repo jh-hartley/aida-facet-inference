@@ -1,6 +1,10 @@
 from src.common.db import db_session
-from src.core.infrastructure.database.input_data.records import RawCategoryRecord
-from src.core.infrastructure.database.input_data.repositories import RawCategoryRepository
+from src.core.infrastructure.database.input_data.records import (
+    RawCategoryRecord,
+)
+from src.core.infrastructure.database.input_data.repositories import (
+    RawCategoryRepository,
+)
 
 
 def create_category(

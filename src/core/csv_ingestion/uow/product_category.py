@@ -1,6 +1,10 @@
 from src.common.db import db_session
-from src.core.infrastructure.database.input_data.records import RawProductCategoryRecord
-from src.core.infrastructure.database.input_data.repositories import RawProductCategoryRepository
+from src.core.infrastructure.database.input_data.records import (
+    RawProductCategoryRecord,
+)
+from src.core.infrastructure.database.input_data.repositories import (
+    RawProductCategoryRepository,
+)
 
 
 def create_product_category(

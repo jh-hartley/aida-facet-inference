@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Any, Dict, List
 
-from src.core.prompts.confidence_levels import ConfidenceLevel
+from src.core.domain.confidence_levels import ConfidenceLevel
 
 
 @dataclass

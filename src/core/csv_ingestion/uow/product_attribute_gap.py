@@ -1,6 +1,10 @@
 from src.common.db import db_session
-from src.core.infrastructure.database.input_data.records import RawProductAttributeGapRecord
-from src.core.infrastructure.database.input_data.repositories import RawProductAttributeGapRepository
+from src.core.infrastructure.database.input_data.records import (
+    RawProductAttributeGapRecord,
+)
+from src.core.infrastructure.database.input_data.repositories import (
+    RawProductAttributeGapRepository,
+)
 
 
 def create_product_attribute_gap(

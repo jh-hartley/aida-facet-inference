@@ -8,18 +8,14 @@ from sqlalchemy.orm import Session
 
 from src.common.clock import clock
 from src.common.db import SessionLocal, db_session, uuid
-from src.core.facet_inference.service import FacetInferenceService
-from src.core.infrastructure.database.models import FacetPrediction
-from core.infrastructure.database.predictions.records import (
-    PredictionExperimentRecord,
-    PredictionResultRecord,
-)
-from src.core.infrastructure.database.repositories import (
+from src.core.domain.models import FacetPrediction
+from src.core.domain.repositories import (
     FacetIdentificationRepository,
     PredictionExperimentRepository,
     PredictionResultRepository,
 )
-from src.core.infrastructure.database.types import ProductAttributeGap
+from src.core.domain.types import ProductAttributeGap
+from src.core.facet_inference.service import FacetInferenceService
 from src.core.infrastructure.database.input_data.records import (
     HumanRecommendationRecord,
     RawAttributeRecord,
@@ -28,6 +24,10 @@ from src.core.infrastructure.database.input_data.records import (
 from src.core.infrastructure.database.input_data.repositories import (
     RawAttributeRepository,
     RawProductRepository,
+)
+from src.core.infrastructure.database.predictions.records import (
+    PredictionExperimentRecord,
+    PredictionResultRecord,
 )
 
 logger = logging.getLogger(__name__)
@@ -483,7 +483,7 @@ class ExperimentOrchestrator:
 
                         # Store predictions
                         self._store_predictions(
-                            experiment_key, product_key, predictions
+                            experiment_key, product_key, list(predictions)
                         )
                         total_predictions += len(predictions)
                         processed_products += 1

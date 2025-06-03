@@ -1,7 +1,11 @@
 from src.common.db import db_session
-from src.core.csv_ingestion.product_identifiers import process_code_type
-from src.core.infrastructure.database.input_data.records import RawProductRecord
-from src.core.infrastructure.database.input_data.repositories import RawProductRepository
+from src.core.domain.product_identifiers import process_code_type
+from src.core.infrastructure.database.input_data.records import (
+    RawProductRecord,
+)
+from src.core.infrastructure.database.input_data.repositories import (
+    RawProductRepository,
+)
 
 
 def create_product(

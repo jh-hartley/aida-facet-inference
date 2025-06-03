@@ -1,6 +1,10 @@
 from src.common.db import db_session
-from src.core.infrastructure.database.input_data.records import RawCategoryAttributeRecord
-from src.core.infrastructure.database.input_data.repositories import RawCategoryAttributeRepository
+from src.core.infrastructure.database.input_data.records import (
+    RawCategoryAttributeRecord,
+)
+from src.core.infrastructure.database.input_data.repositories import (
+    RawCategoryAttributeRepository,
+)
 
 
 def create_category_attribute(

@@ -1,4 +1,4 @@
-from typing import Any, cast, Generator
+from typing import Any, Generator, cast
 from uuid import UUID, uuid4
 
 from dotenv import load_dotenv
@@ -6,7 +6,7 @@ from pgvector.psycopg2 import register_vector
 from psycopg_pool import ConnectionPool
 from psycopg_pool.pool_async import AsyncConnectionPool
 from sqlalchemy import Engine, MetaData, create_engine, event, text
-from sqlalchemy.orm import declarative_base, sessionmaker, Session
+from sqlalchemy.orm import Session, declarative_base, sessionmaker
 
 from src.config import config
 

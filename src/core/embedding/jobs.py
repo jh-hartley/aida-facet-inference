@@ -4,11 +4,13 @@ import logging
 from src.common.clock import clock
 from src.common.db import SessionLocal
 from src.common.logs import setup_logging
+from src.core.domain.models import ProductDetails
+from src.core.domain.repositories import FacetIdentificationRepository
 from src.core.embedding.generators import len_safe_get_averaged_embedding
 from src.core.infrastructure.database.embeddings.models import ProductEmbedding
-from src.core.infrastructure.database.embeddings.repository import ProductEmbeddingRepository
-from src.core.infrastructure.database.models import ProductDetails
-from src.core.infrastructure.database.repositories import FacetIdentificationRepository
+from src.core.infrastructure.database.embeddings.repository import (
+    ProductEmbeddingRepository,
+)
 
 logger = logging.getLogger(__name__)
 setup_logging()

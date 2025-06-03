@@ -4,7 +4,7 @@ import argparse
 import logging
 
 from src.common.logs import setup_logging
-from src.core.csv_ingestion import ingest_files, ProductIdentifierType
+from src.core.csv_ingestion import ProductIdentifierType, ingest_files
 
 logger = logging.getLogger(__name__)
 setup_logging()

@@ -1,3 +1,19 @@
+from src.core.csv_ingestion.uow import (
+    create_attribute,
+    create_attribute_allowable_value_applicable_in_every_category,
+    create_attribute_allowable_value_in_any_category,
+    create_bq_batch16_qa_complete,
+    create_category,
+    create_category_allowable_value,
+    create_category_attribute,
+    create_product,
+    create_product_attribute_allowable_value,
+    create_product_attribute_gap,
+    create_product_attribute_value,
+    create_product_category,
+    create_recommendation,
+    create_rich_text_source,
+)
 from src.core.infrastructure.database.input_data.records import (
     HumanRecommendationRecord,
     RawAttributeAllowableValueApplicableInEveryCategoryRecord,
@@ -13,22 +29,6 @@ from src.core.infrastructure.database.input_data.records import (
     RawProductRecord,
     RawRecommendationRecord,
     RawRichTextSourceRecord,
-)
-from src.core.csv_ingestion.uow import (
-    create_attribute,
-    create_attribute_allowable_value_in_any_category,
-    create_bq_batch16_qa_complete,
-    create_category,
-    create_category_allowable_value,
-    create_category_attribute,
-    create_product,
-    create_product_attribute_allowable_value,
-    create_product_attribute_gap,
-    create_product_attribute_value,
-    create_product_category,
-    create_recommendation,
-    create_rich_text_source,
-    create_attribute_allowable_value_applicable_in_every_category
 )
 
 GloballyAllowedValueRecord = (
