@@ -1,6 +1,7 @@
 from src.common.db import SessionLocal
 from src.config import config
 from src.core.domain.repositories import FacetIdentificationRepository
+from src.core.embedding_generation.generators import len_safe_get_averaged_embedding
 from src.core.infrastructure.database.embeddings.repository import (
     ProductEmbeddingRepository,
 )
@@ -22,18 +23,18 @@ class SimilaritySearchService:
         self,
         product_key: str,
         limit: int = config.SIMILARITY_DEFAULT_LIMIT,
-        similarity_threshold: float = config.SIMILARITY_DEFAULT_THRESHOLD,
+        max_distance: float = config.SIMILARITY_DEFAULT_DISTANCE,
     ) -> SimilaritySearchResponse:
         """
         Find products similar to the given product key.
-
+        
         Args:
-            product_key (str): The key of the product to find similar products
-                for.
+            product_key (str): The key of the product to find similar products for.
             limit (int, optional): Maximum number of results to return.
                 Defaults to config.SIMILARITY_DEFAULT_LIMIT.
-            similarity_threshold (float, optional): Minimum similarity score.
-                Defaults to config.SIMILARITY_DEFAULT_THRESHOLD.
+            max_distance (float, optional): Maximum cosine distance (0-2).
+                Products with distances above this will be excluded.
+                Defaults to config.SIMILARITY_DEFAULT_DISTANCE.
 
         Returns:
             SimilaritySearchResponse: A response object containing the list
@@ -45,38 +46,89 @@ class SimilaritySearchService:
             )
 
         if (
-            not config.SIMILARITY_MIN_THRESHOLD
-            <= similarity_threshold
-            <= config.SIMILARITY_MAX_THRESHOLD
+            not config.SIMILARITY_MIN_DISTANCE
+            <= max_distance
+            <= config.SIMILARITY_MAX_DISTANCE
         ):
             raise ValueError(
-                f"Similarity threshold must be between "
-                f"{config.SIMILARITY_MIN_THRESHOLD} "
-                f"and {config.SIMILARITY_MAX_THRESHOLD}"
+                f"Maximum distance must be between "
+                f"{config.SIMILARITY_MIN_DISTANCE} "
+                f"and {config.SIMILARITY_MAX_DISTANCE}"
             )
 
-        source_embedding = self.embedding_repo.find(product_key)
-        if not source_embedding:
-            raise ValueError(f"No embedding found for product {product_key}")
-
-        similar_products = self.embedding_repo.find_similar_products(
-            embedding=source_embedding.embedding,
+        similar_products = self.embedding_repo.find_similar_products_by_key(
+            product_key=product_key,
             limit=limit,
-            distance_threshold=1 - similarity_threshold,
+            distance_threshold=max_distance,
         )
 
         results = []
         for similar_key, distance in similar_products:
-            if similar_key == product_key:
-                continue
-
             product_details = self.facet_repo.get_product_details(similar_key)
-            similarity_score = 1 - distance
-
             results.append(
                 SimilaritySearchResult(
                     product=product_details,
-                    similarity_score=similarity_score,
+                    similarity_score=distance,
+                )
+            )
+
+        return SimilaritySearchResponse(
+            results=results,
+            total_results=len(results),
+        )
+
+    async def find_similar_products_for_description(
+        self,
+        description: str,
+        limit: int = config.SIMILARITY_DEFAULT_LIMIT,
+        max_distance: float = config.SIMILARITY_DEFAULT_DISTANCE,
+    ) -> SimilaritySearchResponse:
+        """
+        Find products similar to the given description.
+        
+        Args:
+            description (str): The product description to find similar products for.
+            limit (int, optional): Maximum number of results to return.
+                Defaults to config.SIMILARITY_DEFAULT_LIMIT.
+            max_distance (float, optional): Maximum cosine distance (0-2).
+                Products with distances above this will be excluded.
+                Defaults to config.SIMILARITY_DEFAULT_DISTANCE.
+
+        Returns:
+            SimilaritySearchResponse: A response object containing the list
+                of similar products and the total count.
+        """
+        if not 1 <= limit <= config.SIMILARITY_MAX_LIMIT:
+            raise ValueError(
+                f"Limit must be between 1 and {config.SIMILARITY_MAX_LIMIT}"
+            )
+
+        if (
+            not config.SIMILARITY_MIN_DISTANCE
+            <= max_distance
+            <= config.SIMILARITY_MAX_DISTANCE
+        ):
+            raise ValueError(
+                f"Maximum distance must be between "
+                f"{config.SIMILARITY_MIN_DISTANCE} "
+                f"and {config.SIMILARITY_MAX_DISTANCE}"
+            )
+
+        embedding = await len_safe_get_averaged_embedding(description)
+
+        similar_products = self.embedding_repo.find_similar_products_by_embedding(
+            embedding=embedding,
+            limit=limit,
+            distance_threshold=max_distance,
+        )
+
+        results = []
+        for similar_key, distance in similar_products:
+            product_details = self.facet_repo.get_product_details(similar_key)
+            results.append(
+                SimilaritySearchResult(
+                    product=product_details,
+                    similarity_score=distance,
                 )
             )
 

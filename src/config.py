@@ -43,14 +43,14 @@ class Config:
         os.getenv("SIMILARITY_DEFAULT_LIMIT", "10")
     )
     SIMILARITY_MAX_LIMIT: int = int(os.getenv("SIMILARITY_MAX_LIMIT", "50"))
-    SIMILARITY_MIN_THRESHOLD: float = float(
-        os.getenv("SIMILARITY_MIN_THRESHOLD", "0.1")
+    SIMILARITY_MIN_DISTANCE: float = float(
+        os.getenv("SIMILARITY_MIN_DISTANCE", "0.0")
     )
-    SIMILARITY_MAX_THRESHOLD: float = float(
-        os.getenv("SIMILARITY_MAX_THRESHOLD", "0.9")
+    SIMILARITY_MAX_DISTANCE: float = float(
+        os.getenv("SIMILARITY_MAX_DISTANCE", "2.0")
     )
-    SIMILARITY_DEFAULT_THRESHOLD: float = float(
-        os.getenv("SIMILARITY_DEFAULT_THRESHOLD", "0.3")
+    SIMILARITY_DEFAULT_DISTANCE: float = float(
+        os.getenv("SIMILARITY_DEFAULT_DISTANCE", "0.6")
     )
 
     # API Configuration
@@ -168,27 +168,27 @@ class Config:
         return value
 
     @field_validator(
-        "SIMILARITY_MIN_THRESHOLD",
-        "SIMILARITY_MAX_THRESHOLD",
-        "SIMILARITY_DEFAULT_THRESHOLD",
+        "SIMILARITY_MIN_DISTANCE",
+        "SIMILARITY_MAX_DISTANCE",
+        "SIMILARITY_DEFAULT_DISTANCE",
     )
     @classmethod
-    def validate_similarity_threshold(cls, value: float) -> float:
-        if not 0 <= value <= 1:
-            raise ValueError("Similarity threshold must be between 0 and 1")
+    def validate_similarity_distance(cls, value: float) -> float:
+        if not 0 <= value <= 2:
+            raise ValueError("Cosine distance must be between 0 and 2")
         return value
 
-    @field_validator("SIMILARITY_DEFAULT_THRESHOLD")
+    @field_validator("SIMILARITY_DEFAULT_DISTANCE")
     @classmethod
-    def validate_default_threshold(
+    def validate_default_distance(
         cls, value: float, info: ValidationInfo
     ) -> float:
-        min_threshold = info.data.get("SIMILARITY_MIN_THRESHOLD", 0.1)
-        max_threshold = info.data.get("SIMILARITY_MAX_THRESHOLD", 0.9)
-        if not min_threshold <= value <= max_threshold:
+        min_distance = info.data.get("SIMILARITY_MIN_DISTANCE", 0.0)
+        max_distance = info.data.get("SIMILARITY_MAX_DISTANCE", 2.0)
+        if not min_distance <= value <= max_distance:
             raise ValueError(
-                f"Default threshold must be between min ({min_threshold}) "
-                f"and max ({max_threshold}) threshold"
+                f"Default distance must be between min ({min_distance}) "
+                f"and max ({max_distance}) distance"
             )
         return value
 

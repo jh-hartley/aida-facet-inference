@@ -34,11 +34,13 @@ class ProductEmbeddingRecord(Base):
     @classmethod
     def from_dto(cls, dto: ProductEmbedding) -> "ProductEmbeddingRecord":
         """Create from DTO"""
+        now = dto.created_at or clock.now()
         return cls(
             product_key=dto.product_key,
             product_description=dto.product_description,
             embedding=dto.embedding,
-            created_at=dto.created_at,
+            created_at=now,
+            updated_at=now,
         )
 
 
@@ -52,6 +54,8 @@ class ProductEmbeddingRepository:
         """Create a new product embedding"""
         if not embedding.created_at:
             embedding.created_at = clock.now()
+        if not embedding.updated_at:
+            embedding.updated_at = embedding.created_at
         db_entity = ProductEmbeddingRecord.from_dto(embedding)
         self.session.add(db_entity)
         return embedding
@@ -62,7 +66,9 @@ class ProductEmbeddingRepository:
             update(ProductEmbeddingRecord)
             .where(ProductEmbeddingRecord.product_key == embedding.product_key)
             .values(
-                embedding=embedding.embedding, created_at=embedding.created_at
+                embedding=embedding.embedding,
+                created_at=embedding.created_at,
+                updated_at=clock.now(),
             )
         )
         self.session.execute(stmt)
@@ -92,6 +98,7 @@ class ProductEmbeddingRepository:
         embedding: list[float],
         limit: int = 10,
         distance_threshold: float = 0.3,
+        exclude_product_key: str | None = None,
     ) -> list[tuple[str, float]]:
         """Find similar products using cosine distance"""
         stmt = (
@@ -105,9 +112,65 @@ class ProductEmbeddingRepository:
                 ProductEmbeddingRecord.embedding.cosine_distance(embedding)
                 <= distance_threshold
             )
-            .order_by("distance")
-            .limit(limit)
         )
+        
+        if exclude_product_key:
+            stmt = stmt.where(ProductEmbeddingRecord.product_key != exclude_product_key)
+            
+        stmt = stmt.order_by("distance").limit(limit)
+
+        result = self.session.execute(stmt)
+        return [(row.product_key, float(row.distance)) for row in result]
+
+    def find_similar_products_by_key(
+        self,
+        product_key: str,
+        limit: int = 10,
+        distance_threshold: float = 0.3,
+    ) -> list[tuple[str, float]]:
+        """
+        Find similar products using cosine distance, starting from a product key.
+        The source product is automatically excluded from results.
+        """
+        source_embedding = self.find(product_key)
+        if not source_embedding:
+            raise ValueError(f"No embedding found for product {product_key}")
+
+        return self.find_similar_products_by_embedding(
+            embedding=source_embedding.embedding,
+            limit=limit,
+            distance_threshold=distance_threshold,
+            exclude_product_key=product_key,
+        )
+
+    def find_similar_products_by_embedding(
+        self,
+        embedding: list[float],
+        limit: int = 10,
+        distance_threshold: float = 0.3,
+        exclude_product_key: str | None = None,
+    ) -> list[tuple[str, float]]:
+        """
+        Find similar products using cosine distance, starting from an embedding vector.
+        Optionally exclude a specific product key from results.
+        """
+        stmt = (
+            select(
+                ProductEmbeddingRecord.product_key,
+                ProductEmbeddingRecord.embedding.cosine_distance(
+                    embedding
+                ).label("distance"),
+            )
+            .where(
+                ProductEmbeddingRecord.embedding.cosine_distance(embedding)
+                <= distance_threshold
+            )
+        )
+        
+        if exclude_product_key:
+            stmt = stmt.where(ProductEmbeddingRecord.product_key != exclude_product_key)
+            
+        stmt = stmt.order_by("distance").limit(limit)
 
         result = self.session.execute(stmt)
         return [(row.product_key, float(row.distance)) for row in result]
