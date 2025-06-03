@@ -9,23 +9,23 @@ from sqlalchemy.orm import Session
 from src.common.clock import clock
 from src.common.db import SessionLocal, db_session, uuid
 from src.core.facet_inference.service import FacetInferenceService
-from src.core.models import FacetPrediction
-from src.core.records import (
+from src.core.infrastructure.database.models import FacetPrediction
+from core.infrastructure.database.predictions.records import (
     PredictionExperimentRecord,
     PredictionResultRecord,
 )
-from src.core.repositories import (
+from src.core.infrastructure.database.repositories import (
     FacetIdentificationRepository,
     PredictionExperimentRepository,
     PredictionResultRepository,
 )
-from src.core.types import ProductAttributeGap
-from src.csv_ingestion.records import (
+from src.core.infrastructure.database.types import ProductAttributeGap
+from src.core.infrastructure.database.input_data.records import (
     HumanRecommendationRecord,
     RawAttributeRecord,
     RawProductRecord,
 )
-from src.csv_ingestion.repositories import (
+from src.core.infrastructure.database.input_data.repositories import (
     RawAttributeRepository,
     RawProductRepository,
 )
@@ -391,7 +391,7 @@ class ExperimentOrchestrator:
                 )
 
                 # Step 3: Process each product's recommendations
-                service = FacetInferenceService.from_session()
+                service = FacetInferenceService.from_session(session)
                 total_predictions = 0
                 processed_products = 0
 

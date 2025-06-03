@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-from src.core.models import FacetPrediction
+from src.core.infrastructure.database.models import FacetPrediction
 
 
 class FacetPredictionResponse(BaseModel):

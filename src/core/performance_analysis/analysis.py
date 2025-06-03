@@ -15,13 +15,13 @@ from src.core.performance_analysis.analysis_models import (
     PredictionMetrics,
 )
 from src.core.prompts.confidence_levels import ConfidenceLevel
-from src.core.records import PredictionResultRecord
-from src.core.repositories import (
+from core.infrastructure.database.predictions.records import PredictionResultRecord 
+from src.core.infrastructure.database.repositories import (
     FacetIdentificationRepository,
     PredictionExperimentRepository,
     PredictionResultRepository,
-    RawRecommendationRecord,
 )
+from src.core.infrastructure.database.input_data.records import RawRecommendationRecord
 
 
 class PredictionAnalyzer:

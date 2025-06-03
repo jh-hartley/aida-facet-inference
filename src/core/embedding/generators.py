@@ -5,7 +5,7 @@ import numpy as np
 import tiktoken
 
 from src.config import config
-from src.core.llm import embeddings
+from src.core.infrastructure.llm.client import embeddings
 
 
 def _batched(iterable: Iterable, n: int) -> Iterator[tuple]:

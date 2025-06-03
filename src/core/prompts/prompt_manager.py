@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from src.common.read_files import read_text_file
-from src.core.models import FacetPrediction
+from src.core.domain import FacetPrediction
 
 
 class ProductFacetPrompt:
