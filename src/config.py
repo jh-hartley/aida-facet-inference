@@ -49,7 +49,7 @@ class Config:
     )
     AZURE_OPENAI_EMBEDDING_API_VERSION: str = os.getenv(
         "AZURE_OPENAI_EMBEDDING_API_VERSION",
-        os.getenv("AZURE_OPENAI_API_VERSION", "2023-05-15")
+        os.getenv("AZURE_OPENAI_API_VERSION", "2023-05-15"),
     )
 
     # Embedding Configuration

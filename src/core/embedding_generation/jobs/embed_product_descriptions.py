@@ -1,15 +1,16 @@
-import asyncio
+import logging
+
 from tqdm import tqdm
+
 from src.common.db import SessionLocal
 from src.core.domain.models import ProductDetails
 from src.core.domain.repositories import FacetIdentificationRepository
 from src.core.embedding_generation.uow.create_embedding import create_embedding
 from src.core.embedding_generation.uow.update_embedding import update_embedding
+from src.core.facet_inference.concurrency import AsyncConcurrencyManager
 from src.core.infrastructure.database.embeddings.repository import (
     ProductEmbeddingRepository,
 )
-from src.core.facet_inference.concurrency import AsyncConcurrencyManager
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -55,9 +56,7 @@ async def _embed_product_description(product_key: str) -> str:
             if found_embedding.product_description == description:
                 logger.debug(f"Product {product_key}: skipped (no change)")
                 return "skipped"
-            await update_embedding(
-                product_key, description, found_embedding
-            )
+            await update_embedding(product_key, description, found_embedding)
             logger.debug(f"Product {product_key}: updated")
             return "updated"
 

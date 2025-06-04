@@ -29,4 +29,8 @@ if __name__ == "__main__":
     if args.product:
         asyncio.run(embed_single_product(args.product))
     else:
-        asyncio.run(create_embeddings_for_products(max_concurrency=args.max_concurrency))
+        asyncio.run(
+            create_embeddings_for_products(
+                max_concurrency=args.max_concurrency
+            )
+        )

@@ -28,7 +28,11 @@ def embedding_model_to_encoding(model_name: str) -> str:
         "text-embedding-3-large",
     }:
         return "cl100k_base"
-    if model_name in {"ada-002", "text-embedding-3-small", "text-embedding-3-large"}:
+    if model_name in {
+        "ada-002",
+        "text-embedding-3-small",
+        "text-embedding-3-large",
+    }:
         return "cl100k_base"
     raise ValueError(f"Unknown embedding model: {model_name}")
 
