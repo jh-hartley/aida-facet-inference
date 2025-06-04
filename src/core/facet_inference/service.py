@@ -7,6 +7,8 @@ from src.core.domain.repositories import FacetIdentificationRepository
 from src.core.domain.types import ProductAttributeGap
 from src.core.facet_inference.concurrency import AsyncConcurrencyManager
 from src.core.facet_inference.inference import ProductFacetPredictor
+from src.core.infrastructure.llm.client import Llm
+from src.core.infrastructure.llm.models import LlmModel
 
 
 class FacetInferenceService:
@@ -19,6 +21,7 @@ class FacetInferenceService:
     ) -> None:
         self.repository = repository
         self.concurrency_manager = AsyncConcurrencyManager(max_concurrent)
+        self.llm_client = Llm(LlmModel.GPT_4O_MINI)
 
     @classmethod
     def from_session(
@@ -56,8 +59,7 @@ class FacetInferenceService:
         else:
             product_gaps = self.repository.get_product_gaps(product_key)
 
-        predictor = ProductFacetPredictor(product_details)
-
+        predictor = ProductFacetPredictor(product_details, self.llm_client)
         return await self.concurrency_manager.execute(
             predictor.predict_gap, product_gaps.gaps
         )
@@ -74,8 +76,7 @@ class FacetInferenceService:
         targeted predictions.
         """
         product_details = self.repository.get_product_details(product_key)
-
-        predictor = ProductFacetPredictor(product_details)
+        predictor = ProductFacetPredictor(product_details, self.llm_client)
         return await self.concurrency_manager.execute(
             predictor.predict_gap, gaps
         )
@@ -86,7 +87,7 @@ class FacetInferenceService:
         product_details: ProductDetails,
     ) -> FacetPrediction:
         """Predict a value for a single attribute."""
-        predictor = ProductFacetPredictor(product_details)
+        predictor = ProductFacetPredictor(product_details, self.llm_client)
         return await predictor.predict_gap(gap)
 
     async def _predict_multiple_attributes(
@@ -95,7 +96,7 @@ class FacetInferenceService:
         product_details: ProductDetails,
     ) -> Sequence[FacetPrediction]:
         """Predict values for multiple attributes concurrently."""
-        predictor = ProductFacetPredictor(product_details)
+        predictor = ProductFacetPredictor(product_details, self.llm_client)
         return await self.concurrency_manager.execute(
             predictor.predict_gap, gaps
         )

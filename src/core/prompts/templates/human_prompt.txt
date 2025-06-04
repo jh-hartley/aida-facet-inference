@@ -1,3 +1,8 @@
+# Product Information
+{product_context}
+
+{comparable_products}
+
 # Prediction Task
 Predict a value for the following attribute:
 

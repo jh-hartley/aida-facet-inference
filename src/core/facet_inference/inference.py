@@ -7,7 +7,6 @@ from src.core.domain.models import (
     ProductDetails,
 )
 from src.core.infrastructure.llm.client import Llm
-from src.core.infrastructure.llm.models import LlmModel
 from src.core.prompts import PRODUCT_FACET_PROMPT
 
 logger = logging.getLogger(__name__)
@@ -19,14 +18,11 @@ class ProductFacetPredictor:
     def __init__(
         self,
         product_details: ProductDetails,
-        llm: Llm | None = None,
-        llm_model: LlmModel = LlmModel.GPT_4O_MINI,
+        llm: Llm,
     ) -> None:
         self.product_details = product_details
-        self._llm = llm or Llm(llm_model)
-        self._system_prompt = PRODUCT_FACET_PROMPT.get_system_prompt(
-            self.product_details
-        )
+        self._llm = llm
+        self._system_prompt = PRODUCT_FACET_PROMPT.get_system_prompt()
 
     async def predict_gap(
         self,
@@ -34,11 +30,8 @@ class ProductFacetPredictor:
     ) -> FacetPrediction:
         """Predict a value for a single gap."""
         try:
-            logger.info(
-                f"Predicting {gap.attribute} (choosing from "
-                f"{len(gap.allowable_values)} values)"
-            )
-            human_prompt = PRODUCT_FACET_PROMPT.get_human_prompt(
+            human_prompt = await PRODUCT_FACET_PROMPT.get_human_prompt(
+                self.product_details,
                 gap.attribute,
                 gap.allowable_values,
             )
