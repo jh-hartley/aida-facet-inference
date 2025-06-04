@@ -1,7 +1,35 @@
 from enum import Enum
-from typing import TypeVar
+from typing import Protocol, Type, TypeVar
 
-T = TypeVar("T")
+from pydantic import BaseModel
+
+T = TypeVar("T", bound=BaseModel)
+
+
+class LlmClient(Protocol):
+    """Protocol defining the interface for LLM clients."""
+
+    def invoke(
+        self,
+        system: str,
+        human: str,
+        output_type: Type[T] | None = None,
+    ) -> T | str: ...
+
+    async def ainvoke(
+        self,
+        system: str,
+        human: str,
+        output_type: Type[T] | None = None,
+    ) -> T | str: ...
+
+
+class EmbeddingClient(Protocol):
+    """Protocol defining the interface for embedding clients."""
+
+    async def aembed_documents(
+        self, texts: list[str]
+    ) -> list[list[float]]: ...
 
 
 class LlmModel(str, Enum):

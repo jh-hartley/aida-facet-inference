@@ -10,7 +10,12 @@ load_dotenv()
 class Config:
     BASE_DIR: Path = Path(__file__).parent.absolute()
 
-    # LLM Configuration
+    # LLM Provider Configuration
+    LLM_PROVIDER: str = os.getenv(
+        "LLM_PROVIDER", "openai"
+    )  # "openai" or "azure"
+
+    # OpenAI Configuration
     OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "")
     OPENAI_LLM_MODEL: str = os.getenv("OPENAI_LLM_MODEL", "gpt-4")
     OPENAI_EMBEDDING_MODEL: str = os.getenv(
@@ -25,6 +30,22 @@ class Config:
     )
     OPENAI_LLM_REASONING_EFFORT: str = os.getenv(
         "OPENAI_LLM_REASONING_EFFORT", "high"
+    )
+
+    # Azure Configuration
+    AZURE_OPENAI_ENDPOINT: str = os.getenv(
+        "AZURE_OPENAI_ENDPOINT",
+        "https://ai-aidaphi35visiondev404542953478.openai.azure.com",
+    )
+    AZURE_OPENAI_API_KEY: str = os.getenv("AZURE_OPENAI_API_KEY", "")
+    AZURE_OPENAI_API_VERSION: str = os.getenv(
+        "AZURE_OPENAI_API_VERSION", "2024-02-15-preview"
+    )
+    AZURE_OPENAI_DEPLOYMENT: str = os.getenv(
+        "AZURE_OPENAI_DEPLOYMENT", "gpt-4"
+    )
+    AZURE_OPENAI_EMBEDDING_DEPLOYMENT: str = os.getenv(
+        "AZURE_OPENAI_EMBEDDING_DEPLOYMENT", "text-embedding-3-small"
     )
 
     # Embedding Configuration

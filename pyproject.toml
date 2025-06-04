@@ -37,6 +37,7 @@ dependencies = [
     "tqdm>=4.66.0",
     "plotly>=5.18.0",
     "backoff>=2.2.1",
+    "aiohttp>=3.9.0",
 ]
 
 [project.optional-dependencies]
