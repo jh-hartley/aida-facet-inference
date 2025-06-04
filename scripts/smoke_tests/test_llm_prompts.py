@@ -11,7 +11,7 @@ import asyncio
 import logging
 from pathlib import Path
 
-from core.prompts.prompt_manager import PRODUCT_FACET_PROMPT
+from src.core.prompts.prompt_manager import PRODUCT_FACET_PROMPT
 from scripts.smoke_tests.utils import (
     format_section,
     get_output_dir,

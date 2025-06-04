@@ -22,7 +22,7 @@ if __name__ == "__main__":
         "--max-concurrency",
         type=int,
         help="Maximum number of concurrent embedding jobs (default: 10)",
-        default=10,
+        default=32,
     )
     args = parser.parse_args()
 
