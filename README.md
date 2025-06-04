@@ -35,17 +35,47 @@ uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload
 
 The `--reload` flag enables hot-reloading for development.
 
+### Ingest Product Data
+```bash
+python scripts/ingest_csvs.py --directory data
+```
+Ingests product data from CSV files into the database.
+
+### Generate Product Embeddings
+```bash
+python scripts/embed_product_descriptions.py
+```
+Generates vector embeddings for all products in the database.
+
+### Run Facet Inference
+```bash
+python scripts/predict_facets.py --limit 10
+```
+Runs facet inference for a limited number of products and stores results in the database.
+
+For more scripts and advanced usage, see [docs/scripts.md](docs/scripts.md).
+
 ## Environment Variables
 
-The system uses environment variables for API keys, database credentials, LLM settings, logging, and more. For a full list, see `.env.example` and [docs/README_env_vars.md](docs/README_env_vars.md).
+The system uses environment variables for API keys, database credentials, LLM settings, logging, CORS, rate limiting, and more. For a full list, see `.env.example` and [docs/environment_variables.md](docs/environment_variables.md).
 
 **Critical variables to set:**
 - `LLM_PROVIDER`: Choose `openai` or `azure` depending on your LLM provider
 - `OPENAI_API_KEY` or `AZURE_OPENAI_API_KEY`: Your LLM API key
 - `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`: Database connection settings
 - `API_HOST`, `API_PORT`: API server host and port
+- `ALLOWED_ORIGINS`, `TRUSTED_HOSTS`: CORS and security settings for frontend/API access
+- `RATE_LIMIT_REQUESTS_PER_MINUTE`: Rate limiting for API abuse prevention
+- `LOG_LEVEL`: Logging verbosity
+- `DEBUG`: Enable/disable debug mode
 
-See `.env.example` for all available variables and [docs/README_env_vars.md](docs/README_env_vars.md) for detailed explanations and advanced options.
+**LLM and Embedding settings:**
+- `OPENAI_LLM_MODEL`, `OPENAI_EMBEDDING_MODEL`, `OPENAI_LLM_TEMPERATURE`, `OPENAI_LLM_TOP_P`, `OPENAI_LLM_FREQ_PENALTY`, `OPENAI_LLM_REASONING_EFFORT`
+- `AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_API_VERSION`, `AZURE_OPENAI_DEPLOYMENT`, `AZURE_OPENAI_EMBEDDING_DEPLOYMENT`, `AZURE_OPENAI_EMBEDDING_API_VERSION`
+- `EMBEDDING_MIN_DIMENSIONS`, `EMBEDDING_MAX_DIMENSIONS`, `EMBEDDING_DEFAULT_DIMENSIONS`
+- `OPENAI_EMBEDDING_MAX_TRIES`, `OPENAI_EMBEDDING_MAX_TIME`
+
+See `.env.example` for all available variables and [docs/environment_variables.md](docs/environment_variables.md) for detailed explanations and advanced options. The documentation has been updated to reflect the latest configuration options and defaults.
 
 **Never commit real secrets to version control.**
 
@@ -90,7 +120,7 @@ aida-facet-inference/
 - [Development Guide](docs/development.md)
 - [Architecture](docs/architecture.md)
 - [Database Schema](docs/database.md)
-- [Environment Variables Reference](docs/README_env_vars.md)
+- [Environment Variables Reference](docs/environment_variables.md)
 
 ## Development
 
