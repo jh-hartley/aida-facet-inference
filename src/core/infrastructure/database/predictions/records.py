@@ -77,6 +77,8 @@ class PredictionResultRecord(Base):
     correctness_status: Mapped[bool | None] = mapped_column(
         Boolean, nullable=True
     )
+    reasoning: Mapped[str | None] = mapped_column(Text, nullable=True)
+    suggested_value: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     experiment: Mapped["ExperimentRecord"] = relationship(
         "ExperimentRecord", back_populates="predictions"

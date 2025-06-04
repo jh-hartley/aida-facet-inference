@@ -1,5 +1,6 @@
 """Repositories for prediction results."""
 
+import logging
 import uuid
 from datetime import datetime, timezone
 
@@ -7,6 +8,8 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from .records import ExperimentRecord, PredictionResultRecord
+
+logger = logging.getLogger(__name__)
 
 
 class ExperimentRepository:
@@ -40,8 +43,10 @@ class ExperimentRepository:
             },
             started_at=datetime.now(timezone.utc),
         )
+        logger.debug(f"Creating experiment with key: {experiment.experiment_key}")
         self.session.add(experiment)
         self.session.commit()
+        logger.debug(f"Committed experiment {experiment.experiment_key}")
         return experiment
 
     def get_experiment(self, experiment_key: str) -> ExperimentRecord | None:
@@ -76,6 +81,7 @@ class ExperimentRepository:
         """
         experiment = self.get_experiment(experiment_key)
         if experiment:
+            logger.debug(f"Updating metrics for experiment {experiment_key}")
             experiment.total_predictions = total_predictions
             experiment.total_products = validated_predictions
             experiment.average_time_per_prediction = (
@@ -84,6 +90,7 @@ class ExperimentRepository:
             experiment.correct_predictions = correct_predictions
             experiment.accuracy = accuracy
             self.session.commit()
+            logger.debug(f"Committed metrics update for experiment {experiment_key}")
 
     def complete_experiment(self, experiment_key: str) -> None:
         """Mark an experiment as completed.
@@ -93,8 +100,10 @@ class ExperimentRepository:
         """
         experiment = self.get_experiment(experiment_key)
         if experiment:
+            logger.debug(f"Completing experiment {experiment_key}")
             experiment.completed_at = datetime.now(timezone.utc)
             self.session.commit()
+            logger.debug(f"Committed completion for experiment {experiment_key}")
 
 
 class PredictionResultRepository:
@@ -134,8 +143,25 @@ class PredictionResultRepository:
             reasoning=reasoning,
             suggested_value=suggested_value,
         )
+        logger.debug(
+            f"Creating prediction with key: {prediction.prediction_key} "
+            f"for experiment: {experiment_key}, "
+            f"product: {product_key}, "
+            f"attribute: {attribute_key}, "
+            f"value: {value}"
+        )
         self.session.add(prediction)
+        logger.debug(f"Added prediction {prediction.prediction_key} to session")
         self.session.commit()
+        logger.debug(f"Committed prediction {prediction.prediction_key}")
+        
+        # Verify the prediction was actually stored
+        stored_prediction = self.session.get(PredictionResultRecord, prediction.prediction_key)
+        if stored_prediction:
+            logger.debug(f"Verified prediction {prediction.prediction_key} exists in database")
+        else:
+            logger.error(f"Failed to verify prediction {prediction.prediction_key} in database!")
+            
         return prediction
 
     def update_prediction_validation(
@@ -148,6 +174,7 @@ class PredictionResultRepository:
     ) -> None:
         prediction = self.session.get(PredictionResultRecord, prediction_key)
         if prediction:
+            logger.debug(f"Updating validation for prediction {prediction_key}")
             prediction.correctness_status = is_correct
             prediction.actual_value = actual_value
             if reasoning is not None:
@@ -155,6 +182,7 @@ class PredictionResultRepository:
             if suggested_value is not None:
                 prediction.suggested_value = suggested_value
             self.session.commit()
+            logger.debug(f"Committed validation update for prediction {prediction_key}")
 
     def get_predictions_by_experiment(
         self, experiment_key: str
@@ -167,13 +195,16 @@ class PredictionResultRepository:
         Returns:
             List of prediction result records
         """
-        return list(
+        logger.debug(f"Getting predictions for experiment {experiment_key}")
+        predictions = list(
             self.session.scalars(
                 select(PredictionResultRecord).where(
                     PredictionResultRecord.experiment_key == experiment_key
                 )
             )
         )
+        logger.debug(f"Found {len(predictions)} predictions for experiment {experiment_key}")
+        return predictions
 
     def get_predictions_by_product(
         self, experiment_key: str, product_key: str
@@ -187,7 +218,11 @@ class PredictionResultRepository:
         Returns:
             List of prediction result records
         """
-        return list(
+        logger.debug(
+            f"Getting predictions for experiment {experiment_key} "
+            f"and product {product_key}"
+        )
+        predictions = list(
             self.session.scalars(
                 select(PredictionResultRecord).where(
                     PredictionResultRecord.experiment_key == experiment_key,
@@ -195,3 +230,8 @@ class PredictionResultRepository:
                 )
             )
         )
+        logger.debug(
+            f"Found {len(predictions)} predictions for experiment {experiment_key} "
+            f"and product {product_key}"
+        )
+        return predictions

@@ -9,15 +9,18 @@ from sqlalchemy.orm import Session
 from src.core.facet_inference.components.experiment_manager import (
     ExperimentManager,
 )
-from src.core.facet_inference.components.prediction_store import (
-    PredictionStore,
-)
 from src.core.facet_inference.components.product_processor import (
     ProductProcessor,
 )
 from src.core.facet_inference.data_loading.prediction_loader import (
     PredictionEntry,
     PredictionLoader,
+)
+from src.core.infrastructure.database.input_data.repositories import (
+    RawAttributeRepository,
+)
+from src.core.infrastructure.database.predictions.repositories import (
+    PredictionResultRepository,
 )
 
 logger = logging.getLogger(__name__)
@@ -44,8 +47,9 @@ class FacetInferenceOrchestrator:
             session, description=description, metadata=metadata
         )
         self.product_processor = ProductProcessor(session)
-        self.prediction_store = PredictionStore(session)
+        self.prediction_repo = PredictionResultRepository(session)
         self.prediction_loader = PredictionLoader(session)
+        self.attribute_repo = RawAttributeRepository(session)
 
     async def run_experiment(self, limit: int | None = None) -> str:
         """Run a prediction experiment for multiple products.
@@ -87,11 +91,26 @@ class FacetInferenceOrchestrator:
                         logger.error(f"No product key found for {product_ref}")
                         continue
 
-                    self.prediction_store.store_predictions(
-                        experiment_key, product_key, predictions
-                    )
+                    # Store each prediction individually and commit immediately
+                    for prediction, recommendation in zip(predictions, recommendations):
+                        attribute = self.attribute_repo.get_by_friendly_name(prediction.attribute)
+                        
+                        self.prediction_repo.create_prediction(
+                            experiment_key=experiment_key,
+                            product_key=product_key,
+                            attribute_key=attribute.attribute_key,
+                            value=prediction.recommendation,
+                            confidence=prediction.confidence,
+                            recommendation_key=int(recommendation.recommendation_id),
+                            actual_value=prediction.recommendation,
+                            correctness_status=None,
+                            reasoning=prediction.reasoning,
+                            suggested_value=prediction.suggested_value,
+                        )
+                        self.session.commit()
+                        
+                        total_predictions += 1
 
-                    total_predictions += len(predictions)
                     total_products += 1
 
                 except Exception as e:

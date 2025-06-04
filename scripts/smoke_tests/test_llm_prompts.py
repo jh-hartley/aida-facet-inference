@@ -7,6 +7,7 @@ To use, run:
     python -m scripts.smoke_tests.test_llm_prompts [optional product_key]
 """
 
+import asyncio
 import logging
 from pathlib import Path
 
@@ -23,7 +24,7 @@ from src.core.domain.repositories import FacetIdentificationRepository
 logger = logging.getLogger(__name__)
 
 
-def main(
+async def main(
     product_key: str | None = None, output_dir: Path | None = None
 ) -> None:
     """Show the system prompt and human prompts for each gap."""
@@ -44,7 +45,7 @@ def main(
             output = [format_section("System Prompt", system_prompt)]
 
             for gap in product_gaps.gaps:
-                human_prompt = PRODUCT_FACET_PROMPT.get_human_prompt(
+                human_prompt = await PRODUCT_FACET_PROMPT.get_human_prompt(
                     product_details,
                     gap.attribute,
                     gap.allowable_values,
@@ -73,4 +74,4 @@ def main(
 
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())

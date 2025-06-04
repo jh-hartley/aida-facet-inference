@@ -9,7 +9,7 @@ from src.core.facet_inference.orchestration.orchestrator import (
     FacetInferenceOrchestrator,
 )
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 
