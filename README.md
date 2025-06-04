@@ -115,12 +115,21 @@ aida-facet-inference/
 
 ## Documentation
 
-- [Core Concepts](docs/core_concepts.md)
-- [API Reference](docs/api_reference.md)
-- [Development Guide](docs/development.md)
-- [Architecture](docs/architecture.md)
-- [Database Schema](docs/database.md)
-- [Environment Variables Reference](docs/environment_variables.md)
+- [Core Concepts](docs/01_getting_started/01_core_concepts.md)
+- [Architecture](docs/01_getting_started/02_architecture.md)
+- [Environment Variables Reference](docs/02_setup_and_configuration/01_environment_variables.md)
+- [Editing Prompts and Output](docs/02_setup_and_configuration/02_editing_prompts_and_output.md)
+- [Development Guide](docs/03_developer_guide/01_development.md)
+- [Testing Guide](docs/03_developer_guide/02_testing.md)
+- [Scripts Reference](docs/03_developer_guide/03_scripts.md)
+- [Database Infrastructure](docs/04_technical_reference/01_database_infrastructure.md)
+- [Database Schema](docs/04_technical_reference/02_database.md)
+- [Embedding Generation](docs/04_technical_reference/03_embedding.md)
+- [LLM Infrastructure](docs/04_technical_reference/04_llm_infrastructure.md)
+- [API Reference](docs/04_technical_reference/05_api_reference.md)
+- [Performance Analysis](docs/05_analysis_and_operations/01_performance_analysis.md)
+
+For a full navigation index, see [docs/README.md](docs/README.md). Each documentation subfolder now contains its own README.md for quick navigation.
 
 ## Development
 
