@@ -47,7 +47,7 @@ You must:
    - Simply state that "None" is the correct value and explain why
 
 # Response Format
-You must respond with a JSON object matching this structure:
+You must respond with a valid JSON object matching this structure with no other characters or formatting at all:
 {response_format}
 
 # Examples
