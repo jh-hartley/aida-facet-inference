@@ -1,9 +1,12 @@
+import logging
 import re
 from typing import Type, TypeVar
 
 from pydantic import BaseModel
 
 T = TypeVar("T", bound=BaseModel)
+
+logger = logging.getLogger(__name__)
 
 
 def parse_structured_output(content: str, output_type: Type[T]) -> T:

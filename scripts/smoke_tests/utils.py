@@ -12,18 +12,23 @@ def format_section(title: str, content: str) -> str:
 
 
 def get_product_key(
-    product_key: str | None, require_gaps: bool = False
+    product_key: str | None,
+    require_gaps: bool = False,
+    randomise: bool = False,
 ) -> str:
     """
     Returns a product key from args if provided, otherwise finds one
-    with/without gaps.
+    with/without gaps. If randomise is True, picks a random eligible product.
     """
     if product_key:
         return product_key
 
     with SessionLocal() as session:
         repository = FacetIdentificationRepository(session)
-        key = repository.get_single_product(with_gaps=require_gaps)
+        if randomise:
+            key = repository.get_random_product_key(with_gaps=require_gaps)
+        else:
+            key = repository.get_single_product(with_gaps=require_gaps)
         if not key:
             raise ValueError(
                 f"No products {'with' if require_gaps else 'without'} "

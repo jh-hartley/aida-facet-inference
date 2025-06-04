@@ -1,3 +1,5 @@
+import random
+
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -318,3 +320,37 @@ class FacetIdentificationRepository:
             self.get_product_details(product.product_key)
             for product in products
         ]
+
+    def get_random_product_key(
+        self, with_gaps: bool | None = None
+    ) -> str | None:
+        if with_gaps is None:
+            keys = self.session.scalars(
+                select(RawProductRecord.product_key)
+            ).all()
+            if not keys:
+                return None
+            return random.choice(keys)
+
+        if with_gaps:
+            keys = self.session.scalars(
+                select(RawProductAttributeGapRecord.product_key).distinct()
+            ).all()
+            if not keys:
+                return None
+            return random.choice(keys)
+
+        products_with_gaps = set(
+            self.session.scalars(
+                select(RawProductAttributeGapRecord.product_key).distinct()
+            ).all()
+        )
+
+        keys = self.session.scalars(
+            select(RawProductRecord.product_key).where(
+                RawProductRecord.product_key.not_in(products_with_gaps)
+            )
+        ).all()
+        if not keys:
+            return None
+        return random.choice(keys)

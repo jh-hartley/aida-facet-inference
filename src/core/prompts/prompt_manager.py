@@ -2,6 +2,7 @@ from pathlib import Path
 
 from src.common.read_files import read_text_file
 from src.core.domain import FacetPrediction
+from src.core.domain.confidence_levels import ConfidenceLevel
 from src.core.domain.models import ProductDetails
 from src.core.similarity_search.models import SimilaritySearchResult
 from src.core.similarity_search.service import SimilaritySearchService
@@ -84,6 +85,7 @@ class ProductFacetPrompt:
         """
         return self._system_prompt_template.format(
             response_format=FacetPrediction.get_prompt_description(),
+            confidence_guidelines=ConfidenceLevel.get_prompt_description(),
             examples=self._confidence_examples,
         )
 

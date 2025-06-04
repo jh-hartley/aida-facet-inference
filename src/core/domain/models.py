@@ -138,7 +138,8 @@ class FacetPrediction(BaseModel):
 
     attribute: str = Field(description="Name of the attribute being predicted")
     recommendation: str = Field(
-        description="The recommended value for the attribute"
+        description="The recommended value for the attribute",
+        default="",
     )
     unit: str = Field(
         description="Unit of the attribute, empty string if non-numeric data",
@@ -152,7 +153,8 @@ class FacetPrediction(BaseModel):
     )
     suggested_value: str = Field(
         description="Suggested value when the correct value is not in the "
-        "allowed list"
+        "allowed list",
+        default="",
     )
 
     @property
@@ -173,6 +175,6 @@ class FacetPrediction(BaseModel):
             "confidence": float,  # Confidence score between 0 and 1
             "reasoning": str,  # Explanation for the prediction
             "suggested_value": str  # Suggested value if correct value not in
-                # allowed list
+                # allowed list, otherwise empty string
         }
         """

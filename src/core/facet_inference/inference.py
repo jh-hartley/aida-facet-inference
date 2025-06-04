@@ -23,6 +23,11 @@ class ProductFacetPredictor:
         self.product_details = product_details
         self._llm = llm
         self._system_prompt = PRODUCT_FACET_PROMPT.get_system_prompt()
+        print(
+            "\n===== SYSTEM PROMPT SENT TO LLM =====\n"
+            + self._system_prompt
+            + "\n===== END SYSTEM PROMPT =====\n"
+        )
 
     async def predict_gap(
         self,

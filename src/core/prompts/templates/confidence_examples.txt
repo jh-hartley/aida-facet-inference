@@ -1,116 +1,103 @@
-### Example 0: Numeric value with unit
-Allowed values: ["2.7L", "3.5L", "5L"]
+### Example 0: CERTAIN - Definitionally impossible for any other value
+Allowed values: ["3", "4", "5"]
 ```json
 {
-  "attribute": "Capacity",
-  "predicted_value": "2.7",
-  "unit": "L",
-  "confidence": 0.95,
+  "attribute": "Number of steps",
+  "recommendation": "3",
+  "unit": "",
+  "confidence": 0.995,
   "suggested_value": "",
-  "reasoning": "The product description states '2.7L container', so the value is 2.7 and the unit is L."
+  "reasoning": "The product is described as 'This is a 3-step aluminum step ladder, model SL-3000.' The only possible value is 3."
 }
 ```
 
-### Example 1: VERY_HIGH - Direct evidence
+### Example 1: VERY_HIGH - Direct evidence or world knowledge
 Allowed values: ["Internal", "External"]
 ```json
 {
   "attribute": "Location",
-  "predicted_value": "Internal",
+  "recommendation": "Internal",
   "unit": "",
-  "confidence": 0.95,
+  "confidence": 0.963,
   "suggested_value": "",
   "reasoning": "The product description explicitly states 'suitable for internal use' and it's categorized as an interior door."
 }
 ```
 
-### Example 2: HIGH - Strong indirect evidence
+### Example 2: HIGH - Strong indirect evidence, EAN recall
 Allowed values: ["Pine", "Oak", "MDF"]
 ```json
 {
   "attribute": "Material",
-  "predicted_value": "Pine",
+  "recommendation": "Pine",
   "unit": "",
-  "confidence": 0.85,
+  "confidence": 0.902,
   "suggested_value": "",
-  "reasoning": "The product name includes 'Pine', the description mentions 'pine construction', and it's listed in the attributes. Multiple pieces of evidence strongly indicate this is a pine door."
+  "reasoning": "The product name includes 'Pine', the description mentions 'pine construction', and the EAN matches a well-known pine door in my training data."
 }
 ```
 
-### Example 3: MODERATE - Clear inference
+### Example 3: MODERATE - Educated guess, world knowledge
 Allowed values: ["Hollow", "Solid", "Panelled"]
 ```json
 {
   "attribute": "Construction type",
-  "predicted_value": "Hollow",
+  "recommendation": "Hollow",
   "unit": "",
-  "confidence": 0.65,
+  "confidence": 0.784,
   "suggested_value": "",
-  "reasoning": "While not explicitly stated, louvre doors of this type are typically hollow construction to reduce weight while maintaining strength. This is a common industry standard for interior louvre doors."
+  "reasoning": "While not explicitly stated, louvre doors of this type are typically hollow construction to reduce weight. This is a common industry standard for interior louvre doors."
 }
 ```
 
-### Example 4: LOW - Weak inference (low-confidence guess, real value)
+### Example 4: LOW - Weak inference, best guess
 Allowed values: ["White", "Natural", "Grey"]
 ```json
 {
   "attribute": "Colour group",
-  "predicted_value": "White",
+  "recommendation": "White",
   "unit": "",
-  "confidence": 0.20,
+  "confidence": 0.537,
   "suggested_value": "",
   "reasoning": "There is no mention of colour in the product details. 'White' is a common finish for interior doors, but this is a guess."
 }
 ```
 
-### Example 5: LOW - Weak inference (low-confidence guess, 'None' value)
-Allowed values: ["Clear", "Frosted", "None"]
-```json
-{
-  "attribute": "Glazed panel style",
-  "predicted_value": "None",
-  "unit": "",
-  "confidence": 0.15,
-  "suggested_value": "",
-  "reasoning": "There is no mention of glazing in the product details, but 'None' is a plausible default for a louvre door."
-}
-```
-
-### Example 6: VERY_LOW - Minimal evidence
+### Example 5: VERY_LOW - Minimal evidence, placeholder
 Allowed values: ["Standard", "Custom"]
 ```json
 {
   "attribute": "Installation type",
-  "predicted_value": "Standard",
+  "recommendation": "Standard",
   "unit": "",
-  "confidence": 0.10,
+  "confidence": 0.091,
   "suggested_value": "",
   "reasoning": "There's no specific information about installation. This is a guess based on it being a standard interior door, but could be incorrect."
 }
 ```
 
-### Example 7: Cannot make prediction (confidently assert no label applies)
+### Example 6: Cannot make prediction (confidently assert no label applies)
 Allowed values: ["FD30", "FD60"]
 ```json
 {
   "attribute": "Fire rating",
-  "predicted_value": "",
+  "recommendation": "",
   "unit": "",
-  "confidence": 0.95,
+  "confidence": 0.981,
   "suggested_value": "",
   "reasoning": "The product is clearly not fire-rated and none of the allowed values are appropriate for this type of door."
 }
 ```
 
-### Example 8: Value not in allowed list
+### Example 7: Value not in allowed list, EAN recall
 Allowed values: ["Panelled", "Flush", "Moulded"]
 ```json
 {
   "attribute": "Door style",
-  "predicted_value": "",
+  "recommendation": "",
   "unit": "",
-  "confidence": 0.95,
+  "confidence": 0.941,
   "suggested_value": "Louvre",
-  "reasoning": "The product is clearly a louvre door (name, description, and attributes all confirm this), but 'Louvre' is not in the allowed values list. This appears to be an error in the allowed values."
+  "reasoning": "The product is clearly a louvre door (name, description, and attributes all confirm this), and the EAN matches a louvre door in my training data, but 'Louvre' is not in the allowed values list. This appears to be an error in the allowed values."
 }
 ``` 

@@ -45,7 +45,9 @@ def main(product_key: str | None = None) -> None:
     """Run all smoke tests in sequence."""
     try:
         if not product_key:
-            product_key = get_product_key(None, require_gaps=True)
+            product_key = get_product_key(
+                None, require_gaps=True, randomise=True
+            )
         print(f"Using product key: {product_key}")
 
         output_dir = get_output_dir(product_key)

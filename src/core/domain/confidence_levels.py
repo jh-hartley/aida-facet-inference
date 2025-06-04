@@ -24,12 +24,16 @@ CONFIDENCE_BANDS: list[ConfidenceBand] = [
             "The value is not just overwhelmingly likely, but it is logically "
             "or definitionally impossible for any other value to be correct. "
             "There is no sane, reasonable, or even pedantic way to argue for "
-            "a different answer. This is a very rare case."
+            "a different answer. This is a very rare case. This can include "
+            "cases where your world knowledge or EAN-based recall makes any "
+            "other answer impossible."
         ),
         example=(
             "The product is described as 'This is a 3-step aluminum step "
             "ladder, model SL-3000.' The only possible value for 'number of "
-            "steps' is 3, and for 'material' is aluminum."
+            "steps' is 3, and for 'material' is aluminum. Or, you recognise "
+            "the EAN as a unique product and recall from your training that "
+            "it always has these features."
         ),
     ),
     ConfidenceBand(
@@ -39,19 +43,19 @@ CONFIDENCE_BANDS: list[ConfidenceBand] = [
         max_score=0.9799,
         range_str="95-98%",
         description=(
-            "The value is either explicitly stated or so overwhelmingly "
-            "obvious from direct evidence, established rules, or common sense "
-            "that only the most pedantic doubt could exist. This includes "
-            "cases where the product's documentation, specifications, or "
-            "images directly confirm the value, or where the treatment of "
-            "similar products is so consistent that the answer is "
-            "indisputable."
+            "The value is either explicitly stated, or so overwhelmingly "
+            "obvious from direct evidence, established rules, or your expert "
+            "knowledge (including information you recall from the product's "
+            "EAN or your training on ecommerce data) that only the most "
+            "pedantic doubt could exist. This includes cases where the "
+            "product's documentation, specifications, or your world knowledge "
+            "directly confirm the value."
         ),
         example=(
             "The product description says: 'This ladder features a patented "
             "locking mechanism.'\n"
-            "All products in this category with a certain feature are always "
-            "classified the same way, and this product matches exactly."
+            "Or, you recognise the EAN as a well-known product and recall "
+            "from your training that it always has this feature."
         ),
     ),
     ConfidenceBand(
@@ -63,17 +67,17 @@ CONFIDENCE_BANDS: list[ConfidenceBand] = [
         description=(
             "The value is not directly stated, but can be confidently "
             "inferred from strong, consistent patterns in the data, context, "
-            "or domain knowledge. Also includes cases where the answer is "
-            "exceedingly obvious to any reasonable person, even if not "
-            "directly stated. However, there is a small chance of error if an "
-            "exception exists."
+            "domain knowledge, or your familiarity with the product's EAN. "
+            "This includes cases where your expert knowledge or training on "
+            "similar products strongly suggests the answer, even if not "
+            "directly stated. However, there is a small chance of error if "
+            "an exception exists."
         ),
         example=(
-            "The product is a refrigerator; it is obvious to anyone that it "
-            "is an appliance, even if not stated.\n"
-            "The product is in a category where all items are always "
-            "classified as 'outdoor use,' and this product fits all the "
-            "criteria, but the description doesn't say so directly."
+            "The product is a refrigerator; it is obvious to any retail "
+            "specialist that it is an appliance, even if not stated. The "
+            "product's EAN is well-known and matches similar products in "
+            "your training."
         ),
     ),
     ConfidenceBand(
@@ -84,18 +88,18 @@ CONFIDENCE_BANDS: list[ConfidenceBand] = [
         range_str="60-85%",
         description=(
             "The value is an educated guess based on partial evidence, weak "
-            "patterns, or indirect clues. There is some support for the "
-            "answer, but also significant uncertainty or possible exceptions. "
-            "Alternatively, the answer is plausible based on general "
-            "knowledge, but there is no supporting evidence in the product "
-            "info or comparable products."
+            "patterns, indirect clues, or your general world knowledge of "
+            "similar products. There is some support for the answer, but also "
+            "significant uncertainty or possible exceptions. Alternatively, "
+            "the answer is plausible based on general knowledge, EAN-based "
+            "recall, or typical industry practice, but there is no supporting "
+            "evidence in the product info or comparable products."
         ),
         example=(
             "The product is a step ladder, and most step ladders don't "
             "mention a locking mechanism, so it's guessed that this one "
-            "doesn't have one, but there are exceptions.\n"
-            "A product is a kitchen gadget, and it is plausible it is used "
-            "for food prep, but there is no direct or pattern-based evidence."
+            "doesn't have one, but there are exceptions. Or, you use your "
+            "general knowledge of similar EANs to make an informed guess."
         ),
     ),
     ConfidenceBand(
@@ -107,14 +111,17 @@ CONFIDENCE_BANDS: list[ConfidenceBand] = [
         description=(
             "The value is a weak guess with little supporting evidence. The "
             "inference is based on vague similarities, general assumptions, "
-            "or incomplete information. There is a high likelihood of error."
+            "incomplete information, or a broad guess from your world "
+            "knowledge or EAN familiarity. There is a high likelihood of "
+            "error."
         ),
         example=(
             "The product is a ladder, and some ladders have locking "
             "mechanisms, but there's no information about this specific type."
             "\n"
             "The product is in a broad category with mixed treatment of the "
-            "attribute in question."
+            "attribute in question. Or, you make a best guess based on the "
+            "EAN and your general experience, but with little confidence."
         ),
     ),
     ConfidenceBand(
@@ -126,13 +133,15 @@ CONFIDENCE_BANDS: list[ConfidenceBand] = [
         description=(
             "The value is a pure guess or based on almost no evidence. There "
             "is no meaningful information to support the answer, and it is "
-            "essentially a placeholder or random choice."
+            "essentially a placeholder or random choice, possibly using only "
+            "the most general world knowledge or EAN-based intuition."
         ),
         example=(
             "The product description and category provide no clues about the "
             "attribute.\n"
             "The attribute is rarely mentioned for this type of product, and "
-            "there is no pattern to follow."
+            "there is no pattern to follow. You guess based on the EAN or "
+            "general product type, but with very low confidence."
         ),
     ),
 ]
