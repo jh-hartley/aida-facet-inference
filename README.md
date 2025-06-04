@@ -37,53 +37,15 @@ The `--reload` flag enables hot-reloading for development.
 
 ## Environment Variables
 
-The system uses environment variables for API keys, database credentials, LLM settings, logging, and more. See `.env.example` for a full list. Key variables include:
+The system uses environment variables for API keys, database credentials, LLM settings, logging, and more. For a full list, see `.env.example` and [docs/README_env_vars.md](docs/README_env_vars.md).
 
-### API Configuration
-- `API_HOST`: Host for the API server (default: `0.0.0.0`)
-- `API_PORT`: Port for the API server (default: `8000`)
-- `DEBUG`: Enable debug mode (`True` or `False`)
+**Critical variables to set:**
+- `LLM_PROVIDER`: Choose `openai` or `azure` depending on your LLM provider
+- `OPENAI_API_KEY` or `AZURE_OPENAI_API_KEY`: Your LLM API key
+- `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`: Database connection settings
+- `API_HOST`, `API_PORT`: API server host and port
 
-### CORS and Security
-- `ALLOWED_ORIGINS`: Comma-separated list of allowed origins for CORS
-- `TRUSTED_HOSTS`: Comma-separated list of trusted hosts
-- `RATE_LIMIT_REQUESTS_PER_MINUTE`: Basic rate limiting (requests per minute)
-
-### Logging
-- `LOG_LEVEL`: Logging level (e.g., `INFO`, `DEBUG`)
-
-### LLM Configuration
-- `LLM_PROVIDER`: Choose `openai` or `azure`
-- `OPENAI_API_KEY`: OpenAI API key
-- `OPENAI_LLM_MODEL`: OpenAI LLM model name
-- `OPENAI_EMBEDDING_MODEL`: OpenAI embedding model name
-- `OPENAI_LLM_TEMPERATURE`: LLM temperature
-- `OPENAI_LLM_TOP_P`: LLM top_p
-- `OPENAI_LLM_FREQ_PENALTY`: LLM frequency penalty
-- `OPENAI_LLM_REASONING_EFFORT`: LLM reasoning effort
-- `AZURE_OPENAI_API_KEY`: Azure OpenAI API key
-- `AZURE_OPENAI_ENDPOINT`: Azure OpenAI endpoint URL
-- `AZURE_OPENAI_API_VERSION`: Azure OpenAI API version
-- `AZURE_OPENAI_DEPLOYMENT`: Azure OpenAI deployment name
-- `AZURE_OPENAI_EMBEDDING_DEPLOYMENT`: Azure embedding deployment name
-
-### Embedding Configuration
-- `EMBEDDING_MIN_DIMENSIONS`: Minimum embedding dimensions
-- `EMBEDDING_MAX_DIMENSIONS`: Maximum embedding dimensions
-- `EMBEDDING_DEFAULT_DIMENSIONS`: Default embedding dimensions
-- `OPENAI_EMBEDDING_MAX_TRIES`: Max tries for embedding model
-- `OPENAI_EMBEDDING_MAX_TIME`: Max time for embedding model (seconds)
-
-### Database Configuration
-- `DB_HOST`: Database host
-- `DB_PORT`: Database port
-- `DB_NAME`: Database name
-- `DB_USER`: Database user
-- `DB_PASSWORD`: Database password
-- `DB_USE_SSL`: Use SSL for DB connection (`True` or `False`)
-- `DB_POOL_SIZE`: SQLAlchemy pool size
-- `DB_MAX_OVERFLOW`: SQLAlchemy max overflow
-- `DB_ASYNC_POOL_SIZE`: SQLAlchemy async pool size
+See `.env.example` for all available variables and [docs/README_env_vars.md](docs/README_env_vars.md) for detailed explanations and advanced options.
 
 **Never commit real secrets to version control.**
 
@@ -92,16 +54,33 @@ The system uses environment variables for API keys, database credentials, LLM se
 ```
 aida-facet-inference/
 ├── src/
-│   ├── api/                    # FastAPI endpoints
-│   ├── core/                   # Core business logic
-│   │   ├── facet_inference/    # Facet inference implementation
-│   │   └── llm/                # LLM integration
-│   ├── db/                     # Database operations
-│   ├── utils/                  # Utility functions
-│   └── main.py                 # Application entry point
-├── tests/                      # Test suite
-├── docs/                       # Detailed documentation
-└── scripts/                    # Utility scripts
+│   ├── api/                        # FastAPI endpoints
+│   ├── common/                     # Shared utilities: db helpers, exceptions, file IO, logging, time
+│   ├── core/                       # Core business logic
+│   │   ├── performance_analysis/   # Analysis and visualization of model performance
+│   │   ├── domain/                 # Domain models, confidence logic, product identifiers, repository interfaces, type definitions
+│   │   ├── similarity_search/      # Similarity search logic and models
+│   │   ├── csv_ingestion/          # CSV ingestion logic, processors, and unit-of-work
+│   │   ├── prompts/                # Prompt management and templates
+│   │   ├── embedding_generation/   # Embedding generation logic and jobs
+│   │   ├── facet_inference/        # Facet inference logic, orchestration, and components
+│   │   ├── data_analysis/          # Data analysis tools and loaders
+│   │   └── infrastructure/         # Integrations: LLM (OpenAI, Azure), database repositories, embeddings, input data, predictions
+│   │       ├── llm/                # LLM provider clients, models, utilities, and provider-specific implementations
+│   │       └── database/           # Database access, repositories for predictions, input data, embeddings
+│   └── main.py                     # Application entry point
+├── scripts/                        # Utility and data scripts
+├── tests/                          # Test suite
+├── docs/                           # Detailed documentation
+├── schema/                         # Database schema (SQL)
+├── hooks/                          # Git hooks and related scripts
+├── .github/                        # GitHub workflows and configs
+├── data/                           # Example and test data
+├── Dockerfile.api                  # Dockerfile for API
+├── docker-compose.yml              # Docker Compose config
+├── pyproject.toml                  # Python project config
+├── .env.example                    # Example environment variables
+└── README.md                       # Project overview and setup
 ```
 
 ## Documentation
@@ -125,8 +104,10 @@ aida-facet-inference/
 
 ## Project Goals & Next Steps
 
-- Refine prompts for LLMs
-- Finish and maintain documentation
-- Clean up logging and the full-dataset inference script
-- Introduce a self-review loop for model outputs
-- Build richer web scrape context retrieval tooling
+- **Refine LLM Prompts:** Continue iterative improvement of prompt templates and strategies for better facet inference accuracy and reliability. This involves systematic testing, error analysis, and prompt engineering.
+- **Complete and Maintain Documentation:** Ensure all documentation is up-to-date, clear, and comprehensive, including API docs, architecture, and environment variable references.
+- **Logging Improvements:** Review and enhance logging throughout the codebase for better observability, debugging, and monitoring in both development and production.
+- **Refactor Full-Dataset Inference Script:** Clean up and modularize the script for running inference over large datasets, improving maintainability and testability.
+- **Implement Self-Review Loop:** Add a mechanism where the model critiques and refines its own outputs, using a second LLM pass to validate or request revision, with a confidence threshold and loop cap.
+- **Web Scrape Context Retrieval:** Build or integrate tooling to retrieve richer web scrape context for better citation and evidence in facet inference, leveraging LangChain or similar tools.
+- **General Codebase Cleanup:** Address technical debt, improve type safety, and ensure code quality across all modules.
