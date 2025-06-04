@@ -1,9 +1,23 @@
+### Example 0: Numeric value with unit
+Allowed values: ["2.7L", "3.5L", "5L"]
+```json
+{
+  "attribute": "Capacity",
+  "predicted_value": "2.7",
+  "unit": "L",
+  "confidence": 0.95,
+  "suggested_value": "",
+  "reasoning": "The product description states '2.7L container', so the value is 2.7 and the unit is L."
+}
+```
+
 ### Example 1: VERY_HIGH - Direct evidence
 Allowed values: ["Internal", "External"]
 ```json
 {
   "attribute": "Location",
   "predicted_value": "Internal",
+  "unit": "",
   "confidence": 0.95,
   "suggested_value": "",
   "reasoning": "The product description explicitly states 'suitable for internal use' and it's categorized as an interior door."
@@ -16,6 +30,7 @@ Allowed values: ["Pine", "Oak", "MDF"]
 {
   "attribute": "Material",
   "predicted_value": "Pine",
+  "unit": "",
   "confidence": 0.85,
   "suggested_value": "",
   "reasoning": "The product name includes 'Pine', the description mentions 'pine construction', and it's listed in the attributes. Multiple pieces of evidence strongly indicate this is a pine door."
@@ -28,6 +43,7 @@ Allowed values: ["Hollow", "Solid", "Panelled"]
 {
   "attribute": "Construction type",
   "predicted_value": "Hollow",
+  "unit": "",
   "confidence": 0.65,
   "suggested_value": "",
   "reasoning": "While not explicitly stated, louvre doors of this type are typically hollow construction to reduce weight while maintaining strength. This is a common industry standard for interior louvre doors."
@@ -40,6 +56,7 @@ Allowed values: ["White", "Natural", "Grey"]
 {
   "attribute": "Colour group",
   "predicted_value": "White",
+  "unit": "",
   "confidence": 0.20,
   "suggested_value": "",
   "reasoning": "There is no mention of colour in the product details. 'White' is a common finish for interior doors, but this is a guess."
@@ -52,6 +69,7 @@ Allowed values: ["Clear", "Frosted", "None"]
 {
   "attribute": "Glazed panel style",
   "predicted_value": "None",
+  "unit": "",
   "confidence": 0.15,
   "suggested_value": "",
   "reasoning": "There is no mention of glazing in the product details, but 'None' is a plausible default for a louvre door."
@@ -64,6 +82,7 @@ Allowed values: ["Standard", "Custom"]
 {
   "attribute": "Installation type",
   "predicted_value": "Standard",
+  "unit": "",
   "confidence": 0.10,
   "suggested_value": "",
   "reasoning": "There's no specific information about installation. This is a guess based on it being a standard interior door, but could be incorrect."
@@ -76,6 +95,7 @@ Allowed values: ["FD30", "FD60"]
 {
   "attribute": "Fire rating",
   "predicted_value": "",
+  "unit": "",
   "confidence": 0.95,
   "suggested_value": "",
   "reasoning": "The product is clearly not fire-rated and none of the allowed values are appropriate for this type of door."
@@ -88,6 +108,7 @@ Allowed values: ["Panelled", "Flush", "Moulded"]
 {
   "attribute": "Door style",
   "predicted_value": "",
+  "unit": "",
   "confidence": 0.95,
   "suggested_value": "Louvre",
   "reasoning": "The product is clearly a louvre door (name, description, and attributes all confirm this), but 'Louvre' is not in the allowed values list. This appears to be an error in the allowed values."
