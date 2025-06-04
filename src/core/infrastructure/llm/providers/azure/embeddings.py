@@ -10,7 +10,7 @@ class AzureEmbeddingClient(BaseEmbeddingClient):
         self._client = AzureOpenAIEmbeddings(
             api_key=SecretStr(config.AZURE_OPENAI_API_KEY),
             azure_endpoint=config.AZURE_OPENAI_ENDPOINT,
-            api_version=config.AZURE_OPENAI_API_VERSION,
+            api_version=config.AZURE_OPENAI_EMBEDDING_API_VERSION,
             azure_deployment=config.AZURE_OPENAI_EMBEDDING_DEPLOYMENT,
         )
 

@@ -18,9 +18,15 @@ if __name__ == "__main__":
         help="Product key to embed (if omitted, embed all products)",
         default=None,
     )
+    parser.add_argument(
+        "--max-concurrency",
+        type=int,
+        help="Maximum number of concurrent embedding jobs (default: 10)",
+        default=10,
+    )
     args = parser.parse_args()
 
     if args.product:
         asyncio.run(embed_single_product(args.product))
     else:
-        asyncio.run(create_embeddings_for_products())
+        asyncio.run(create_embeddings_for_products(max_concurrency=args.max_concurrency))
