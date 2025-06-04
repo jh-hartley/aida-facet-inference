@@ -1,4 +1,3 @@
--- Views for experiment tables
 -- Experiment summary view
 DO $$ 
 BEGIN
@@ -7,24 +6,21 @@ BEGIN
     ) THEN
         CREATE VIEW experiment_summary AS
         SELECT 
-            er.run_id,
-            er.experiment_name,
-            er.start_time,
-            er.end_time,
-            er.status,
-            COUNT(DISTINCT em.metric_id) AS metric_count,
-            COUNT(DISTINCT ea.artifact_id) AS artifact_count,
-            MIN(em.metric_value) AS min_metric_value,
-            MAX(em.metric_value) AS max_metric_value,
-            AVG(em.metric_value) AS avg_metric_value
-        FROM experiment_runs er
-        LEFT JOIN experiment_metrics em ON er.run_id = em.run_id
-        LEFT JOIN experiment_artifacts ea ON er.run_id = ea.run_id
-        GROUP BY er.run_id, er.experiment_name, er.start_time, er.end_time, er.status;
+            pe.experiment_key,
+            pe.created_at,
+            pe.started_at,
+            pe.completed_at,
+            pe.total_predictions,
+            pe.total_products,
+            pe.average_time_per_prediction,
+            COUNT(DISTINCT pr.prediction_key) AS prediction_count
+        FROM prediction_experiments pe
+        LEFT JOIN prediction_results pr ON pe.experiment_key = pr.experiment_key
+        GROUP BY pe.experiment_key, pe.created_at, pe.started_at, pe.completed_at, pe.total_predictions, pe.total_products, pe.average_time_per_prediction;
     END IF;
 END $$;
 
--- Metric trends view
+-- Metric trends view (example: confidence over time)
 DO $$ 
 BEGIN
     IF NOT EXISTS (
@@ -32,14 +28,14 @@ BEGIN
     ) THEN
         CREATE VIEW metric_trends AS
         SELECT 
-            er.experiment_name,
-            em.metric_name,
-            em.timestamp,
-            em.metric_value,
-            LAG(em.metric_value) OVER (PARTITION BY er.experiment_name, em.metric_name ORDER BY em.timestamp) AS previous_value,
-            em.metric_value - LAG(em.metric_value) OVER (PARTITION BY er.experiment_name, em.metric_name ORDER BY em.timestamp) AS value_change
-        FROM experiment_runs er
-        JOIN experiment_metrics em ON er.run_id = em.run_id
-        ORDER BY er.experiment_name, em.metric_name, em.timestamp;
+            pe.experiment_key,
+            pr.attribute_key,
+            pr.created_at,
+            pr.confidence,
+            LAG(pr.confidence) OVER (PARTITION BY pe.experiment_key, pr.attribute_key ORDER BY pr.created_at) AS previous_confidence,
+            pr.confidence - LAG(pr.confidence) OVER (PARTITION BY pe.experiment_key, pr.attribute_key ORDER BY pr.created_at) AS confidence_change
+        FROM prediction_experiments pe
+        JOIN prediction_results pr ON pe.experiment_key = pr.experiment_key
+        ORDER BY pe.experiment_key, pr.attribute_key, pr.created_at;
     END IF;
 END $$; 

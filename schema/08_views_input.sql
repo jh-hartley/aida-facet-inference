@@ -62,7 +62,7 @@ BEGIN
     END IF;
 END $$;
 
--- Product details view for quick access to complete product information
+-- Product details view for direct mapping to ProductDetails Pydantic model
 DO $$ 
 BEGIN
     IF NOT EXISTS (
@@ -77,29 +77,43 @@ BEGIN
                         'descriptor', name,
                         'value', content
                     ) ORDER BY priority
-                ) AS descriptions
+                ) AS product_description
             FROM raw_rich_text_sources
             GROUP BY product_key
+        ),
+        attribute_pairs AS (
+            SELECT 
+                pav.product_key,
+                jsonb_agg(
+                    jsonb_build_object(
+                        'attribute', a.friendly_name,
+                        'value', pav.value
+                    ) ORDER BY a.friendly_name
+                ) AS attributes
+            FROM raw_product_attribute_values pav
+            JOIN raw_attributes a ON pav.attribute_key = a.attribute_key
+            GROUP BY pav.product_key
+        ),
+        product_categories AS (
+            SELECT 
+                pc.product_key,
+                array_agg(DISTINCT c.friendly_name) AS categories
+            FROM raw_product_categories pc
+            JOIN raw_categories c ON pc.category_key = c.category_key
+            GROUP BY pc.product_key
         )
         SELECT 
             p.product_key,
-            p.system_name AS product_system_name,
-            p.friendly_name AS product_friendly_name,
-            array_agg(DISTINCT c.friendly_name) AS categories,
-            jsonb_agg(
-                DISTINCT jsonb_build_object(
-                    'attribute', a.friendly_name,
-                    'value', pav.value
-                )
-            ) AS attributes,
-            COALESCE(od.descriptions, '[]'::jsonb) AS descriptions
+            p.system_name AS product_code,
+            p.code_type,
+            p.friendly_name AS product_name,
+            COALESCE(od.product_description, '[]'::jsonb) AS product_description,
+            COALESCE(pc.categories, ARRAY[]::text[]) AS categories,
+            COALESCE(ap.attributes, '[]'::jsonb) AS attributes
         FROM raw_products p
-        LEFT JOIN raw_product_categories pc ON p.product_key = pc.product_key
-        LEFT JOIN raw_categories c ON pc.category_key = c.category_key
-        LEFT JOIN raw_product_attribute_values pav ON p.product_key = pav.product_key
-        LEFT JOIN raw_attributes a ON pav.attribute_key = a.attribute_key
         LEFT JOIN ordered_descriptions od ON p.product_key = od.product_key
-        GROUP BY p.product_key, p.system_name, p.friendly_name, od.descriptions;
+        LEFT JOIN attribute_pairs ap ON p.product_key = ap.product_key
+        LEFT JOIN product_categories pc ON p.product_key = pc.product_key;
     END IF;
 END $$;
 
