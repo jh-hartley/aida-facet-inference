@@ -1,5 +1,6 @@
 from enum import Enum
-from typing import Protocol, TypeVar, Type
+from typing import Protocol, Type, TypeVar
+
 from pydantic import BaseModel
 
 T = TypeVar("T", bound=BaseModel)
@@ -7,14 +8,14 @@ T = TypeVar("T", bound=BaseModel)
 
 class LlmClient(Protocol):
     """Protocol defining the interface for LLM clients."""
-    
+
     def invoke(
         self,
         system: str,
         human: str,
         output_type: Type[T] | None = None,
     ) -> T | str: ...
-    
+
     async def ainvoke(
         self,
         system: str,
@@ -25,8 +26,10 @@ class LlmClient(Protocol):
 
 class EmbeddingClient(Protocol):
     """Protocol defining the interface for embedding clients."""
-    
-    async def aembed_documents(self, texts: list[str]) -> list[list[float]]: ...
+
+    async def aembed_documents(
+        self, texts: list[str]
+    ) -> list[list[float]]: ...
 
 
 class LlmModel(str, Enum):

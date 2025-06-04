@@ -1,12 +1,21 @@
 from typing import Type, TypeVar, overload
+
 from pydantic import BaseModel
 
 from src.config import config
-from src.core.infrastructure.llm.models import LlmModel, LlmClient, EmbeddingClient
+from src.core.infrastructure.llm.models import (
+    EmbeddingClient,
+    LlmClient,
+    LlmModel,
+)
 from src.core.infrastructure.llm.providers.azure.client import AzureLlm
-from src.core.infrastructure.llm.providers.azure.embeddings import AzureEmbeddingClient
+from src.core.infrastructure.llm.providers.azure.embeddings import (
+    AzureEmbeddingClient,
+)
 from src.core.infrastructure.llm.providers.openai.client import OpenAiClient
-from src.core.infrastructure.llm.providers.openai.embeddings import OpenAiEmbeddingClient
+from src.core.infrastructure.llm.providers.openai.embeddings import (
+    OpenAiEmbeddingClient,
+)
 
 T = TypeVar("T", bound=BaseModel)
 
@@ -14,9 +23,6 @@ T = TypeVar("T", bound=BaseModel)
 def embeddings(model: str | None = None) -> EmbeddingClient:
     """
     Get an embedding client for the configured provider.
-    
-    Parameters:
-    - model (str | None): The model to use. If None, uses the default from config.
     """
     if config.LLM_PROVIDER == "azure":
         return AzureEmbeddingClient()
@@ -25,8 +31,8 @@ def embeddings(model: str | None = None) -> EmbeddingClient:
 
 class Llm:
     """
-    Adapter for LLM interactions that provides a unified interface for different
-    LLM providers. Handles structured output parsing and validation.
+    Adapter for LLM interactions that provides a unified interface for
+    different LLM providers. Handles structured output parsing and validation.
     """
 
     def __init__(

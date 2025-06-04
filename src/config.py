@@ -11,7 +11,9 @@ class Config:
     BASE_DIR: Path = Path(__file__).parent.absolute()
 
     # LLM Provider Configuration
-    LLM_PROVIDER: str = os.getenv("LLM_PROVIDER", "openai")  # "openai" or "azure"
+    LLM_PROVIDER: str = os.getenv(
+        "LLM_PROVIDER", "openai"
+    )  # "openai" or "azure"
 
     # OpenAI Configuration
     OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "")
@@ -33,12 +35,18 @@ class Config:
     # Azure Configuration
     AZURE_OPENAI_ENDPOINT: str = os.getenv(
         "AZURE_OPENAI_ENDPOINT",
-        "https://ai-aidaphi35visiondev404542953478.openai.azure.com"
+        "https://ai-aidaphi35visiondev404542953478.openai.azure.com",
     )
     AZURE_OPENAI_API_KEY: str = os.getenv("AZURE_OPENAI_API_KEY", "")
-    AZURE_OPENAI_API_VERSION: str = os.getenv("AZURE_OPENAI_API_VERSION", "2024-02-15-preview")
-    AZURE_OPENAI_DEPLOYMENT: str = os.getenv("AZURE_OPENAI_DEPLOYMENT", "gpt-4")
-    AZURE_OPENAI_EMBEDDING_DEPLOYMENT: str = os.getenv("AZURE_OPENAI_EMBEDDING_DEPLOYMENT", "text-embedding-3-small")
+    AZURE_OPENAI_API_VERSION: str = os.getenv(
+        "AZURE_OPENAI_API_VERSION", "2024-02-15-preview"
+    )
+    AZURE_OPENAI_DEPLOYMENT: str = os.getenv(
+        "AZURE_OPENAI_DEPLOYMENT", "gpt-4"
+    )
+    AZURE_OPENAI_EMBEDDING_DEPLOYMENT: str = os.getenv(
+        "AZURE_OPENAI_EMBEDDING_DEPLOYMENT", "text-embedding-3-small"
+    )
 
     # Embedding Configuration
     EMBEDDING_MIN_DIMENSIONS: int = int(

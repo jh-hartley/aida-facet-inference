@@ -1,8 +1,10 @@
-from typing import Type, TypeVar
 import re
+from typing import Type, TypeVar
+
 from pydantic import BaseModel
 
 T = TypeVar("T", bound=BaseModel)
+
 
 def parse_structured_output(content: str, output_type: Type[T]) -> T:
     """
@@ -17,10 +19,11 @@ def parse_structured_output(content: str, output_type: Type[T]) -> T:
         match = re.search(r"```(?:json)?\n(.*?)\n```", content, re.DOTALL)
         if match:
             content = match.group(1).strip()
-    
+
     try:
         return output_type.model_validate_json(content)
     except Exception as e:
         raise ValueError(
-            f"Failed to parse structured output as {output_type.__name__}: {str(e)}"
-        ) from e 
+            f"Failed to parse structured output as "
+            f"{output_type.__name__}: {str(e)}"
+        ) from e

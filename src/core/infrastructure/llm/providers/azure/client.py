@@ -1,8 +1,8 @@
 from typing import Type, TypeVar, cast
-from pydantic import BaseModel, SecretStr
 
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_openai import AzureChatOpenAI
+from pydantic import BaseModel, SecretStr
 
 from src.config import config
 from src.core.infrastructure.llm.models import LlmModel
@@ -11,8 +11,11 @@ from src.core.infrastructure.llm.utils.parsing import parse_structured_output
 
 T = TypeVar("T", bound=BaseModel)
 
-class AzureLlm(BaseLlmClient):    
-    def __init__(self, llm_model: LlmModel, temperature: float | None = None) -> None:
+
+class AzureLlm(BaseLlmClient):
+    def __init__(
+        self, llm_model: LlmModel, temperature: float | None = None
+    ) -> None:
         self._client = AzureChatOpenAI(
             model=llm_model.value,
             temperature=temperature or config.OPENAI_LLM_TEMPERATURE,
@@ -21,7 +24,7 @@ class AzureLlm(BaseLlmClient):
             api_version=config.AZURE_OPENAI_API_VERSION,
             azure_deployment=llm_model.value,
         )
-    
+
     def invoke(
         self,
         system: str,
@@ -34,11 +37,11 @@ class AzureLlm(BaseLlmClient):
         ]
         response = self._client.invoke(messages)
         content = cast(str, response.content)
-        
+
         if output_type is not None:
             return parse_structured_output(content, output_type)
         return content
-    
+
     async def ainvoke(
         self,
         system: str,
@@ -51,7 +54,7 @@ class AzureLlm(BaseLlmClient):
         ]
         response = await self._client.ainvoke(messages)
         content = cast(str, response.content)
-        
+
         if output_type is not None:
             return parse_structured_output(content, output_type)
-        return content 
+        return content
