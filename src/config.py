@@ -4,7 +4,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 from pydantic import ValidationInfo, field_validator
 
-load_dotenv()
+load_dotenv(override=True)
 
 
 class Config:
@@ -12,7 +12,7 @@ class Config:
 
     # LLM Provider Configuration
     LLM_PROVIDER: str = os.getenv(
-        "LLM_PROVIDER", "openai"
+        "LLM_PROVIDER", "azure"
     )  # "openai" or "azure"
 
     # OpenAI Configuration
@@ -46,6 +46,10 @@ class Config:
     )
     AZURE_OPENAI_EMBEDDING_DEPLOYMENT: str = os.getenv(
         "AZURE_OPENAI_EMBEDDING_DEPLOYMENT", "text-embedding-3-small"
+    )
+    AZURE_OPENAI_EMBEDDING_API_VERSION: str = os.getenv(
+        "AZURE_OPENAI_EMBEDDING_API_VERSION",
+        os.getenv("AZURE_OPENAI_API_VERSION", "2023-05-15"),
     )
 
     # Embedding Configuration

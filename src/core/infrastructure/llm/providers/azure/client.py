@@ -24,7 +24,7 @@ class AzureLlm(BaseLlmClient):
             api_key=SecretStr(config.AZURE_OPENAI_API_KEY),
             azure_endpoint=config.AZURE_OPENAI_ENDPOINT,
             api_version=config.AZURE_OPENAI_API_VERSION,
-            azure_deployment=llm_model.value,
+            azure_deployment=config.AZURE_OPENAI_DEPLOYMENT,
         )
 
     @backoff.on_exception(

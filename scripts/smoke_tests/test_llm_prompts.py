@@ -11,7 +11,6 @@ import asyncio
 import logging
 from pathlib import Path
 
-from core.prompts.prompt_manager import PRODUCT_FACET_PROMPT
 from scripts.smoke_tests.utils import (
     format_section,
     get_output_dir,
@@ -20,6 +19,7 @@ from scripts.smoke_tests.utils import (
 )
 from src.common.db import SessionLocal
 from src.core.domain.repositories import FacetIdentificationRepository
+from src.core.prompts.prompt_manager import PRODUCT_FACET_PROMPT
 
 logger = logging.getLogger(__name__)
 
