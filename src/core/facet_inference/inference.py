@@ -47,7 +47,7 @@ class ProductFacetPredictor:
             )
             logger.debug(
                 f"Prediction for {prediction.attribute}: "
-                f"{prediction.predicted_value} (confidence: "
+                f"{prediction.recommendation} (confidence: "
                 f"{prediction.confidence:.2f})"
             )
             return prediction

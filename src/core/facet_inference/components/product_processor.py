@@ -46,7 +46,6 @@ class ProductProcessor:
         """
         entries = self.ground_truth_loader.load_ground_truth()
 
-        # Group by product system name
         product_recommendations: dict[str, list[GroundTruthEntry]] = {}
         for entry in entries:
             if entry.product_system_name not in product_recommendations:
@@ -77,7 +76,6 @@ class ProductProcessor:
 
     def get_allowable_values(self, attribute_key: str) -> list[str]:
         """Get allowable values for an attribute."""
-        # Get values from category-specific rules
         category_values = list(
             self.session.scalars(
                 select(text("value"))
@@ -101,7 +99,6 @@ class ProductProcessor:
             ).all()
         )
 
-        # Get values from any-category rules
         any_category_values = list(
             self.session.scalars(
                 select(text("value"))
@@ -113,7 +110,6 @@ class ProductProcessor:
             ).all()
         )
 
-        # Combine all values and remove duplicates
         return sorted(
             list(set(category_values + global_values + any_category_values))
         )
@@ -130,14 +126,12 @@ class ProductProcessor:
         Returns:
             Tuple of (product_key, predictions)
         """
-        # Get product key from first recommendation
         if not recommendations:
             logger.error(f"No recommendations found for product {product_ref}")
             return None, []
 
         product_key = recommendations[0].product_key
 
-        # Get product categories
         product_categories = (
             self.service.repository.product_category_repo.get_by_product_key(
                 product_key
@@ -145,7 +139,6 @@ class ProductProcessor:
         )
         category_keys = [pc.category_key for pc in product_categories]
 
-        # Build gaps from recommendations
         gaps = []
         seen_attributes = set()
 
@@ -153,7 +146,6 @@ class ProductProcessor:
             if rec.attribute_name in seen_attributes:
                 continue
 
-            # Get allowable values for this attribute
             allowable_values = list(
                 self.service.repository._get_allowable_values_for_attribute(
                     category_keys, rec.attribute_key
@@ -176,7 +168,6 @@ class ProductProcessor:
             logger.warning(f"No valid gaps found for product {product_key}")
             return product_key, []
 
-        # Generate predictions
         predictions = await self.service.predict_specific_gaps(
             product_key, gaps
         )

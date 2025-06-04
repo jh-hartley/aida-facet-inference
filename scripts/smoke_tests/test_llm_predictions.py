@@ -131,7 +131,7 @@ async def main(
                     "Formatted Predictions",
                     "\n\n".join(
                         f"Attribute: {pred.attribute}\n"
-                        f"Predicted Value: {pred.predicted_value}\n"
+                        f"Predicted Value: {pred.recommendation}\n"
                         f"Confidence: {pred.confidence}\n"
                         f"Reasoning: {pred.reasoning}"
                         for pred in predictions
