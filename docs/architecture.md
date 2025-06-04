@@ -151,4 +151,4 @@ Product Key
 
 ---
 
-For more details, see the [Core Concepts](core_concepts.md), [API Reference](api_reference.md), and [Development Guide](development.md). 
+For more details, see the [Core Concepts](core_concepts.md), [API Reference](api_reference.md), [Development Guide](development.md), and [Environment Variables Reference](environment_variables.md). 

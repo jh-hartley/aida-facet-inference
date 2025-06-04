@@ -57,7 +57,7 @@ For more scripts and advanced usage, see [docs/scripts.md](docs/scripts.md).
 
 ## Environment Variables
 
-The system uses environment variables for API keys, database credentials, LLM settings, logging, CORS, rate limiting, and more. For a full list, see `.env.example` and [docs/README_env_vars.md](docs/README_env_vars.md).
+The system uses environment variables for API keys, database credentials, LLM settings, logging, CORS, rate limiting, and more. For a full list, see `.env.example` and [docs/environment_variables.md](docs/environment_variables.md).
 
 **Critical variables to set:**
 - `LLM_PROVIDER`: Choose `openai` or `azure` depending on your LLM provider
@@ -75,7 +75,7 @@ The system uses environment variables for API keys, database credentials, LLM se
 - `EMBEDDING_MIN_DIMENSIONS`, `EMBEDDING_MAX_DIMENSIONS`, `EMBEDDING_DEFAULT_DIMENSIONS`
 - `OPENAI_EMBEDDING_MAX_TRIES`, `OPENAI_EMBEDDING_MAX_TIME`
 
-See `.env.example` for all available variables and [docs/README_env_vars.md](docs/README_env_vars.md) for detailed explanations and advanced options. The documentation has been updated to reflect the latest configuration options and defaults.
+See `.env.example` for all available variables and [docs/environment_variables.md](docs/environment_variables.md) for detailed explanations and advanced options. The documentation has been updated to reflect the latest configuration options and defaults.
 
 **Never commit real secrets to version control.**
 
@@ -120,7 +120,7 @@ aida-facet-inference/
 - [Development Guide](docs/development.md)
 - [Architecture](docs/architecture.md)
 - [Database Schema](docs/database.md)
-- [Environment Variables Reference](docs/README_env_vars.md)
+- [Environment Variables Reference](docs/environment_variables.md)
 
 ## Development
 
