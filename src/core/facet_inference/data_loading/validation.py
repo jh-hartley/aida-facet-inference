@@ -16,14 +16,11 @@ def fuzzy_match(
     Returns:
         True if the strings match within the threshold
     """
-    # Normalize strings
     predicted = predicted.lower().strip()
     ground_truth = ground_truth.lower().strip()
 
-    # Exact match
     if predicted == ground_truth:
         return True
 
-    # Calculate similarity ratio
     similarity = SequenceMatcher(None, predicted, ground_truth).ratio()
     return similarity >= threshold

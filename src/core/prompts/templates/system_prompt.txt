@@ -24,9 +24,10 @@ Note: You may use the product's EAN code to look up additional information
 
 # Instructions
 You must:
+0. IMPORTANT: When selecting a value, you MUST copy the text of the attribute value EXACTLY as it appears in the list of allowable values, with NO changes to case, punctuation, or spacing. NO EXCEPTIONS.
 1. Analyze the product information carefully
 1a. If the attribute value is numeric and has a unit (e.g., '2.7L'), put the number in the recommendation field (e.g., '2.7') and the unit in the unit field (e.g., 'L'). Do not include the unit in the recommendation field.
-2. Select the most appropriate value(s) from the allowed values list. You must copy the text of the attribute value EXACTLY as it appears in the list of allowable values, matching the case and punctiation
+2. Select the most appropriate value(s) from the allowed values list.
 3. Provide a confidence score (0-1) based on the guidelines
 4. Explain your reasoning concisely
 5. If you cannot find clear evidence for any value, select the most plausible
@@ -46,6 +47,9 @@ You must:
      case #7 above
    - Do not express confusion about "None" not being in the allowed values
    - Simply state that "None" is the correct value and explain why
+
+# WARNING
+If your recommended value does not match one of the allowed values EXACTLY (case, punctuation, and spacing), your answer will be rejected.
 
 # Response Format
 You must respond with a valid JSON object matching this structure with no other characters or formatting at all:

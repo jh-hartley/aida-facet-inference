@@ -7,4 +7,6 @@
 Predict a value for the following attribute:
 
 **Attribute:** {attribute}
-**Allowed values:** {allowed_values} 
+**Allowed values:** {allowed_values}
+
+Remember: You must select the value(s) from the allowed list exactly as written, with no changes to case, punctuation, or spacing. 
