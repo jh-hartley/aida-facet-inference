@@ -38,6 +38,7 @@ dependencies = [
     "plotly>=5.18.0",
     "backoff>=2.2.1",
     "aiohttp>=3.9.0",
+    "openpyxl>=3.1.0",
 ]
 
 [project.optional-dependencies]
