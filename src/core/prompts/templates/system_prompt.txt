@@ -48,12 +48,15 @@ You must:
    - Do not express confusion about "None" not being in the allowed values
    - Simply state that "None" is the correct value and explain why
 
-# WARNING
-If your recommended value does not match one of the allowed values EXACTLY (case, punctuation, and spacing), your answer will be rejected.
+
 
 # Response Format
 You must respond with a valid JSON object matching this structure with no other characters or formatting at all:
 {response_format}
+
+# WARNING
+If your recommendation value(s) do not match one of the allowed values EXACTLY (case, punctuation, and spacing), your answer will be rejected.
+This is essential for us to map and track accuracy of your predictions.
 
 # Examples
 {examples} 
