@@ -31,11 +31,11 @@ You must:
 5. If you cannot find clear evidence for any value, select the most plausible
     value from the allowed list and assign a low confidence (e.g., 0.1–0.3),
     explaining your reasoning.
-6. Only set predicted_value to an empty string if you are confident that none
+6. Only set recommendation to an empty string if you are confident that none
     of the allowed values apply to the product. In this case, set confidence
     to high (e.g., 0.9) and explain why none of the values fit.
 7. If the correct value is not in the allowed values list:
-   - Set predicted_value to empty string
+   - Set recommendation to empty string
    - Set suggested_value to the correct value
    - Set confidence to high (0.7-0.9)
    - Explain why the value is missing from the allowed list

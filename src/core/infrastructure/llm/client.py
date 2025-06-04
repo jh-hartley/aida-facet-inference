@@ -1,74 +1,48 @@
-from typing import Any, Type, cast, overload
+from typing import Type, TypeVar, cast, overload, Any
+from pydantic import BaseModel
 
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 
 from src.config import config
-from src.core.infrastructure.llm.models import LlmModel, T
+from src.core.infrastructure.llm.azure_client import AzureLlm, AzureEmbeddingClient
+from src.core.infrastructure.llm.openai_client import OpenAiAdapter, llm
+from src.core.infrastructure.llm.models import LlmModel, LlmClient, EmbeddingClient
+from src.core.infrastructure.llm.json_utils import parse_structured_output
+
+T = TypeVar("T", bound=BaseModel)
 
 
-def llm(
-    model: str | None = None,
-    temperature: float | None = None,
-    top_p: float | None = None,
-    frequency_penalty: float | None = None,
-    reasoning_effort: str | None = None,
-) -> ChatOpenAI:
+def embeddings(model: str | None = None) -> EmbeddingClient:
     """
-    Creates and returns a configured ChatOpenAI instance.
-
+    Get an embedding client for the configured provider.
+    
     Parameters:
-    - model (str, optional): The name of the model to use
-        (default from config).
-    - temperature (float, optional): Sampling temperature for
-        randomness in output.
-    - top_p (float, optional): Top-p sampling threshold for diversity.
-    - frequency_penalty (float, optional): Penalty for word/phrase repetition.
-    - reasoning_effort (str, optional): Reasoning effort level for o3-mini
-        model.
+    - model (str | None): Optional model name to use
+    
+    Returns:
+    - EmbeddingClient: The configured embedding client
     """
-    llm_config: dict[str, Any] = {
-        "model": model or config.OPENAI_LLM_MODEL,
-        "top_p": top_p or config.OPENAI_LLM_TOP_P,
-        "frequency_penalty": frequency_penalty
-        or config.OPENAI_LLM_FREQ_PENALTY,
-    }
-
-    if (model or config.OPENAI_LLM_MODEL) == "o3-mini":
-        if reasoning_effort:
-            llm_config["reasoning_effort"] = (
-                reasoning_effort or config.OPENAI_LLM_REASONING_EFFORT
-            )
-    else:
-        llm_config["temperature"] = (
-            temperature or config.OPENAI_LLM_TEMPERATURE
-        )
-
-    return ChatOpenAI(**llm_config)
-
-
-def embeddings(model: str | None = None) -> OpenAIEmbeddings:
+    if config.LLM_PROVIDER == "azure":
+        return AzureEmbeddingClient()
     return OpenAIEmbeddings(model=model or config.OPENAI_EMBEDDING_MODEL)
 
 
 class Llm:
     """
-    Abstraction layer for LLM interactions that provides configurable access to
-    LLM providers. Supports both synchronous and asynchronous invocations with
-    structured output.
+    Adapter for LLM interactions that provides a unified interface for different
+    LLM providers. Handles structured output parsing and validation.
     """
 
     def __init__(
         self, llm_model: LlmModel, temperature: float | None = None
     ) -> None:
         self.llm_model = llm_model
-        model_config: dict[str, Any] = {
-            "model": self.llm_model.value,
-            "temperature": temperature,
-        }
-        if self.llm_model == LlmModel.O3_MINI_HIGH:
-            model_config["reasoning_effort"] = "high"
-        self._chat = ChatOpenAI(**model_config)
+        self._client = (
+            AzureLlm(llm_model, temperature)
+            if config.LLM_PROVIDER == "azure"
+            else llm(model=llm_model.value, temperature=temperature)
+        )
 
     @overload
     def invoke(self, system: str, human: str) -> str: ...
@@ -94,17 +68,10 @@ class Llm:
         Returns:
         - T | str: The response content in the specified type
         """
-        messages = [SystemMessage(system), HumanMessage(human)]
-
-        if output_type is None:
-            # ChatOpenAI.ainvoke() always returns a BaseMessage,
-            # but mypy can't infer this
-            response = self._chat.invoke(messages)
-            return response.content  # type: ignore
-        else:
-            chat = self._chat.with_structured_output(output_type)
-            response = chat.invoke(messages)  # type: ignore[assignment]
-            return cast(T, response)
+        response = self._client.invoke(system, human, output_type)
+        if output_type is not None and isinstance(response, str):
+            return parse_structured_output(response, output_type)
+        return response
 
     @overload
     async def ainvoke(self, system: str, human: str) -> str: ...
@@ -132,14 +99,7 @@ class Llm:
         Returns:
         - T | str: The response content in the specified type
         """
-        messages = [SystemMessage(system), HumanMessage(human)]
-
-        if output_type is None:
-            # ChatOpenAI.ainvoke() always returns a BaseMessage,
-            # but mypy can't infer this
-            response = await self._chat.ainvoke(messages)
-            return response.content  # type: ignore
-        else:
-            chat = self._chat.with_structured_output(output_type)
-            response = await chat.ainvoke(messages)  # type: ignore[assignment]
-            return cast(T, response)
+        response = await self._client.ainvoke(system, human, output_type)
+        if output_type is not None and isinstance(response, str):
+            return parse_structured_output(response, output_type)
+        return response
