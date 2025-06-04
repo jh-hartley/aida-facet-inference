@@ -1,90 +1,154 @@
 # Architecture
 
-## System Overview
+## Introduction & Philosophy
 
-The AIDA Facet Inference system is built with a clean, modular architecture that separates concerns and promotes maintainability. The system consists of several key components:
+AIDA Facet Inference is designed with a modular, domain-driven architecture that emphasizes separation of concerns, testability, and extensibility. The system ingests product data and uses LLMs to infer missing facets, with confidence scoring and validation. The architecture is inspired by Domain-Driven Design (DDD) and industry best practices for modern Python backends.
 
-1. **API Layer** (`src/api/`)
-   - FastAPI-based HTTP endpoints
-   - Request/response DTOs
-   - Input validation
-   - Route handling
+---
 
-2. **Core Layer** (`src/core/`)
-   - Business logic implementation
-   - Facet inference service
-   - LLM integration
-   - Model definitions
+## Project Structure Overview
 
-3. **Database Layer** (`src/db/`)
-   - Database operations
-   - Connection management
-   - Query handling
+```
+aida-facet-inference/
+├── src/
+│   ├── api/                        # FastAPI endpoints
+│   ├── common/                     # Shared utilities: db helpers, exceptions, file IO, logging, time
+│   ├── core/                       # Core business logic
+│   │   ├── performance_analysis/   # Analysis and visualization of model performance
+│   │   ├── domain/                 # Domain models, confidence logic, product identifiers, repository interfaces, type definitions
+│   │   ├── similarity_search/      # Similarity search logic and models
+│   │   ├── csv_ingestion/          # CSV ingestion logic, processors, and unit-of-work
+│   │   ├── prompts/                # Prompt management and templates
+│   │   ├── embedding_generation/   # Embedding generation logic and jobs
+│   │   ├── facet_inference/        # Facet inference logic, orchestration, and components
+│   │   ├── data_analysis/          # Data analysis tools and loaders
+│   │   └── infrastructure/         # Integrations: LLM (OpenAI, Azure), database repositories, embeddings, input data, predictions
+│   │       ├── llm/                # LLM provider clients, models, utilities, and provider-specific implementations
+│   │       └── database/           # Database access, repositories for predictions, input data, embeddings
+│   └── main.py                     # Application entry point
+├── scripts/                        # Utility and data scripts
+├── tests/                          # Test suite
+├── docs/                           # Detailed documentation
+├── schema/                         # Database schema (SQL)
+├── hooks/                          # Git hooks and related scripts
+├── .github/                        # GitHub workflows and configs
+├── data/                           # Example and test data
+├── Dockerfile.api                  # Dockerfile for API
+├── docker-compose.yml              # Docker Compose config
+├── pyproject.toml                  # Python project config
+├── .env.example                    # Example environment variables
+└── README.md                       # Project overview and setup
+```
 
-4. **Utility Layer** (`src/utils/`)
-   - Shared utilities
-   - Helper functions
-   - Common types
+---
 
-## Data Flow
+## Layered Architecture & DDD Approach
 
-1. **HTTP Request Flow**
-   ```
-   Client Request
-   → API Endpoint
-   → Request DTO Validation
-   → Service Layer
-   → LLM Processing
-   → Response DTO
-   → Client Response
-   ```
+The system is organized into clear layers, each with distinct responsibilities:
 
-2. **Facet Inference Flow**
-   ```
-   Product Info + Facet Definition
-   → FacetInferenceService
-   → ProductFacetPredictor
-   → LLM Processing
-   → Confidence Scoring
-   → FacetPrediction
-   ```
+- **API Layer (`src/api/`)**: Exposes HTTP endpoints using FastAPI. Handles request/response DTOs, input validation, and routing.
+- **Core Layer (`src/core/`)**: Contains all business logic, organized by domain concepts. Implements services, domain models, and orchestration.
+- **Infrastructure Layer (`src/core/infrastructure/`)**: Integrates with external systems (LLMs, databases). Implements provider-specific logic and repository patterns.
+- **Common Utilities (`src/common/`)**: Shared helpers for DB access, error handling, logging, and file IO.
 
-## Design Decisions
+**Domain-Driven Design (DDD) Principles:**
+- **Domain Models**: Central business objects (e.g., Product, Facet, Prediction) live in `core/domain`.
+- **Repositories**: Abstract data access, implemented in infrastructure.
+- **Services**: Orchestrate business logic, often async and stateless.
+- **Value Objects & Types**: Used for strong typing and invariants.
 
-1. **API Design**
-   - RESTful endpoints for facet inference
-   - Async processing for concurrent predictions
-   - Pydantic models for request/response validation
-   - Clear separation between API and business logic
+---
 
-2. **Service Layer**
-   - Dependency injection for flexibility
-   - Async-first design for performance
-   - Clear interfaces for testing
-   - Modular predictor implementation
+## Section-by-Section Breakdown
 
-3. **LLM Integration**
-   - Abstracted LLM interface
-   - Configurable model selection
-   - Structured prompt management
-   - Confidence scoring system
+### API Layer (`src/api/`)
+- **Routers**: Define HTTP endpoints (e.g., `/facet-inference/predict/{product_key}`) and group related routes.
+- **DTOs**: Pydantic models for request/response validation, decoupled from domain models.
+- **Dependency Injection**: Uses FastAPI's dependency system for DB sessions and service wiring.
+
+### Core Layer (`src/core/`)
+- **domain/**: Domain models, confidence logic, product identifiers, repository interfaces, and type definitions. Implements DDD patterns.
+- **facet_inference/**: Main business logic for facet prediction. Includes service layer, orchestration, concurrency management, and prediction components.
+- **embedding_generation/**: Logic for generating and managing vector embeddings, including jobs and unit-of-work patterns.
+- **similarity_search/**: Implements similarity search over embeddings, with caching and service abstractions.
+- **csv_ingestion/**: Handles CSV ingestion, parsing, and batch processing using processors and UoW.
+- **prompts/**: Manages prompt templates and prompt engineering for LLMs.
+- **performance_analysis/**: Tools and scripts for analyzing and visualizing model performance.
+- **data_analysis/**: Data loaders and evaluators for ground truth and prediction analysis.
+
+### Infrastructure Layer (`src/core/infrastructure/`)
+- **llm/**: Provider-agnostic LLM client, with submodules for OpenAI, Azure, and utilities. Handles prompt invocation and model selection.
+- **database/**: Implements repository patterns for predictions, input data, and embeddings. Encapsulates all DB access.
+
+### Common Utilities (`src/common/`)
+- **db.py**: DB session management and helpers.
+- **exceptions.py**: Custom error types.
+- **read_files.py**: File IO utilities.
+- **clock.py**: Time utilities.
+- **logs/**: Logging configuration and helpers.
+
+### Scripts (`scripts/`)
+- Utility scripts for embedding, prediction, ingestion, and checks. Used for operational tasks and automation.
+
+### Tests (`tests/`)
+- Test suite for unit, integration, and end-to-end testing. Organized to mirror the main codebase structure.
+
+---
+
+## Data Flow Diagrams
+
+### HTTP Request Flow
+```
+Client Request
+→ API Endpoint (FastAPI)
+→ Request DTO Validation
+→ Service Layer (core)
+→ LLM/DB/Embedding Processing
+→ Response DTO
+→ Client Response
+```
+
+### Facet Inference Flow
+```
+Product Key
+→ FacetInferenceService
+→ ProductFacetPredictor
+→ LLM Processing
+→ Confidence Scoring
+→ FacetPrediction
+```
+
+---
+
+## Design Decisions & Patterns
+
+- **Async-First Design**: All service and prediction logic is async for scalability.
+- **Separation of Concerns**: API, business logic, and infrastructure are strictly separated.
+- **Repository Pattern**: All data access is abstracted via repositories, enabling easy swapping of DB backends.
+- **Service Layer**: Orchestrates business logic, keeps controllers thin.
+- **Unit of Work (UoW)**: Used in batch operations (e.g., CSV ingestion, embedding jobs) for transactional integrity.
+- **Dependency Injection**: Used throughout for testability and flexibility.
+- **Extensibility**: New LLM providers, embedding models, or business logic can be added with minimal changes to existing code.
+
+---
+
+## Extending the System
+
+- **Adding a New LLM Provider**: Implement a new provider in `infrastructure/llm/providers/` and register it in the LLM client.
+- **Adding a New API Endpoint**: Create a new router in `api/routers/` and wire up the service layer.
+- **Adding New Business Logic**: Place new domain logic in `core/domain/` or a new submodule under `core/` as appropriate.
+- **Adding New Data Pipelines**: Use the UoW and repository patterns for robust, testable data processing.
+
+---
 
 ## Future Considerations
 
-1. **API Enhancements**
-   - Authentication/authorization
-   - Rate limiting
-   - Request validation middleware
-   - API versioning
+- **API Enhancements**: Authentication, rate limiting, request validation middleware, API versioning.
+- **Performance**: Caching, batch processing, connection pooling, response compression.
+- **Monitoring**: Request logging, performance metrics, error tracking, usage analytics.
+- **Self-Review Loop**: Planned mechanism for LLM self-critique and output refinement.
+- **Web Scrape Context Retrieval**: Planned integration for richer product context.
 
-2. **Performance**
-   - Caching layer
-   - Batch processing optimization
-   - Connection pooling
-   - Response compression
+---
 
-3. **Monitoring**
-   - Request logging
-   - Performance metrics
-   - Error tracking
-   - Usage analytics 
+For more details, see the [Core Concepts](core_concepts.md), [API Reference](api_reference.md), and [Development Guide](development.md). 

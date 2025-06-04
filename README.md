@@ -35,6 +35,26 @@ uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload
 
 The `--reload` flag enables hot-reloading for development.
 
+### Ingest Product Data
+```bash
+python scripts/ingest_csvs.py --directory data
+```
+Ingests product data from CSV files into the database.
+
+### Generate Product Embeddings
+```bash
+python scripts/embed_product_descriptions.py
+```
+Generates vector embeddings for all products in the database.
+
+### Run Facet Inference
+```bash
+python scripts/predict_facets.py --limit 10
+```
+Runs facet inference for a limited number of products and stores results in the database.
+
+For more scripts and advanced usage, see [docs/scripts.md](docs/scripts.md).
+
 ## Environment Variables
 
 The system uses environment variables for API keys, database credentials, LLM settings, logging, CORS, rate limiting, and more. For a full list, see `.env.example` and [docs/README_env_vars.md](docs/README_env_vars.md).
