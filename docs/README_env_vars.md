@@ -32,14 +32,15 @@ This document provides a comprehensive reference for all environment variables u
 - **AZURE_OPENAI_ENDPOINT**: Azure OpenAI endpoint URL. E.g., `https://your-azure-endpoint.openai.azure.com`.
 - **AZURE_OPENAI_API_VERSION**: API version string. E.g., `2024-02-15-preview`.
 - **AZURE_OPENAI_DEPLOYMENT**: Azure OpenAI deployment name (e.g., `gpt-4o-mini`).
-- **AZURE_OPENAI_EMBEDDING_DEPLOYMENT**: Azure embedding deployment name (e.g., `text-embedding-3-small`).
+- **AZURE_OPENAI_EMBEDDING_DEPLOYMENT**: Azure embedding deployment name (e.g., `text-embedding-ada-002`).
+- **AZURE_OPENAI_EMBEDDING_API_VERSION**: API version for Azure embedding deployment (e.g., `2023-05-15`).
 
 ## Embedding Configuration
 - **EMBEDDING_MIN_DIMENSIONS**: Integer. Minimum embedding dimensions. Default: `1536`.
 - **EMBEDDING_MAX_DIMENSIONS**: Integer. Maximum embedding dimensions. Default: `1536`.
 - **EMBEDDING_DEFAULT_DIMENSIONS**: Integer. Default embedding dimensions. Default: `1536`.
-- **OPENAI_EMBEDDING_MAX_TRIES**: Integer. Max tries for embedding model before failing. Default: `5`.
-- **OPENAI_EMBEDDING_MAX_TIME**: Integer (seconds). Max time for embedding model before timeout. Default: `60`.
+- **OPENAI_EMBEDDING_MAX_TRIES**: Integer. Max tries for embedding model before failing. Default: `10`.
+- **OPENAI_EMBEDDING_MAX_TIME**: Integer (seconds). Max time for embedding model before timeout. Default: `120`.
 
 ## Database Configuration
 - **DB_HOST**: Database host (e.g., `localhost`).
@@ -52,12 +53,14 @@ This document provides a comprehensive reference for all environment variables u
 - **DB_MAX_OVERFLOW**: SQLAlchemy max overflow. Default: `2`.
 - **DB_ASYNC_POOL_SIZE**: SQLAlchemy async pool size. Default: `20`.
 
-## Vector Database
+## Vector Database (Optional)
 - **VECTOR_DB_URL**: URL for the vector database service.
 - **VECTOR_DB_API_KEY**: API key for the vector database.
 
-## App Settings
+## App Settings (Optional)
 - **ENV**: Application environment (e.g., `development`, `production`).
 
-## Adding New Variables
-If you add new environment variables, document them here and in `.env.example`. 
+## Notes
+- All variables above are shown in `.env.example` with example values or defaults.
+- If you add new environment variables, document them here and in `.env.example`.
+- Never commit real secrets to version control. 
