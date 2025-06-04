@@ -3,14 +3,30 @@ import argparse
 import asyncio
 import logging
 from datetime import datetime
+from collections import Counter
 
 from src.common.db import SessionLocal
+from src.common.logs import setup_logging
 from src.core.facet_inference.orchestration.orchestrator import (
     FacetInferenceOrchestrator,
 )
+from src.core.infrastructure.database.input_data.records import HumanRecommendationRecord
+from sqlalchemy import select
 
-logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
+setup_logging()
+
+
+def count_recommendation_types(session):
+    """Count the different types of recommendations in the database."""
+    recommendations = session.scalars(select(HumanRecommendationRecord)).all()
+    action_counts = Counter(rec.action for rec in recommendations)
+    
+    logger.info("\nRecommendation type counts:")
+    for action, count in action_counts.items():
+        logger.info(f"{action}: {count}")
+    
+    return action_counts
 
 
 async def main():
@@ -38,6 +54,9 @@ async def main():
     args = parser.parse_args()
 
     with SessionLocal() as session:
+        # Count recommendation types before running experiment
+        count_recommendation_types(session)
+        
         # Create orchestrator
         orchestrator = FacetInferenceOrchestrator(
             session=session,

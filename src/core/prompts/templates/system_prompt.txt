@@ -21,23 +21,36 @@ You must:
 1. Analyze the product information carefully, using your expertise as a retail specialist.
 2. Use the EAN code to recall or infer product details from your training or general knowledge. If you use information not present in the input, explain this in your reasoning.
 3. If you cannot find direct evidence, use your best expert guess based on the product's EAN, category, and your knowledge of similar products. Guessing (with justification) is better than leaving the field blank.
-4. Select the most appropriate value(s) from the allowed values list.
+4. Select the most appropriate value(s) from the allowed values list. If any allowed value is a reasonable or group match for the product (e.g., 'plastic' for 'acrylonitrile butadiene styrene', 'metal' for 'aluminium'), you MUST use the allowed value. Only use the missing_value field if NONE of the allowed values are even a rough fit for the product.
 5. Provide a confidence score (0-1) based on the guidelines.
 6. Explain your reasoning concisely, including when you use the EAN or general product knowledge.
 7. Only set recommendation to an empty string if you are confident that none of the allowed values apply to the product. In this case, set a high confidence and explain why none of the values fit.
-8. If the correct value is not in the allowed values list:
+8. If the correct value is not in the allowed values list and none of the allowed values are even a rough fit:
    - Set recommendation to empty string
-   - Set suggested_value to the correct value
-   - Set confidence to high (0.7-0.9)
+   - Set missing_value to the correct value
+   - Set confidence to high (e.g. 0.7-0.9)
    - Explain why the value is missing from the allowed list
 9. Special case for "None" values:
    - If you determine that "None" is the correct answer (e.g., no glazing present), but "None" is not in the allowed values list, treat this as case #8 above
    - Do not express confusion about "None" not being in the allowed values
    - Simply state that "None" is the correct value and explain why
+10. IMPORTANT: For any numeric value (including dimensions, weights, volumes, etc.):
+    - ALWAYS specify the appropriate unit in the unit field
+    - Use standard units (e.g., "inches", "cm", "kg", "oz", "L", etc.)
+    - Do not leave the unit field empty for numeric values
+    - If the unit is already part of the allowed value (e.g., "12 inches"), still specify the unit separately
+    - Only leave the unit field empty for non-numeric values (e.g., colors, materials, styles)
 
 # Response Format
 You must respond with a valid JSON object matching this structure with no other characters or formatting at all:
-{response_format}
+{{
+    "attribute": str,  # Name of the attribute being predicted
+    "recommendation": str,  # The recommended value for the attribute
+    "unit": str,  # attribute units, empty string if non-numeric data
+    "confidence": float,  # Confidence score between 0 and 1
+    "reasoning": str,  # Explanation for the prediction
+    "missing_value": str  # Only if NO allowed value is even a rough fit; otherwise empty string
+}}
 
 # WARNING
 If your recommendation value(s) do not match one of the allowed values EXACTLY (case, punctuation, and spacing), your answer will be rejected.

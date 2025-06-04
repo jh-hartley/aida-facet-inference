@@ -3,6 +3,7 @@
 import logging
 import time
 from typing import Any
+import traceback
 
 from sqlalchemy.orm import Session
 
@@ -67,6 +68,8 @@ class FacetInferenceOrchestrator:
         experiment_key = self.experiment_manager.create_experiment()
         logger.info(f"Created experiment {experiment_key}")
 
+        errors = []  # Collect errors for later reporting
+
         try:
             accepted_recommendations = (
                 self.product_processor.get_accepted_recommendations()
@@ -103,7 +106,7 @@ class FacetInferenceOrchestrator:
                             experiment_key=experiment_key,
                             product_key=product_key,
                             attribute_key=attribute.attribute_key,
-                            value=prediction.recommendation,
+                            predicted_value=prediction.recommendation,
                             confidence=prediction.confidence,
                             recommendation_key=int(
                                 recommendation.recommendation_id
@@ -111,7 +114,7 @@ class FacetInferenceOrchestrator:
                             actual_value=prediction.recommendation,
                             correctness_status=None,
                             reasoning=prediction.reasoning,
-                            suggested_value=prediction.suggested_value,
+                            missing_value=prediction.missing_value,
                         )
                         self.session.commit()
 
@@ -120,10 +123,21 @@ class FacetInferenceOrchestrator:
                     total_products += 1
 
                 except Exception as e:
+                    tb = traceback.format_exc()
+                    error_msg = (
+                        f"Product key/ref: {product_ref}\nError: {str(e)}\nTraceback:\n{tb}\n{'='*80}\n"
+                    )
+                    errors.append(error_msg)
                     logger.error(
                         f"Error processing product {product_ref}: {str(e)}"
                     )
                     continue
+
+            # Write errors to file if any
+            if errors:
+                with open("failed_predictions.txt", "w") as f:
+                    f.writelines(errors)
+                logger.info(f"Wrote {len(errors)} errors to failed_predictions.txt")
 
             db_predictions: list[PredictionEntry] = (
                 self.prediction_loader.get_predictions_by_experiment(

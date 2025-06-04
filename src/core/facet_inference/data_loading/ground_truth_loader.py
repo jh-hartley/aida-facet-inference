@@ -29,6 +29,7 @@ class GroundTruthEntry:
     attribute_name: str
     value: str
     recommendation_id: str
+    action: str
 
 
 class GroundTruthLoader:
@@ -46,15 +47,15 @@ class GroundTruthLoader:
         self.attribute_repo = RawAttributeRepository(session)
 
     def load_ground_truth(self) -> Sequence[GroundTruthEntry]:
-        """Load all ground truth data from accepted recommendations.
+        """Load all ground truth data from recommendations.
 
         Returns:
             Sequence of ground truth entries
         """
-        # Get all accepted recommendations
+        # Get all recommendations except those with "Action"
         recommendations = self.session.scalars(
             select(HumanRecommendationRecord).where(
-                HumanRecommendationRecord.action == "Accept Recommendation"
+                HumanRecommendationRecord.action != "Action"
             )
         ).all()
 
@@ -78,6 +79,16 @@ class GroundTruthLoader:
             if not attribute:
                 continue
 
+            # Determine ground truth value based on action
+            if rec.action == "Make no change":
+                value = ""
+            elif rec.action == "Apply override":
+                value = rec.override
+            elif rec.action == "Accept Recommendation":
+                value = rec.recommendation
+            else:
+                continue  # Skip unknown action types
+
             entries.append(
                 GroundTruthEntry(
                     product_key=product.product_key,
@@ -85,8 +96,9 @@ class GroundTruthLoader:
                     attribute_key=attribute.attribute_key,
                     attribute_system_name=attribute.system_name,
                     attribute_name=rec.attribute_name,
-                    value=rec.recommendation,
+                    value=value,
                     recommendation_id=str(rec.id),
+                    action=rec.action,
                 )
             )
 

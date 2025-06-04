@@ -84,7 +84,6 @@ class ProductFacetPrompt:
         Get the system prompt with general instructions and examples.
         """
         return self._system_prompt_template.format(
-            response_format=FacetPrediction.get_prompt_description(),
             confidence_guidelines=ConfidenceLevel.get_prompt_description(),
             examples=self._confidence_examples,
         )

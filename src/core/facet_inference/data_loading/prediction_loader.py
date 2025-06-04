@@ -36,7 +36,7 @@ class PredictionEntry:
     recommendation_key: int | None
     correctness_status: bool | None = None
     reasoning: str | None = None
-    suggested_value: str | None = None
+    missing_value: str | None = None
 
 
 class PredictionLoader:
@@ -71,12 +71,12 @@ class PredictionLoader:
                 experiment_key=experiment_key,
                 product_key=pred.product_key,
                 attribute_key=pred.attribute_key,
-                predicted_value=pred.value,
+                predicted_value=pred.predicted_value,
                 confidence=pred.confidence,
                 recommendation_key=pred.recommendation_key,
                 correctness_status=pred.correctness_status,
                 reasoning=pred.reasoning,
-                suggested_value=pred.suggested_value,
+                missing_value=pred.missing_value,
             )
             for pred in results
         ]
@@ -112,10 +112,32 @@ class PredictionLoader:
                     ground_truth = self.session.scalars(query).first()
 
                     if ground_truth:
+                        # Skip if action is "Action"
+                        if ground_truth.action == "Action":
+                            logger.info(
+                                f"Skipping validation for recommendation {entry.recommendation_key} "
+                                f"as action is 'Action'"
+                            )
+                            continue
+
+                        # Determine ground truth value based on action
+                        if ground_truth.action == "Make no change":
+                            ground_truth_value = ""
+                        elif ground_truth.action == "Apply override":
+                            ground_truth_value = ground_truth.override
+                        elif ground_truth.action == "Accept Recommendation":
+                            ground_truth_value = ground_truth.recommendation
+                        else:
+                            logger.warning(
+                                f"Unknown action type '{ground_truth.action}' "
+                                f"for recommendation {entry.recommendation_key}"
+                            )
+                            continue
+
                         # Compare predicted value with ground truth
                         is_correct = self._fuzzy_match(
                             entry.predicted_value,
-                            ground_truth.recommendation,
+                            ground_truth_value,
                             similarity_threshold,
                         )
                         entry.correctness_status = is_correct
@@ -124,15 +146,15 @@ class PredictionLoader:
                         self.repo.update_prediction_validation(
                             entry.prediction_key,
                             is_correct,
-                            ground_truth.recommendation,
+                            ground_truth_value,
                             (
                                 entry.reasoning
                                 if hasattr(entry, "reasoning")
                                 else None
                             ),
                             (
-                                entry.suggested_value
-                                if hasattr(entry, "suggested_value")
+                                entry.missing_value
+                                if hasattr(entry, "missing_value")
                                 else None
                             ),
                         )
@@ -140,10 +162,11 @@ class PredictionLoader:
                         logger.info(
                             f"Validated prediction for {entry.attribute_key}: "
                             f"predicted='{entry.predicted_value}', "
-                            f"ground_truth='{ground_truth.recommendation}', "
+                            f"ground_truth='{ground_truth_value}', "
+                            f"action='{ground_truth.action}', "
                             f"correct={is_correct}, "
                             f"reasoning='{entry.reasoning if hasattr(entry, 'reasoning') else None}', "  # noqa: E501
-                            f"suggested_value='{entry.suggested_value if hasattr(entry, 'suggested_value') else None}'"  # noqa: E501
+                            f"missing_value='{entry.missing_value if hasattr(entry, 'missing_value') else None}'"  # noqa: E501
                         )
                     else:
                         logger.warning(
@@ -273,12 +296,12 @@ class PredictionLoader:
                 experiment_key=experiment_key,
                 product_key=pred.product_key,
                 attribute_key=pred.attribute_key,
-                predicted_value=pred.value,
+                predicted_value=pred.predicted_value,
                 confidence=pred.confidence,
                 recommendation_key=pred.recommendation_key,
                 correctness_status=pred.correctness_status,
                 reasoning=pred.reasoning,
-                suggested_value=pred.suggested_value,
+                missing_value=pred.missing_value,
             )
             for pred in predictions
         ]

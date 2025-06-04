@@ -151,9 +151,8 @@ class FacetPrediction(BaseModel):
     reasoning: str = Field(
         description="Explanation for why this value was chosen"
     )
-    suggested_value: str = Field(
-        description="Suggested value when the correct value is not in the "
-        "allowed list",
+    missing_value: str = Field(
+        description="Missing value when the correct value is not in the allowed list and none of the allowed values are even a rough fit; otherwise empty string",
         default="",
     )
 
@@ -161,20 +160,3 @@ class FacetPrediction(BaseModel):
     def confidence_level(self) -> ConfidenceLevel:
         """Get the confidence level for this prediction."""
         return ConfidenceLevel.from_score(self.confidence)
-
-    @classmethod
-    def get_prompt_description(cls) -> str:
-        """
-        Get a formatted description of the response structure for prompts.
-        """
-        return """
-        {
-            "attribute": str,  # Name of the attribute being predicted
-            "recommendation": str,  # The recommended value for the attribute
-            "unit": str,  # attribute units, empty string if non-numeric data
-            "confidence": float,  # Confidence score between 0 and 1
-            "reasoning": str,  # Explanation for the prediction
-            "suggested_value": str  # Suggested value if correct value not in
-                # allowed list, otherwise empty string
-        }
-        """

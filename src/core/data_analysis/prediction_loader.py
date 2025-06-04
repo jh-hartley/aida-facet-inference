@@ -40,7 +40,7 @@ class PredictionLoader:
             PredictionEntry(
                 product_key=pred.product_key,
                 attribute_key=pred.attribute_key,
-                predicted_value=pred.value,
+                predicted_value=pred.predicted_value,
                 confidence=pred.confidence,
                 recommendation_key=pred.recommendation_key,
             )

@@ -67,13 +67,13 @@ class PredictionStore:
                     experiment_key=experiment_key,
                     product_key=product_key,
                     attribute_key=attribute.attribute_key,
-                    value=prediction.recommendation,
+                    predicted_value=prediction.recommendation,
                     confidence=prediction.confidence,
                     recommendation_key=None,  # Will be set later if matched
                     actual_value=prediction.recommendation,
                     correctness_status=None,  # Will be set during validation
                     reasoning=prediction.reasoning,
-                    suggested_value=prediction.suggested_value,
+                    missing_value=prediction.missing_value,
                 )
                 self.session.commit()
                 logger.debug(

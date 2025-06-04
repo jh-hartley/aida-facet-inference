@@ -6,7 +6,7 @@ Allowed values: ["3", "4", "5"]
   "recommendation": "3",
   "unit": "",
   "confidence": 0.995,
-  "suggested_value": "",
+  "missing_value": "",
   "reasoning": "The product is described as 'This is a 3-step aluminum step ladder, model SL-3000.' The only possible value is 3."
 }
 ```
@@ -19,7 +19,7 @@ Allowed values: ["Internal", "External"]
   "recommendation": "Internal",
   "unit": "",
   "confidence": 0.963,
-  "suggested_value": "",
+  "missing_value": "",
   "reasoning": "The product description explicitly states 'suitable for internal use' and it's categorized as an interior door."
 }
 ```
@@ -32,7 +32,7 @@ Allowed values: ["Pine", "Oak", "MDF"]
   "recommendation": "Pine",
   "unit": "",
   "confidence": 0.902,
-  "suggested_value": "",
+  "missing_value": "",
   "reasoning": "The product name includes 'Pine', the description mentions 'pine construction', and the EAN matches a well-known pine door in my training data."
 }
 ```
@@ -45,7 +45,7 @@ Allowed values: ["Hollow", "Solid", "Panelled"]
   "recommendation": "Hollow",
   "unit": "",
   "confidence": 0.784,
-  "suggested_value": "",
+  "missing_value": "",
   "reasoning": "While not explicitly stated, louvre doors of this type are typically hollow construction to reduce weight. This is a common industry standard for interior louvre doors."
 }
 ```
@@ -58,7 +58,7 @@ Allowed values: ["White", "Natural", "Grey"]
   "recommendation": "White",
   "unit": "",
   "confidence": 0.537,
-  "suggested_value": "",
+  "missing_value": "",
   "reasoning": "There is no mention of colour in the product details. 'White' is a common finish for interior doors, but this is a guess."
 }
 ```
@@ -71,7 +71,7 @@ Allowed values: ["Standard", "Custom"]
   "recommendation": "Standard",
   "unit": "",
   "confidence": 0.091,
-  "suggested_value": "",
+  "missing_value": "",
   "reasoning": "There's no specific information about installation. This is a guess based on it being a standard interior door, but could be incorrect."
 }
 ```
@@ -84,20 +84,46 @@ Allowed values: ["FD30", "FD60"]
   "recommendation": "",
   "unit": "",
   "confidence": 0.981,
-  "suggested_value": "",
+  "missing_value": "",
   "reasoning": "The product is clearly not fire-rated and none of the allowed values are appropriate for this type of door."
 }
 ```
 
 ### Example 7: Value not in allowed list, EAN recall
-Allowed values: ["Panelled", "Flush", "Moulded"]
+Allowed values: ["Wood", "Metal", "Plastic"]
 ```json
 {
-  "attribute": "Door style",
+  "attribute": "Material",
   "recommendation": "",
   "unit": "",
   "confidence": 0.941,
-  "suggested_value": "Louvre",
-  "reasoning": "The product is clearly a louvre door (name, description, and attributes all confirm this), and the EAN matches a louvre door in my training data, but 'Louvre' is not in the allowed values list. This appears to be an error in the allowed values."
+  "missing_value": "Acrylonitrile Butadiene Styrene",
+  "reasoning": "The product is clearly made of ABS (name, description, and attributes all confirm this), and the EAN matches an ABS product in my training data, but 'Acrylonitrile Butadiene Styrene' is not in the allowed values list. While 'Plastic' is a general category, the specific material is important for this technical product."
+}
+```
+
+### Example 8: Numeric value with units
+Allowed values: ["12", "14", "16"]
+```json
+{
+  "attribute": "Length",
+  "recommendation": "12",
+  "unit": "inches",
+  "confidence": 0.923,
+  "missing_value": "",
+  "reasoning": "The product is a leather holster, which typically has a length that accommodates tools or items it is designed to hold. While the exact length is not specified in the product details, 12 inches is a common length for holsters and fits within the allowed values. This is an educated guess based on typical dimensions for similar products."
+}
+```
+
+### Example 9: Numeric value with units in allowed value
+Allowed values: ["12 inches", "14 inches", "16 inches"]
+```json
+{
+  "attribute": "Length",
+  "recommendation": "12 inches",
+  "unit": "inches",
+  "confidence": 0.923,
+  "missing_value": "",
+  "reasoning": "The product is a leather holster, which typically has a length that accommodates tools or items it is designed to hold. While the exact length is not specified in the product details, 12 inches is a common length for holsters and fits within the allowed values. This is an educated guess based on typical dimensions for similar products."
 }
 ``` 

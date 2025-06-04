@@ -77,7 +77,7 @@ class PredictionAnalyzer:
             if ground_truth is None:
                 continue
 
-            if result.value == ground_truth:
+            if result.predicted_value == ground_truth:
                 correct += 1
                 true_positives += 1
             else:
@@ -294,7 +294,7 @@ class PredictionAnalyzer:
             )
             if ground_truth is not None:
                 confidences.append(result.confidence)
-                accuracies.append(1.0 if result.value == ground_truth else 0.0)
+                accuracies.append(1.0 if result.predicted_value == ground_truth else 0.0)
 
         if not confidences:
             return CorrelationAnalysis(correlation=0.0, sample_size=0)

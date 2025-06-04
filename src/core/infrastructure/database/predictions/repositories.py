@@ -128,33 +128,33 @@ class PredictionResultRepository:
         experiment_key: str,
         product_key: str,
         attribute_key: str,
-        value: str,
+        predicted_value: str,
         confidence: float,
         recommendation_key: int | None = None,
         actual_value: str | None = None,
         correctness_status: bool | None = None,
         reasoning: str | None = None,
-        suggested_value: str | None = None,
+        missing_value: str | None = None,
     ) -> PredictionResultRecord:
         prediction = PredictionResultRecord(
             prediction_key=str(uuid.uuid4()),
             experiment_key=experiment_key,
             product_key=product_key,
             attribute_key=attribute_key,
-            value=value,
+            predicted_value=predicted_value,
             confidence=confidence,
             recommendation_key=recommendation_key,
             actual_value=actual_value,
             correctness_status=correctness_status,
             reasoning=reasoning,
-            suggested_value=suggested_value,
+            missing_value=missing_value,
         )
         logger.debug(
             f"Creating prediction with key: {prediction.prediction_key} "
             f"for experiment: {experiment_key}, "
             f"product: {product_key}, "
             f"attribute: {attribute_key}, "
-            f"value: {value}"
+            f"value: {predicted_value}"
         )
         self.session.add(prediction)
         logger.debug(
@@ -185,7 +185,7 @@ class PredictionResultRepository:
         is_correct: bool,
         actual_value: str,
         reasoning: str | None = None,
-        suggested_value: str | None = None,
+        missing_value: str | None = None,
     ) -> None:
         prediction = self.session.get(PredictionResultRecord, prediction_key)
         if prediction:
@@ -196,8 +196,8 @@ class PredictionResultRepository:
             prediction.actual_value = actual_value
             if reasoning is not None:
                 prediction.reasoning = reasoning
-            if suggested_value is not None:
-                prediction.suggested_value = suggested_value
+            if missing_value is not None:
+                prediction.missing_value = missing_value
             self.session.commit()
             logger.debug(
                 f"Committed validation update for prediction {prediction_key}"
