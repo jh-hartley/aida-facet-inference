@@ -1,14 +1,12 @@
-from typing import Type, TypeVar, cast, overload, Any
+from typing import Type, TypeVar, overload
 from pydantic import BaseModel
 
-from langchain_core.messages import HumanMessage, SystemMessage
-from langchain_openai import ChatOpenAI, OpenAIEmbeddings
-
 from src.config import config
-from src.core.infrastructure.llm.azure_client import AzureLlm, AzureEmbeddingClient
-from src.core.infrastructure.llm.openai_client import OpenAiAdapter, llm
 from src.core.infrastructure.llm.models import LlmModel, LlmClient, EmbeddingClient
-from src.core.infrastructure.llm.json_utils import parse_structured_output
+from src.core.infrastructure.llm.providers.azure.client import AzureLlm
+from src.core.infrastructure.llm.providers.azure.embeddings import AzureEmbeddingClient
+from src.core.infrastructure.llm.providers.openai.client import OpenAiClient
+from src.core.infrastructure.llm.providers.openai.embeddings import OpenAiEmbeddingClient
 
 T = TypeVar("T", bound=BaseModel)
 
@@ -18,14 +16,11 @@ def embeddings(model: str | None = None) -> EmbeddingClient:
     Get an embedding client for the configured provider.
     
     Parameters:
-    - model (str | None): Optional model name to use
-    
-    Returns:
-    - EmbeddingClient: The configured embedding client
+    - model (str | None): The model to use. If None, uses the default from config.
     """
     if config.LLM_PROVIDER == "azure":
         return AzureEmbeddingClient()
-    return OpenAIEmbeddings(model=model or config.OPENAI_EMBEDDING_MODEL)
+    return OpenAiEmbeddingClient(model=model or config.OPENAI_EMBEDDING_MODEL)
 
 
 class Llm:
@@ -38,10 +33,10 @@ class Llm:
         self, llm_model: LlmModel, temperature: float | None = None
     ) -> None:
         self.llm_model = llm_model
-        self._client = (
+        self._client: LlmClient = (
             AzureLlm(llm_model, temperature)
             if config.LLM_PROVIDER == "azure"
-            else llm(model=llm_model.value, temperature=temperature)
+            else OpenAiClient(llm_model, temperature)
         )
 
     @overload
@@ -58,20 +53,8 @@ class Llm:
     ) -> T | str:
         """
         Invoke the LLM with the provided messages.
-
-        Parameters:
-        - system (str): The system message to send
-        - human (str): The user message to send
-        - output_type (Type[T] | None): The expected output type
-            (defaults to str)
-
-        Returns:
-        - T | str: The response content in the specified type
         """
-        response = self._client.invoke(system, human, output_type)
-        if output_type is not None and isinstance(response, str):
-            return parse_structured_output(response, output_type)
-        return response
+        return self._client.invoke(system, human, output_type)
 
     @overload
     async def ainvoke(self, system: str, human: str) -> str: ...
@@ -89,17 +72,5 @@ class Llm:
     ) -> T | str:
         """
         Asynchronously invoke the LLM with the provided messages.
-
-        Parameters:
-        - system (str): The system message to send
-        - human (str): The user message to send
-        - output_type (Type[T] | None): The expected output type (defaults to
-            str)
-
-        Returns:
-        - T | str: The response content in the specified type
         """
-        response = await self._client.ainvoke(system, human, output_type)
-        if output_type is not None and isinstance(response, str):
-            return parse_structured_output(response, output_type)
-        return response
+        return await self._client.ainvoke(system, human, output_type)
