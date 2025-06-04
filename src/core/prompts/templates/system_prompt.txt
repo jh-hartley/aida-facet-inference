@@ -51,9 +51,4 @@ You must respond with a JSON object matching this structure:
 {response_format}
 
 # Examples
-{examples}
-
-# Target Product
-{product_context}
-
-{comparable_products} 
+{examples} 

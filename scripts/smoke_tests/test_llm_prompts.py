@@ -39,14 +39,13 @@ def main(
             product_details = repository.get_product_details(product_key)
             product_gaps = repository.get_product_gaps(product_key)
 
-            system_prompt = PRODUCT_FACET_PROMPT.get_system_prompt(
-                product_details
-            )
+            system_prompt = PRODUCT_FACET_PROMPT.get_system_prompt()
 
             output = [format_section("System Prompt", system_prompt)]
 
             for gap in product_gaps.gaps:
                 human_prompt = PRODUCT_FACET_PROMPT.get_human_prompt(
+                    product_details,
                     gap.attribute,
                     gap.allowable_values,
                 )

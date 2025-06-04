@@ -76,14 +76,25 @@ class ProductFacetPrompt:
         except Exception:
             return ""
 
-    def get_system_prompt(
+    def get_system_prompt(self) -> str:
+        """
+        Get the system prompt with general instructions and examples.
+        """
+        return self._system_prompt_template.format(
+            response_format=FacetPrediction.get_prompt_description(),
+            examples=self._confidence_examples,
+        )
+
+    def get_human_prompt(
         self,
         product_details: ProductDetails,
+        attribute: str,
+        allowed_values: list[str],
         max_similar_products: int = 3,
         max_distance: float = 0.6,
     ) -> str:
         """
-        Get the full system prompt including similar products if available.
+        Get the human prompt with product-specific information.
         """
         similar_products = self._get_similar_products_section(
             product_details.product_key,
@@ -91,17 +102,9 @@ class ProductFacetPrompt:
             max_distance=max_distance,
         )
 
-        return self._system_prompt_template.format(
-            response_format=FacetPrediction.get_prompt_description(),
-            examples=self._confidence_examples,
+        return self._human_prompt_template.format(
             product_context=product_details.get_llm_prompt(),
             comparable_products=similar_products,
-        )
-
-    def get_human_prompt(
-        self, attribute: str, allowed_values: list[str]
-    ) -> str:
-        return self._human_prompt_template.format(
             attribute=attribute,
             allowed_values=", ".join(allowed_values),
         )
