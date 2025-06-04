@@ -5,6 +5,7 @@ from src.core.domain import FacetPrediction
 from src.core.domain.models import ProductDetails
 from src.core.similarity_search.models import SimilaritySearchResult
 from src.core.similarity_search.service import SimilaritySearchService
+from src.core.similarity_search.similarity_cache import SIMILARITY_CACHE
 
 
 class ProductFacetPrompt:
@@ -42,7 +43,7 @@ class ProductFacetPrompt:
             )
         )
 
-    def _get_similar_products_section(
+    async def _get_similar_products_section(
         self,
         product_key: str,
         max_similar_products: int = 5,
@@ -53,8 +54,9 @@ class ProductFacetPrompt:
         none found.
         """
         try:
-            results = self._similarity_service.find_similar_products(
-                product_key=product_key,
+            results = await SIMILARITY_CACHE.get_or_fetch(
+                product_key,
+                self._similarity_service.find_similar_products,
                 limit=max_similar_products,
                 max_distance=max_distance,
             )
@@ -85,7 +87,7 @@ class ProductFacetPrompt:
             examples=self._confidence_examples,
         )
 
-    def get_human_prompt(
+    async def get_human_prompt(
         self,
         product_details: ProductDetails,
         attribute: str,
@@ -96,7 +98,7 @@ class ProductFacetPrompt:
         """
         Get the human prompt with product-specific information.
         """
-        similar_products = self._get_similar_products_section(
+        similar_products = await self._get_similar_products_section(
             product_details.product_key,
             max_similar_products=max_similar_products,
             max_distance=max_distance,

@@ -30,7 +30,7 @@ class ProductFacetPredictor:
     ) -> FacetPrediction:
         """Predict a value for a single gap."""
         try:
-            human_prompt = PRODUCT_FACET_PROMPT.get_human_prompt(
+            human_prompt = await PRODUCT_FACET_PROMPT.get_human_prompt(
                 self.product_details,
                 gap.attribute,
                 gap.allowable_values,
