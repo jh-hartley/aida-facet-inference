@@ -132,6 +132,7 @@ class ProductProcessor:
 
         product_key = recommendations[0].product_key
 
+        # Get product categories for allowable values
         product_categories = (
             self.service.repository.product_category_repo.get_by_product_key(
                 product_key
@@ -139,6 +140,7 @@ class ProductProcessor:
         )
         category_keys = [pc.category_key for pc in product_categories]
 
+        # Build gaps from recommendations
         gaps = []
         seen_attributes = set()
 
@@ -168,8 +170,8 @@ class ProductProcessor:
             logger.warning(f"No valid gaps found for product {product_key}")
             return product_key, []
 
-        predictions = await self.service.predict_specific_gaps(
-            product_key, gaps
+        predictions = await self.service.predict_for_product_key(
+            product_key, evaluation_mode=True
         )
         logger.info(f"Generated {len(predictions)} predictions")
 

@@ -43,7 +43,9 @@ class ExperimentRepository:
             },
             started_at=datetime.now(timezone.utc),
         )
-        logger.debug(f"Creating experiment with key: {experiment.experiment_key}")
+        logger.debug(
+            f"Creating experiment with key: {experiment.experiment_key}"
+        )
         self.session.add(experiment)
         self.session.commit()
         logger.debug(f"Committed experiment {experiment.experiment_key}")
@@ -90,7 +92,9 @@ class ExperimentRepository:
             experiment.correct_predictions = correct_predictions
             experiment.accuracy = accuracy
             self.session.commit()
-            logger.debug(f"Committed metrics update for experiment {experiment_key}")
+            logger.debug(
+                f"Committed metrics update for experiment {experiment_key}"
+            )
 
     def complete_experiment(self, experiment_key: str) -> None:
         """Mark an experiment as completed.
@@ -103,7 +107,9 @@ class ExperimentRepository:
             logger.debug(f"Completing experiment {experiment_key}")
             experiment.completed_at = datetime.now(timezone.utc)
             self.session.commit()
-            logger.debug(f"Committed completion for experiment {experiment_key}")
+            logger.debug(
+                f"Committed completion for experiment {experiment_key}"
+            )
 
 
 class PredictionResultRepository:
@@ -151,17 +157,26 @@ class PredictionResultRepository:
             f"value: {value}"
         )
         self.session.add(prediction)
-        logger.debug(f"Added prediction {prediction.prediction_key} to session")
+        logger.debug(
+            f"Added prediction {prediction.prediction_key} to session"
+        )
         self.session.commit()
         logger.debug(f"Committed prediction {prediction.prediction_key}")
-        
-        # Verify the prediction was actually stored
-        stored_prediction = self.session.get(PredictionResultRecord, prediction.prediction_key)
+
+        stored_prediction = self.session.get(
+            PredictionResultRecord, prediction.prediction_key
+        )
         if stored_prediction:
-            logger.debug(f"Verified prediction {prediction.prediction_key} exists in database")
+            logger.debug(
+                f"Verified prediction {prediction.prediction_key} "
+                "exists in database"
+            )
         else:
-            logger.error(f"Failed to verify prediction {prediction.prediction_key} in database!")
-            
+            logger.error(
+                f"Failed to verify prediction {prediction.prediction_key} "
+                "in database!"
+            )
+
         return prediction
 
     def update_prediction_validation(
@@ -174,7 +189,9 @@ class PredictionResultRepository:
     ) -> None:
         prediction = self.session.get(PredictionResultRecord, prediction_key)
         if prediction:
-            logger.debug(f"Updating validation for prediction {prediction_key}")
+            logger.debug(
+                f"Updating validation for prediction {prediction_key}"
+            )
             prediction.correctness_status = is_correct
             prediction.actual_value = actual_value
             if reasoning is not None:
@@ -182,7 +199,9 @@ class PredictionResultRepository:
             if suggested_value is not None:
                 prediction.suggested_value = suggested_value
             self.session.commit()
-            logger.debug(f"Committed validation update for prediction {prediction_key}")
+            logger.debug(
+                f"Committed validation update for prediction {prediction_key}"
+            )
 
     def get_predictions_by_experiment(
         self, experiment_key: str
@@ -203,7 +222,10 @@ class PredictionResultRepository:
                 )
             )
         )
-        logger.debug(f"Found {len(predictions)} predictions for experiment {experiment_key}")
+        logger.debug(
+            f"Found {len(predictions)} predictions for experiment "
+            f"{experiment_key}"
+        )
         return predictions
 
     def get_predictions_by_product(
@@ -231,7 +253,8 @@ class PredictionResultRepository:
             )
         )
         logger.debug(
-            f"Found {len(predictions)} predictions for experiment {experiment_key} "
+            f"Found {len(predictions)} predictions for experiment "
+            f"{experiment_key} "
             f"and product {product_key}"
         )
         return predictions

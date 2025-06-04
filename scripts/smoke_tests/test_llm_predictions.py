@@ -102,7 +102,9 @@ async def main(
         with SessionLocal() as session:
             repository = FacetIdentificationRepository(session)
             service = FacetInferenceService(repository)
-            predictions = await service.predict_for_product_key(product_key)
+            predictions = await service.predict_for_product_key(
+                product_key, evaluation_mode=False
+            )
 
             confidence_summary = ", ".join(
                 f"{pred.attribute}: {pred.confidence:.2f}"

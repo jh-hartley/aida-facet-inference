@@ -102,6 +102,10 @@ class Config:
         os.getenv("OPENAI_EMBEDDING_MAX_TIME", "60")
     )
 
+    # LLM Backoff/Retry Configuration
+    OPENAI_LLM_MAX_TRIES: int = int(os.getenv("OPENAI_LLM_MAX_TRIES", "5"))
+    OPENAI_LLM_MAX_TIME: int = int(os.getenv("OPENAI_LLM_MAX_TIME", "60"))
+
     @field_validator("OPENAI_API_KEY")
     @classmethod
     def validate_openai_key(cls, value: str) -> str:

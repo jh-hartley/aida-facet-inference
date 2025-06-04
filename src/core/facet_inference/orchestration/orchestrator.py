@@ -92,23 +92,29 @@ class FacetInferenceOrchestrator:
                         continue
 
                     # Store each prediction individually and commit immediately
-                    for prediction, recommendation in zip(predictions, recommendations):
-                        attribute = self.attribute_repo.get_by_friendly_name(prediction.attribute)
-                        
+                    for prediction, recommendation in zip(
+                        predictions, recommendations
+                    ):
+                        attribute = self.attribute_repo.get_by_friendly_name(
+                            prediction.attribute
+                        )
+
                         self.prediction_repo.create_prediction(
                             experiment_key=experiment_key,
                             product_key=product_key,
                             attribute_key=attribute.attribute_key,
                             value=prediction.recommendation,
                             confidence=prediction.confidence,
-                            recommendation_key=int(recommendation.recommendation_id),
+                            recommendation_key=int(
+                                recommendation.recommendation_id
+                            ),
                             actual_value=prediction.recommendation,
                             correctness_status=None,
                             reasoning=prediction.reasoning,
                             suggested_value=prediction.suggested_value,
                         )
                         self.session.commit()
-                        
+
                         total_predictions += 1
 
                     total_products += 1

@@ -1,7 +1,9 @@
 from typing import Type, TypeVar, cast
 
+import backoff
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_openai import AzureChatOpenAI
+from openai import RateLimitError
 from pydantic import BaseModel, SecretStr
 
 from src.config import config
@@ -25,6 +27,12 @@ class AzureLlm(BaseLlmClient):
             azure_deployment=llm_model.value,
         )
 
+    @backoff.on_exception(
+        backoff.expo,
+        RateLimitError,
+        max_tries=config.OPENAI_LLM_MAX_TRIES,
+        max_time=config.OPENAI_LLM_MAX_TIME,
+    )
     def invoke(
         self,
         system: str,
@@ -42,6 +50,12 @@ class AzureLlm(BaseLlmClient):
             return parse_structured_output(content, output_type)
         return content
 
+    @backoff.on_exception(
+        backoff.expo,
+        RateLimitError,
+        max_tries=config.OPENAI_LLM_MAX_TRIES,
+        max_time=config.OPENAI_LLM_MAX_TIME,
+    )
     async def ainvoke(
         self,
         system: str,
