@@ -1,20 +1,12 @@
 # Architecture
 
-## Introduction & Philosophy
-
-AIDA Facet Inference is designed with a modular, domain-driven architecture that emphasizes separation of concerns, testability, and extensibility. The system ingests product data and uses LLMs to infer missing facets, with confidence scoring and validation. The architecture is inspired by Domain-Driven Design (DDD) and industry best practices for modern Python backends.
-
----
-
-## Project Structure Overview
-
-```
+## Project Structure Overview```
 aida-facet-inference/
 ├── src/
 │   ├── api/                        # FastAPI endpoints
 │   ├── common/                     # Shared utilities: db helpers, exceptions, file IO, logging, time
 │   ├── core/                       # Core business logic
-│   │   ├── performance_analysis/   # Analysis and visualization of model performance
+│   │   ├── performance_analysis/   # Analysis and visualisation of model performance
 │   │   ├── domain/                 # Domain models, confidence logic, product identifiers, repository interfaces, type definitions
 │   │   ├── similarity_search/      # Similarity search logic and models
 │   │   ├── csv_ingestion/          # CSV ingestion logic, processors, and unit-of-work
@@ -44,10 +36,10 @@ aida-facet-inference/
 
 ## Layered Architecture & DDD Approach
 
-The system is organized into clear layers, each with distinct responsibilities:
+The system is organised into layers, each with distinct responsibilities:
 
 - **API Layer (`src/api/`)**: Exposes HTTP endpoints using FastAPI. Handles request/response DTOs, input validation, and routing.
-- **Core Layer (`src/core/`)**: Contains all business logic, organized by domain concepts. Implements services, domain models, and orchestration.
+- **Core Layer (`src/core/`)**: Contains all business logic, organised by domain concepts. Implements services, domain models, and orchestration.
 - **Infrastructure Layer (`src/core/infrastructure/`)**: Integrates with external systems (LLMs, databases). Implements provider-specific logic and repository patterns.
 - **Common Utilities (`src/common/`)**: Shared helpers for DB access, error handling, logging, and file IO.
 
@@ -73,7 +65,7 @@ The system is organized into clear layers, each with distinct responsibilities:
 - **similarity_search/**: Implements similarity search over embeddings, with caching and service abstractions.
 - **csv_ingestion/**: Handles CSV ingestion, parsing, and batch processing using processors and UoW.
 - **prompts/**: Manages prompt templates and prompt engineering for LLMs.
-- **performance_analysis/**: Tools and scripts for analyzing and visualizing model performance.
+- **performance_analysis/**: Tools and scripts for analysing and visualising model performance.
 - **data_analysis/**: Data loaders and evaluators for ground truth and prediction analysis.
 
 ### Infrastructure Layer (`src/core/infrastructure/`)
@@ -91,7 +83,7 @@ The system is organized into clear layers, each with distinct responsibilities:
 - Utility scripts for embedding, prediction, ingestion, and checks. Used for operational tasks and automation.
 
 ### Tests (`tests/`)
-- Test suite for unit, integration, and end-to-end testing. Organized to mirror the main codebase structure.
+- Test suite for unit, integration, and end-to-end testing. Organised to mirror the main codebase structure.
 
 ---
 
@@ -152,3 +144,4 @@ Product Key
 ---
 
 For more details, see the [Core Concepts](core_concepts.md), [API Reference](api_reference.md), [Development Guide](development.md), and [Environment Variables Reference](environment_variables.md). 
+

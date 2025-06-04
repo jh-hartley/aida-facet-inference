@@ -1,6 +1,6 @@
 # Scripts Reference
 
-This document provides an overview of the main utility scripts available in the `scripts/` directory. These scripts are used for data ingestion, embedding generation, and running facet inference experiments.
+This document provides an overview of the main utility scripts available in the `scripts/` directory. These scripts are used for data ingestion, embedding generation, running facet inference experiments, and smoke testing.
 
 ---
 
@@ -67,6 +67,27 @@ This document provides an overview of the main utility scripts available in the 
 - **Notes:**
   - Results are stored in the database and include experiment metadata.
   - Can be run for all products, a limited number, or a single product.
+
+---
+
+## Smoke Test Scripts
+- **Purpose:**
+  Provide end-to-end and integration checks for key system functionality, including LLM prompt output, similarity search, and prediction flows. Useful for sanity checks after changes or before deployment.
+- **Location:**
+  `scripts/smoke_tests/`
+- **Key scripts:**
+  - `test_llm_prompts.py`: Shows exactly what is sent to the LLM for a product's facet prediction (system and human prompts).
+  - `test_llm_predictions.py`: Runs a full prediction for a product and analyses the LLM's output and token usage.
+  - `test_similarity_search.py`: Checks the similarity search logic and outputs distance metrics for similar products.
+- **Usage:**
+  ```bash
+  python -m scripts.smoke_tests.test_llm_prompts [product_key]
+  python -m scripts.smoke_tests.test_llm_predictions [product_key]
+  python -m scripts.smoke_tests.test_similarity_search [product_key]
+  ```
+- **Notes:**
+  - These scripts are for manual, interactive, or CI smoke testing, not for full automated regression testing.
+  - See each script's docstring for details and options.
 
 ---
 

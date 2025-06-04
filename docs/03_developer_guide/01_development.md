@@ -176,4 +176,6 @@ git checkout -b feature/your-feature-name
    - Use local development for active coding
    - Test in Docker before committing
    - Keep the database schema in sync
-   - Document any new environment variables 
+   - Document any new environment variables
+
+- Test suite for unit, integration, and end-to-end testing. Organised to mirror the main codebase structure. 

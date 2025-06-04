@@ -1,6 +1,6 @@
 # LLM Infrastructure
 
-This document explains the architecture and implementation of the LLM (Large Language Model) infrastructure in the project. It covers the adapter pattern, unified client, provider implementations, configuration, and extensibility.
+This document explains the architecture and implementation of the LLM infrastructure in the project. It covers the adapter pattern, unified client, provider implementations, configuration, and extensibility.
 
 ---
 

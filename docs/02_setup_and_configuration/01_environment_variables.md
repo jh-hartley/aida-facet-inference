@@ -1,6 +1,6 @@
 # Environment Variables Reference
 
-This document provides a comprehensive reference for all environment variables used in the AIDA Facet Inference project. Use this as a guide when configuring your `.env` file.
+This document provides a comprehensive reference for all environment variables used in the project
 
 ## API Configuration
 - **API_HOST**: Host for the API server. Default is `0.0.0.0` (all interfaces). Set to `127.0.0.1` for local-only access.
@@ -63,4 +63,3 @@ This document provides a comprehensive reference for all environment variables u
 ## Notes
 - All variables above are shown in `.env.example` with example values or defaults.
 - If you add new environment variables, document them here and in `.env.example`.
-- Never commit real secrets to version control. 

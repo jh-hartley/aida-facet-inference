@@ -37,9 +37,9 @@ See [docs/environment_variables.md](environment_variables.md) for full details.
 ## How Embeddings Are Generated
 
 - Product descriptions are constructed from product metadata, attributes, and rich text sources.
-- Descriptions are tokenized and, if necessary, chunked to fit model limits.
+- Descriptions are tokenised and, if necessary, chunked to fit model limits.
 - Each chunk is embedded using the configured provider/model.
-- If chunked, embeddings are averaged (weighted by chunk length) and normalized.
+- If chunked, embeddings are averaged (weighted by chunk length) and normalised.
 - Embeddings are stored in the `product_embeddings` table in PostgreSQL.
 
 ### Code Example: Generating and Storing an Embedding

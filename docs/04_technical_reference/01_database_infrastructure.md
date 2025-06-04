@@ -52,7 +52,7 @@ The following Postgres extensions must be enabled:
 - The `embedding` column is of type `vector(1536)`.
 - Vector similarity search is enabled via the `ivfflat` index:
   - `CREATE INDEX ... USING ivfflat (embedding vector_cosine_ops) WITH (lists = 100);`
-- This allows fast nearest-neighbor search for product similarity and recommendation features.
+- This allows fast nearest-neighbour search for product similarity and recommendation features.
 
 ---
 
@@ -64,32 +64,32 @@ The following Postgres extensions must be enabled:
 - **Performance Indexes:**
   - Indexes on frequently queried columns (e.g., `created_at`, `completed_at`).
 - **Vector Indexes:**
-  - Specialized `ivfflat` index for vector similarity search on embeddings.
+  - Specialised `ivfflat` index for vector similarity search on embeddings.
 - **QA and Recommendation Indexes:**
   - Indexes on human recommendation tables for efficient QA workflows.
 
 ---
 
-## Views and Materialized Views
+## Views and Materialised Views
 
-The schema defines several views and materialized views for analytics, reporting, and efficient data access:
+The schema defines several views and materialised views for analytics, reporting, and efficient data access:
 
 ### Input Data Views
-- **product_summary** (materialized): Combines products, categories, attributes, values, and recommendations for analytics and reporting.
+- **product_summary** (materialised): Combines products, categories, attributes, values, and recommendations for analytics and reporting.
 - **attribute_value_stats** (view): Aggregates statistics on attribute values and recommendations.
-- **product_details** (materialized): Maps directly to the `ProductDetails` Pydantic model, aggregating product info, descriptions, categories, and attributes.
-- **product_gaps** (materialized): Lists missing attributes (gaps) for products, along with allowable values.
+- **product_details** (materialised): Maps directly to the `ProductDetails` Pydantic model, aggregating product info, descriptions, categories, and attributes.
+- **product_gaps** (materialised): Lists missing attributes (gaps) for products, along with allowable values.
 
 ### Embedding Views
 - **product_similarity_search** (view): Computes pairwise similarity scores between products using vector embeddings (via pgvector's `<=>` operator).
 - **embedding_stats** (view): Aggregates statistics on embeddings (count, oldest, newest).
 
 ### Experiment and Prediction Views
-- **experiment_summary** (view): Summarizes experiment metadata and prediction counts.
+- **experiment_summary** (view): Summarises experiment metadata and prediction counts.
 - **metric_trends** (view): Tracks confidence trends and changes over time for predictions.
 
-#### Materialized vs. Regular Views
-- **Materialized views** (e.g., `product_summary`, `product_details`, `product_gaps`) are used for expensive aggregations and can be refreshed as needed for performance.
+#### Materialised vs. Regular Views
+- **Materialised views** (e.g., `product_summary`, `product_details`, `product_gaps`) are used for expensive aggregations and can be refreshed as needed for performance.
 - **Regular views** are used for lightweight, always-up-to-date analytics.
 
 ---
