@@ -1,6 +1,6 @@
 # Database Infrastructure
 
-This document explains the architecture and implementation of the database infrastructure in the project. It covers the repository pattern, Postgres schema, required extensions, and how the database layer is structured and used.
+This document explains the architecture and implementation of the database infrastructure in the project. It covers the repository pattern, Postgres schema, required extensions (including pgvector), indexing strategy, views, and how the database layer is structured and used.
 
 ---
 
@@ -10,7 +10,7 @@ The database infrastructure provides robust, scalable storage for products, attr
 
 - **Repository Pattern:** All database access is abstracted via repositories, enabling testability and easy backend changes.
 - **Postgres Schema:** The schema is designed for extensibility, performance, and analytics, with clear separation of input, embedding, and prediction data.
-- **Extensions:** Uses Postgres extensions for vector search, indexing, and similarity.
+- **Extensions:** Uses Postgres extensions for vector search (pgvector), indexing, and similarity.
 
 ---
 
@@ -34,10 +34,63 @@ The database infrastructure provides robust, scalable storage for products, attr
 - **Prediction Tables:**
   - `prediction_experiments`: Stores experiment metadata and metrics.
   - `prediction_results`: Stores individual prediction results, including confidence, reasoning, and links to recommendations.
-- **Required Extensions:**
-  - `vector`: For vector search and storage.
-  - `btree_gin`: For efficient JSONB indexing.
-  - `pg_trgm`: For trigram similarity search.
+
+---
+
+## Required Extensions
+
+The following Postgres extensions must be enabled:
+- `vector` (pgvector): For vector storage and similarity search (used for product embeddings and similarity queries).
+- `btree_gin`: For efficient JSONB indexing.
+- `pg_trgm`: For trigram similarity search (useful for fuzzy text matching).
+
+---
+
+## Vector Search and pgvector
+
+- **pgvector** is used to store and search high-dimensional product embeddings in the `product_embeddings` table.
+- The `embedding` column is of type `vector(1536)`.
+- Vector similarity search is enabled via the `ivfflat` index:
+  - `CREATE INDEX ... USING ivfflat (embedding vector_cosine_ops) WITH (lists = 100);`
+- This allows fast nearest-neighbor search for product similarity and recommendation features.
+
+---
+
+## Indexing Strategy
+
+- **Foreign Key and Lookup Indexes:**
+  - Indexes on all foreign key columns for fast joins (e.g., `product_key`, `category_key`, `attribute_key`).
+  - Indexes on system name columns for quick lookups.
+- **Performance Indexes:**
+  - Indexes on frequently queried columns (e.g., `created_at`, `completed_at`).
+- **Vector Indexes:**
+  - Specialized `ivfflat` index for vector similarity search on embeddings.
+- **QA and Recommendation Indexes:**
+  - Indexes on human recommendation tables for efficient QA workflows.
+
+---
+
+## Views and Materialized Views
+
+The schema defines several views and materialized views for analytics, reporting, and efficient data access:
+
+### Input Data Views
+- **product_summary** (materialized): Combines products, categories, attributes, values, and recommendations for analytics and reporting.
+- **attribute_value_stats** (view): Aggregates statistics on attribute values and recommendations.
+- **product_details** (materialized): Maps directly to the `ProductDetails` Pydantic model, aggregating product info, descriptions, categories, and attributes.
+- **product_gaps** (materialized): Lists missing attributes (gaps) for products, along with allowable values.
+
+### Embedding Views
+- **product_similarity_search** (view): Computes pairwise similarity scores between products using vector embeddings (via pgvector's `<=>` operator).
+- **embedding_stats** (view): Aggregates statistics on embeddings (count, oldest, newest).
+
+### Experiment and Prediction Views
+- **experiment_summary** (view): Summarizes experiment metadata and prediction counts.
+- **metric_trends** (view): Tracks confidence trends and changes over time for predictions.
+
+#### Materialized vs. Regular Views
+- **Materialized views** (e.g., `product_summary`, `product_details`, `product_gaps`) are used for expensive aggregations and can be refreshed as needed for performance.
+- **Regular views** are used for lightweight, always-up-to-date analytics.
 
 ---
 
@@ -66,15 +119,6 @@ The database infrastructure provides robust, scalable storage for products, attr
 ### Prediction Tables
 - **prediction_experiments:** Experiment metadata and metrics
 - **prediction_results:** Individual prediction results (value, confidence, reasoning, correctness)
-
----
-
-## Required Extensions
-
-The following Postgres extensions must be enabled:
-- `vector`: For vector storage and search
-- `btree_gin`: For efficient JSONB indexing
-- `pg_trgm`: For trigram similarity search
 
 ---
 
