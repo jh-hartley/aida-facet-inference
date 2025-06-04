@@ -1,69 +1,10 @@
 # AIDA Facet Inference
 
-A product facet inference system that uses LLMs to intelligently categorise and enrich product data. When complete, the system will take in product information and use LLMs to infer missing facets based on the gathered information, with confidence scoring and validation.
+A product facet inference system that uses LLMs to intelligently categorise and enrich product data. The system ingests product information and uses LLMs to infer missing facets, with confidence scoring and validation.
 
-## TODO
+## Quick Start
 
-### Core Functionality (Must Have)
-- [ ] Data Ingestion Pipeline
-  - [ ] CSV ingestion for raw product information
-  - [ ] Separation of universal traits (EAN) from retailer-specific traits
-  - [ ] Database schema design for product and facet data
-  - [ ] Facet structure ingestion and validation
-- [ ] Facet Prediction Pipeline
-  - [ ] Missing facet detection
-  - [ ] Batch processing for products with missing values
-  - [ ] Confidence scoring system
-  - [ ] False positive prevention mechanisms
-
-### Data Infrastructure (Must Have)
-- [ ] Vector Database Integration
-  - [ ] Embedding generation for product details
-  - [ ] Similarity search functionality
-  - [ ] Efficient storage and retrieval of embeddings
-- [ ] Evaluation Framework
-  - [ ] Test dataset creation from labeled entries
-  - [ ] Confusion matrix analysis
-  - [ ] Class imbalance handling
-  - [ ] Performance metrics tracking
-
-### Performance Optimization (Should Have)
-- [ ] Model Evaluation
-  - [ ] Comparison of different OpenAI models (speed, cost, accuracy)
-  - [ ] Confidence score analysis
-  - [ ] Failure rate tracking
-- [ ] Token Optimization
-  - [ ] Multi-facet bundling in single queries
-  - [ ] Token usage monitoring
-  - [ ] Cost optimization strategies
-
-### Extended Features (Nice to Have)
-- [ ] Cross-Retailer Integration
-  - [ ] EAN-based product lookup service
-  - [ ] Automatic data enrichment from multiple sources
-  - [ ] Context aggregation from different retailers
-- [ ] Image Processing
-  - [ ] Image-to-text conversion
-  - [ ] Visual feature extraction
-  - [ ] Integration with product descriptions
-
-### Future Experiments
-- [ ] Advanced Similarity Search
-  - [ ] Multi-modal search (text + image)
-  - [ ] Cross-retailer similarity matching
-  - [ ] Category-aware similarity
-- [ ] Model Improvements
-  - [ ] Fine-tuning on domain-specific data
-  - [ ] Custom model development
-  - [ ] Ensemble approaches
-
-## Development Setup
-
-### Local Development (Recommended for Active Development)
-
-This setup is ideal for development as it allows for quick code changes and testing without rebuilding containers.
-
-1. Clone and install:
+### 1. Clone and Install
 ```bash
 git clone https://github.com/yourusername/aida-facet-inference.git
 cd aida-facet-inference
@@ -72,77 +13,84 @@ source venv/bin/activate  # or `venv\Scripts\activate` on Windows
 pip install -e ".[dev]"
 ```
 
-2. Configure environment:
+### 2. Configure Environment Variables
+
+Copy the example environment file and fill in your actual values:
 ```bash
-# Copy example env file
 cp .env.example .env
 # Edit .env with your settings
 ```
 
-3. Start the database (using Docker):
+See the [Environment Variables](#environment-variables) section below for details.
+
+### 3. Start the Database (Docker)
 ```bash
 docker-compose --profile db up
 ```
 
-4. Run the API locally:
+### 4. Run the API Locally
 ```bash
 uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
-The `--reload` flag enables hot-reloading, so your API will automatically update when you make code changes.
+The `--reload` flag enables hot-reloading for development.
 
-### Docker-based Development
+## Environment Variables
 
-For Docker-based development, you have several options:
+The system uses environment variables for API keys, database credentials, LLM settings, logging, and more. For a full list, see `.env.example` and [docs/README_env_vars.md](docs/README_env_vars.md).
 
-1. Run services separately (recommended for development):
-```bash
-# Terminal 1 - Start the database
-docker-compose --profile db up
+**Critical variables to set:**
+- `LLM_PROVIDER`: Choose `openai` or `azure` depending on your LLM provider
+- `OPENAI_API_KEY` or `AZURE_OPENAI_API_KEY`: Your LLM API key
+- `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`: Database connection settings
+- `API_HOST`, `API_PORT`: API server host and port
 
-# Terminal 2 - Start the API
-docker-compose --profile api up
-```
+See `.env.example` for all available variables and [docs/README_env_vars.md](docs/README_env_vars.md) for detailed explanations and advanced options.
 
-2. Run everything together (useful for testing the full stack):
-```bash
-docker-compose --profile all up
-```
-
-Note: When running services separately, the API will start even if the database isn't ready. This is intentional for development purposes. The API will handle database connection retries internally.
-
-The separate service approach allows you to:
-- See logs clearly for each service
-- Stop and restart services independently
-- Quickly identify which service has issues
-- Maintain separate terminal windows for each service's logs
-
-Note: The Docker-based approach requires rebuilding the container for code changes, which is slower for active development.
+**Never commit real secrets to version control.**
 
 ## Project Structure
 
 ```
 aida-facet-inference/
 ├── src/
-│   ├── api/                    # FastAPI endpoints
-│   ├── core/                   # Core business logic
-│   │   ├── facet_inference/    # Facet inference implementation
-│   │   └── llm/                # LLM integration
-│   ├── db/                     # Database operations
-│   ├── utils/                  # Utility functions
-│   └── main.py                 # Application entry point
-├── tests/                      # Test suite
-├── docs/                       # Detailed documentation
-└── scripts/                    # Utility scripts
+│   ├── api/                        # FastAPI endpoints
+│   ├── common/                     # Shared utilities: db helpers, exceptions, file IO, logging, time
+│   ├── core/                       # Core business logic
+│   │   ├── performance_analysis/   # Analysis and visualization of model performance
+│   │   ├── domain/                 # Domain models, confidence logic, product identifiers, repository interfaces, type definitions
+│   │   ├── similarity_search/      # Similarity search logic and models
+│   │   ├── csv_ingestion/          # CSV ingestion logic, processors, and unit-of-work
+│   │   ├── prompts/                # Prompt management and templates
+│   │   ├── embedding_generation/   # Embedding generation logic and jobs
+│   │   ├── facet_inference/        # Facet inference logic, orchestration, and components
+│   │   ├── data_analysis/          # Data analysis tools and loaders
+│   │   └── infrastructure/         # Integrations: LLM (OpenAI, Azure), database repositories, embeddings, input data, predictions
+│   │       ├── llm/                # LLM provider clients, models, utilities, and provider-specific implementations
+│   │       └── database/           # Database access, repositories for predictions, input data, embeddings
+│   └── main.py                     # Application entry point
+├── scripts/                        # Utility and data scripts
+├── tests/                          # Test suite
+├── docs/                           # Detailed documentation
+├── schema/                         # Database schema (SQL)
+├── hooks/                          # Git hooks and related scripts
+├── .github/                        # GitHub workflows and configs
+├── data/                           # Example and test data
+├── Dockerfile.api                  # Dockerfile for API
+├── docker-compose.yml              # Docker Compose config
+├── pyproject.toml                  # Python project config
+├── .env.example                    # Example environment variables
+└── README.md                       # Project overview and setup
 ```
 
 ## Documentation
 
-- [Core Concepts](docs/core_concepts.md) - Overview of facet inference concepts
-- [API Reference](docs/api_reference.md) - Detailed API documentation
-- [Development Guide](docs/development.md) - Setup and contribution guidelines
-- [Architecture](docs/architecture.md) - System architecture and design decisions
-- [Database Schema](docs/database.md) - Database structure and relationships
+- [Core Concepts](docs/core_concepts.md)
+- [API Reference](docs/api_reference.md)
+- [Development Guide](docs/development.md)
+- [Architecture](docs/architecture.md)
+- [Database Schema](docs/database.md)
+- [Environment Variables Reference](docs/README_env_vars.md)
 
 ## Development
 
@@ -153,3 +101,13 @@ aida-facet-inference/
 # Fix formatting issues
 ./scripts/check.sh --fix
 ```
+
+## Project Goals & Next Steps
+
+- **Refine LLM Prompts:** Continue iterative improvement of prompt templates and strategies for better facet inference accuracy and reliability. This involves systematic testing, error analysis, and prompt engineering.
+- **Complete and Maintain Documentation:** Ensure all documentation is up-to-date, clear, and comprehensive, including API docs, architecture, and environment variable references.
+- **Logging Improvements:** Review and enhance logging throughout the codebase for better observability, debugging, and monitoring in both development and production.
+- **Refactor Full-Dataset Inference Script:** Clean up and modularize the script for running inference over large datasets, improving maintainability and testability.
+- **Implement Self-Review Loop:** Add a mechanism where the model critiques and refines its own outputs, using a second LLM pass to validate or request revision, with a confidence threshold and loop cap.
+- **Web Scrape Context Retrieval:** Build or integrate tooling to retrieve richer web scrape context for better citation and evidence in facet inference, leveraging LangChain or similar tools.
+- **General Codebase Cleanup:** Address technical debt, improve type safety, and ensure code quality across all modules.

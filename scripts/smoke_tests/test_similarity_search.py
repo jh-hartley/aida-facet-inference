@@ -106,7 +106,7 @@ def main(
 
         write_output(
             output_dir,
-            "05_similarity_search.txt",
+            "04_similarity_search.txt",
             "\n\n".join(output),
         )
 
