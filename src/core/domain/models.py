@@ -137,8 +137,12 @@ class FacetPrediction(BaseModel):
     """Domain model for a facet prediction result."""
 
     attribute: str = Field(description="Name of the attribute being predicted")
-    predicted_value: str = Field(
-        description="The predicted value for the attribute"
+    recommendation: str = Field(
+        description="The recommended value for the attribute"
+    )
+    unit: str = Field(
+        description="Unit of the attribute, empty string if non-numeric data",
+        default="",
     )
     confidence: float = Field(
         description="Confidence score (0-1) for the prediction", ge=0.0, le=1.0
@@ -164,8 +168,8 @@ class FacetPrediction(BaseModel):
         return """
         {
             "attribute": str,  # Name of the attribute being predicted
-            "predicted_value": str,  # The predicted value (empty string if no
-                # prediction possible)
+            "recommendation": str,  # The recommended value for the attribute
+            "unit": str,  # attribute units, empty string if non-numeric data
             "confidence": float,  # Confidence score between 0 and 1
             "reasoning": str,  # Explanation for the prediction
             "suggested_value": str  # Suggested value if correct value not in

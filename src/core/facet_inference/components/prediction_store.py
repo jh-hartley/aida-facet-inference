@@ -142,10 +142,10 @@ class PredictionStore:
                 experiment_key=experiment_key,
                 product_key=product_key,
                 attribute_key=attribute.attribute_key,
-                value=prediction.predicted_value,
+                value=prediction.recommendation,
                 confidence=prediction.confidence,
                 recommendation_key=recommendation_key,
-                actual_value=prediction.predicted_value,
+                actual_value=prediction.recommendation,
                 reasoning=prediction.reasoning,
                 suggested_value=prediction.suggested_value,
             )

@@ -81,13 +81,12 @@ class FacetInferenceOrchestrator:
                         await self.product_processor.process_product(
                             product_ref, recommendations
                         )
-                    )  # predictions: Sequence[FacetPrediction]
+                    )
 
                     if not product_key:
                         logger.error(f"No product key found for {product_ref}")
                         continue
 
-                    # Store FacetPrediction objects in the DB
                     self.prediction_store.store_predictions(
                         experiment_key, product_key, predictions
                     )

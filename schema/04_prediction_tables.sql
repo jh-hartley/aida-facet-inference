@@ -18,6 +18,7 @@ CREATE TABLE prediction_results (
     confidence FLOAT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     recommendation_key INTEGER REFERENCES human_recommendations(id),
+    unit TEXT,
     actual_value TEXT,
     correctness_status BOOLEAN,
     reasoning TEXT,
