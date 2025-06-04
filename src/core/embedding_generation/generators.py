@@ -58,6 +58,8 @@ def _chunked_tokens(text: str, chunk_length: int) -> Iterator[tuple[int]]:
     openai.RateLimitError,
     max_tries=config.OPENAI_EMBEDDING_MAX_TRIES,
     max_time=config.OPENAI_EMBEDDING_MAX_TIME,
+    base=config.OPENAI_EMBEDDING_BACKOFF_BASE,
+    jitter=backoff.full_jitter if config.OPENAI_EMBEDDING_BACKOFF_JITTER else None,
 )
 async def get_embedding_with_backoff(chunk_text: str) -> list[float]:
     client = embeddings()

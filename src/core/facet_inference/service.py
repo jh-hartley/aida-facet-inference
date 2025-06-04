@@ -17,7 +17,7 @@ class FacetInferenceService:
     def __init__(
         self,
         repository: FacetIdentificationRepository,
-        max_concurrent: int = 32,
+        max_concurrent: int = 8,
     ) -> None:
         self.repository = repository
         self.concurrency_manager = AsyncConcurrencyManager(max_concurrent)
@@ -27,7 +27,7 @@ class FacetInferenceService:
     def from_session(
         cls,
         session: Session,
-        max_concurrent: int = 32,
+        max_concurrent: int = 8,
     ) -> "FacetInferenceService":
         """Create a service instance from a session."""
         repository = FacetIdentificationRepository(session)

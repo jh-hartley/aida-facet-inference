@@ -98,6 +98,12 @@ class Config:
     # Logging
     LOG_LEVEL: str = os.getenv("LOG_LEVEL", "INFO").upper()
 
+    # LLM Backoff/Retry Configuration
+    OPENAI_LLM_MAX_TRIES: int = int(os.getenv("OPENAI_LLM_MAX_TRIES", "10"))
+    OPENAI_LLM_MAX_TIME: int = int(os.getenv("OPENAI_LLM_MAX_TIME", "300"))
+    OPENAI_LLM_BACKOFF_BASE: int = int(os.getenv("OPENAI_LLM_BACKOFF_BASE", "2"))
+    OPENAI_LLM_BACKOFF_JITTER: bool = os.getenv("OPENAI_LLM_BACKOFF_JITTER", "true").lower() == "true"
+
     # Embedding Backoff/Retry Configuration
     OPENAI_EMBEDDING_MAX_TRIES: int = int(
         os.getenv("OPENAI_EMBEDDING_MAX_TRIES", "5")
@@ -105,10 +111,8 @@ class Config:
     OPENAI_EMBEDDING_MAX_TIME: int = int(
         os.getenv("OPENAI_EMBEDDING_MAX_TIME", "60")
     )
-
-    # LLM Backoff/Retry Configuration
-    OPENAI_LLM_MAX_TRIES: int = int(os.getenv("OPENAI_LLM_MAX_TRIES", "5"))
-    OPENAI_LLM_MAX_TIME: int = int(os.getenv("OPENAI_LLM_MAX_TIME", "60"))
+    OPENAI_EMBEDDING_BACKOFF_BASE: int = int(os.getenv("OPENAI_EMBEDDING_BACKOFF_BASE", "2"))
+    OPENAI_EMBEDDING_BACKOFF_JITTER: bool = os.getenv("OPENAI_EMBEDDING_BACKOFF_JITTER", "true").lower() == "true"
 
     @field_validator("OPENAI_API_KEY")
     @classmethod

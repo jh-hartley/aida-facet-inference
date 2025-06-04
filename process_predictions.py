@@ -25,7 +25,7 @@ def fuzzy_match(predicted: str, ground_truth: str, threshold: float = 0.9) -> bo
 def get_ground_truth_value(recommendation: HumanRecommendationRecord) -> str:
     """Get the ground truth value based on the recommendation action."""
     if recommendation.action == "Action":
-        return None
+        return ""
     elif recommendation.action == "Make no change":
         return ""
     elif recommendation.action == "Apply override":
@@ -34,7 +34,7 @@ def get_ground_truth_value(recommendation: HumanRecommendationRecord) -> str:
         return recommendation.recommendation
     else:
         logger.warning(f"Unknown action type: {recommendation.action}")
-        return None
+        return ""
 
 def process_predictions(csv_path: str, db_url: str) -> None:
     """Process predictions from CSV and calculate accuracy metrics."""
